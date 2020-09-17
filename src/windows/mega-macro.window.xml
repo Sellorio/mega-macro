@@ -32,9 +32,9 @@
 			</Layer>
 			<Layer level="ARTWORK">
 				<Texture name="MegaMacro_HorizontalBarLeft" file="Interface\ClassTrainerFrame\UI-ClassTrainer-HorizontalBar">
-					<Size x="554" y="16"/>
+					<Size x="556" y="16"/>
 					<Anchors>
-						<Anchor point="TOPLEFT" x="2" y="-210"/>
+						<Anchor point="TOPLEFT" x="0" y="-210"/>
 					</Anchors>
 					<TexCoords left="0" right="1.0" top="0" bottom="0.25"/>
 				</Texture>
@@ -206,10 +206,10 @@
 					<Anchor point="TOPLEFT" x="51" y="-28"/>
 				</Anchors>
 				<Scripts>
-					<OnLoad>
+					<OnShow>
 						PanelTemplates_TabResize(self, -8);
-						_G[self:GetName().."HighlightTexture"]:SetWidth(self:GetTextWidth() + 31);
-					</OnLoad>
+						_G[self:GetName().."HighlightTexture"]:SetWidth(55);
+					</OnShow>
 					<OnClick>
 						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
 						PanelTemplates_SetTab(MegaMacro_Frame, self:GetID());
@@ -222,11 +222,11 @@
 					<Anchor point="LEFT" relativeTo="MegaMacro_FrameTab1" relativePoint="RIGHT" x="0" y="0"/>
 				</Anchors>
 				<Scripts>
-					<OnLoad>
-						PanelTemplates_TabResize(self, 0);
-						_G[self:GetName().."HighlightTexture"]:SetWidth(self:GetTextWidth() + 31);
+					<OnShow>
+						PanelTemplates_TabResize(self, 35);
+						_G[self:GetName().."HighlightTexture"]:SetWidth(103);
                         self:SetText(UnitClass("player"));
-					</OnLoad>
+					</OnShow>
 					<OnClick>
 						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
 						PanelTemplates_SetTab(MegaMacro_Frame, self:GetID());
@@ -234,18 +234,18 @@
 					</OnClick>
 				</Scripts>
 			</Button>
-			<Button name="MegaMacro_FrameTab3" inherits="TabButtonTemplate" text="{Class}" id="3">
+			<Button name="MegaMacro_FrameTab3" inherits="TabButtonTemplate" text="{Spec}" id="3">
 				<Anchors>
 					<Anchor point="LEFT" relativeTo="MegaMacro_FrameTab2" relativePoint="RIGHT" x="0" y="0"/>
 				</Anchors>
 				<Scripts>
-					<OnLoad>
-						PanelTemplates_TabResize(self, 12);
-						_G[self:GetName().."HighlightTexture"]:SetWidth(self:GetTextWidth() + 31);
+					<OnShow>
+						PanelTemplates_TabResize(self, 20);
+						_G[self:GetName().."HighlightTexture"]:SetWidth(82);
                         local currentSpec = GetSpecialization()
                         local currentSpecName = currentSpec and select(2, GetSpecializationInfo(currentSpec)) or "None"
                         self:SetText(currentSpecName);
-					</OnLoad>
+					</OnShow>
 					<OnClick>
 						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
 						PanelTemplates_SetTab(MegaMacro_Frame, self:GetID());
@@ -253,16 +253,16 @@
 					</OnClick>
 				</Scripts>
 			</Button>
-			<Button name="MegaMacro_FrameTab4" inherits="TabButtonTemplate" text="{Class}" id="4">
+			<Button name="MegaMacro_FrameTab4" inherits="TabButtonTemplate" text="{Character}" id="4">
 				<Anchors>
 					<Anchor point="LEFT" relativeTo="MegaMacro_FrameTab3" relativePoint="RIGHT" x="0" y="0"/>
 				</Anchors>
 				<Scripts>
-					<OnLoad>
+					<OnShow>
 						PanelTemplates_TabResize(self, 20);
-						_G[self:GetName().."HighlightTexture"]:SetWidth(self:GetTextWidth() + 31);
+						_G[self:GetName().."HighlightTexture"]:SetWidth(112);
                         self:SetText(UnitName("player"));
-					</OnLoad>
+					</OnShow>
 					<OnClick>
 						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
 						PanelTemplates_SetTab(MegaMacro_Frame, self:GetID());
@@ -270,18 +270,18 @@
 					</OnClick>
 				</Scripts>
 			</Button>
-			<Button name="MegaMacro_FrameTab5" inherits="TabButtonTemplate" text="{Class}" id="5">
+			<Button name="MegaMacro_FrameTab5" inherits="TabButtonTemplate" text="{Character Spec}" id="5">
 				<Anchors>
 					<Anchor point="LEFT" relativeTo="MegaMacro_FrameTab4" relativePoint="RIGHT" x="0" y="0"/>
 				</Anchors>
 				<Scripts>
-					<OnLoad>
-						PanelTemplates_TabResize(self, 70);
-						_G[self:GetName().."HighlightTexture"]:SetWidth(self:GetTextWidth() + 31);
+					<OnShow>
+						PanelTemplates_TabResize(self, 60);
+						_G[self:GetName().."HighlightTexture"]:SetWidth(190);
                         local currentSpec = GetSpecialization()
                         local currentSpecName = currentSpec and select(2, GetSpecializationInfo(currentSpec)) or "None"
                         self:SetText(UnitName("player") .. " " .. currentSpecName);
-					</OnLoad>
+					</OnShow>
 					<OnClick>
 						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
 						PanelTemplates_SetTab(MegaMacro_Frame, self:GetID());
