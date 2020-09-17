@@ -1,0 +1,16 @@
+## Interface: 80300
+## Title: Mega Macro ALPHA
+## Author: Sellorio
+## Version: 0.1
+
+## SavedVariables: MegaMacroConfig, MegaMacroGlobalData
+## SavedVariablesPerCharacter: MegaMacroCharacterData
+
+src/helpers/macro-helper.lua
+
+src/config.lua
+src/macro-engine.lua
+src/windows/mega-macro.window.xml
+src/windows/mega-macro.window.lua
+
+src/main.lua
