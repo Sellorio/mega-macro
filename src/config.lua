@@ -7,6 +7,11 @@ function MegaMacro_InitialiseConfig()
                     Id = "Test Macgg01",
                     DisplayName = "Test Macro",
                     Code = "#showtooltip\n/cast [combat] Shadowmeld\n"
+                },
+                {
+                    Id = "Second Tgg02",
+                    DisplayName = "Second Test Macro",
+                    Code = "#showtooltip\n/cast Immolation Aura\n"
                 }
             },
             Classes = {}

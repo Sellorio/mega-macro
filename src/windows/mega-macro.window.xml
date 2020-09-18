@@ -1,6 +1,9 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/..\..\FrameXML\UI.xsd">
 	<Script file="src/windows/mega-macro.window.lua"/>
 	<CheckButton name="MegaMacro_ButtonTemplate" inherits="PopupButtonTemplate" virtual="true">
+		<Scripts>
+			<OnClick function="MegaMacro_MacroButton_OnClick" />
+		</Scripts>
 	</CheckButton>
 	<CheckButton name="MegaMacro_PopupButtonTemplate" inherits="SimplePopupButtonTemplate" virtual="true">
 		<NormalTexture name="$parentIcon" nonBlocking="true">
@@ -52,7 +55,7 @@
 					</Anchors>
 				</Texture>
 				<FontString name="MegaMacro_FrameSelectedMacroName" inherits="GameFontNormalLarge" justifyH="LEFT">
-					<Size x="554" y="16"/>
+					<Size x="554" y="19"/>
 					<Anchors>
 						<Anchor point="TOPLEFT" relativeTo="MegaMacro_FrameSelectedMacroBackground" relativePoint="TOPRIGHT" x="-4" y="-10"/>
 					</Anchors>
@@ -126,10 +129,10 @@
 					</Frame>
 				</ScrollChild>
 			</ScrollFrame>
-			<Button name="MegaMacro_EditButton" frameStrata="HIGH" inherits="UIPanelButtonTemplate" text="CHANGE_MACRO_NAME_ICON">
-				<Size x="170" y="22"/>
+			<Button name="MegaMacro_EditButton" frameStrata="HIGH" inherits="UIPanelButtonTemplate" text="Rename">
+				<Size x="65" y="22"/>
 				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="MegaMacro_FrameSelectedMacroBackground" x="55" y="-30"/>
+					<Anchor point="TOPLEFT" relativeTo="MegaMacro_FrameSelectedMacroBackground" x="55" y="-32"/>
 				</Anchors>
 				<Scripts>
 					<OnClick function="MegaMacro_EditButton_OnClick"/>

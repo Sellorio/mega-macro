@@ -4,6 +4,8 @@ local rendering = {
 }
 
 local SelectedScope = MegaMacroScopeCodes.Global
+local MacroItems = {}
+local SelectedMacro = nil
 
 NUM_ICONS_PER_ROW = 10
 NUM_ICON_ROWS = 9
@@ -29,6 +31,11 @@ MegaMacroWindow = {
         ShowUIPanel(MegaMacro_Frame);
 	end
 }
+
+local function GetMacroButtonUI(index)
+	local buttonName = "MegaMacro_MacroButton" .. index
+	return _G[buttonName], _G[buttonName .. "Name"], _G[buttonName .. "Icon"]
+end
 
 -- Creates the button frames for the macro slots
 local function CreateMacroSlotFrames()
@@ -77,6 +84,26 @@ local function SetMacroItems()
 	end
 end
 
+local function SelectMacro(macro)
+	MegaMacro_FrameSelectedMacroName:SetText("")
+	MegaMacro_FrameSelectedMacroButtonIcon:SetTexture("")
+	MegaMacro_FrameText:SetText("")
+
+	for i=1, MegaMacroHelper.HighestMaxMacroCount do
+		local buttonFrame, buttonName, buttonIcon = GetMacroButtonUI(i)
+
+		if macro and buttonFrame.Macro == macro then
+			buttonFrame:SetChecked(true)
+			SelectedMacro = macro
+			MegaMacro_FrameSelectedMacroName:SetText(macro.DisplayName)
+			MegaMacro_FrameSelectedMacroButtonIcon:SetTexture(buttonIcon:GetTexture())
+			MegaMacro_FrameText:SetText(macro.Code)
+		else
+			buttonFrame:SetChecked(false)
+		end
+	end
+end
+
 local function SetMacroItems()
 	local items = nil
 
@@ -84,44 +111,34 @@ local function SetMacroItems()
 		items = MegaMacroGlobalData.Macros
 	end
 
-	items = items or {}
+	MacroItems = items or {}
+
 	table.sort(
-		items,
+		MacroItems,
 		function(left, right)
 			return left.DisplayName < right.DisplayName
 		end)
 
 	for i=1, MegaMacroHelper.HighestMaxMacroCount do
-		local buttonId = "MegaMacro_MacroButton" .. i
-		local buttonFrame = _G[buttonId]
-		local buttonName = _G[buttonId .. "Name"]
-		local buttonIcon = _G[buttonId .. "Icon"]
+		local buttonFrame, buttonName, buttonIcon = GetMacroButtonUI(i)
 
-		local macro = items[i]
+		local macro = MacroItems[i]
 
 		if macro == nil then
-			buttonFrame.MacroId = nil
+			buttonFrame.Macro = nil
 			buttonFrame:SetChecked(false)
 			buttonFrame:Disable()
 			buttonName:SetText("")
 			buttonIcon:SetTexture("")
 		else
-			buttonFrame.MacroId = macro.Id
+			buttonFrame.Macro = macro
 			buttonFrame:Enable()
 			buttonName:SetText(macro.DisplayName)
 			buttonIcon:SetTexture("")
-
-			-- move this to a dedicated SelectMacro function when implementing macro selection
-			-- also call ClearMacroSelection at the top once implemented
-			if i == 1 then
-				MegaMacro_FrameSelectedMacroButton:SetID(i);
-				MegaMacro_FrameSelectedMacroButtonIcon:SetTexture("");
-				buttonFrame:SetChecked(true)
-			else
-				buttonFrame:SetChecked(false)
-			end
 		end
 	end
+
+	SelectMacro(MacroItems[1])
 end
 
 function MegaMacro_Window_OnLoad()
@@ -163,6 +180,10 @@ end
 function MegaMacro_ButtonContainer_OnShow(self)
 	InitializeMacroSlots()
 	SetMacroItems()
+end
+
+function MegaMacro_MacroButton_OnClick(self)
+	SelectMacro(self.Macro)
 end
 
 function MegaMacro_EditButton_OnClick(self, button)
