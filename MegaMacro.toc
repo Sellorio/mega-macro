@@ -6,7 +6,7 @@
 ## SavedVariables: MegaMacroConfig, MegaMacroGlobalData
 ## SavedVariablesPerCharacter: MegaMacroCharacterData
 
-src/helpers/macro-helper.lua
+src/helpers/mega-macro-helper.lua
 
 src/config.lua
 src/macro-engine.lua

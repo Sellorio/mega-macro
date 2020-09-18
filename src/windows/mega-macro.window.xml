@@ -71,17 +71,14 @@
 			</Layer>
 		</Layers>
 		<Frames>
-			<!-- <CheckButton name="MegaMacro_FrameSelectedMacroButton" frameStrata="HIGH" inherits="MegaMacro_ButtonTemplate" id="0">
+			<CheckButton name="MegaMacro_FrameSelectedMacroButton" frameStrata="HIGH" inherits="MegaMacro_ButtonTemplate" id="0">
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeTo="MegaMacro_FrameSelectedMacroBackground" x="14" y="-14"/>
 				</Anchors>
 				<Scripts>
-					<OnClick>
-						self:SetChecked(false);
-						PickupMacro(MegaMacro_Frame.selectedMacro);
-					</OnClick>
+					<OnClick>self:SetChecked(false);</OnClick>
 				</Scripts>
-			</CheckButton> -->
+			</CheckButton>
 			<ScrollFrame name="MegaMacro_ButtonScrollFrame" inherits="UIPanelScrollFrameTemplate">
 				<Size x="593" y="146"/>
 				<Anchors>
@@ -124,6 +121,7 @@
 						</Anchors>
 						<Scripts>
 							<OnLoad function="MegaMacro_ButtonContainer_OnLoad"/>
+							<OnShow function="MegaMacro_ButtonContainer_OnShow"/>
 						</Scripts>
 					</Frame>
 				</ScrollChild>
@@ -213,7 +211,7 @@
 					<OnClick>
 						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
 						PanelTemplates_SetTab(MegaMacro_Frame, self:GetID());
-						MegaMacro_ButtonScrollFrame:SetVerticalScroll(0);
+						MegaMacro_TabChanged(self:GetID());
 					</OnClick>
 				</Scripts>
 			</Button>
@@ -230,7 +228,7 @@
 					<OnClick>
 						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
 						PanelTemplates_SetTab(MegaMacro_Frame, self:GetID());
-						MegaMacro_ButtonScrollFrame:SetVerticalScroll(0);
+						MegaMacro_TabChanged(self:GetID());
 					</OnClick>
 				</Scripts>
 			</Button>
@@ -249,7 +247,7 @@
 					<OnClick>
 						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
 						PanelTemplates_SetTab(MegaMacro_Frame, self:GetID());
-						MegaMacro_ButtonScrollFrame:SetVerticalScroll(0);
+						MegaMacro_TabChanged(self:GetID());
 					</OnClick>
 				</Scripts>
 			</Button>
@@ -266,7 +264,7 @@
 					<OnClick>
 						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
 						PanelTemplates_SetTab(MegaMacro_Frame, self:GetID());
-						MegaMacro_ButtonScrollFrame:SetVerticalScroll(0);
+						MegaMacro_TabChanged(self:GetID());
 					</OnClick>
 				</Scripts>
 			</Button>
@@ -285,7 +283,7 @@
 					<OnClick>
 						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
 						PanelTemplates_SetTab(MegaMacro_Frame, self:GetID());
-						MegaMacro_ButtonScrollFrame:SetVerticalScroll(0);
+						MegaMacro_TabChanged(self:GetID());
 					</OnClick>
 				</Scripts>
 			</Button>
