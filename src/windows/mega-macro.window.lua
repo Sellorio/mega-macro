@@ -3,6 +3,7 @@ local rendering = {
 	CharLimitMessageFormat = "%s/%s Characters Used"
 }
 
+local IsOpen = false
 local SelectedScope = MegaMacroScopeCodes.Global
 local MacroItems = {}
 local SelectedMacro = nil
@@ -84,6 +85,14 @@ local function SetMacroItems()
 	end
 end
 
+local function SaveMacro(macro)
+	if SelectedMacro ~= nil then
+		SelectedMacro.Code = MegaMacro_FrameText:GetText()
+	end
+
+	MegaMacro_SaveButton:Disable()
+end
+
 local function SelectMacro(macro)
 	MegaMacro_FrameSelectedMacroName:SetText("")
 	MegaMacro_FrameSelectedMacroButtonIcon:SetTexture("")
@@ -148,9 +157,11 @@ function MegaMacro_Window_OnLoad()
 end
 
 function MegaMacro_Window_OnShow()
+	IsOpen = true
 end
 
 function MegaMacro_Window_OnHide()
+	IsOpen = false
     MegaMacro_PopupFrame:Hide()
 end
 
@@ -190,7 +201,13 @@ function MegaMacro_EditButton_OnClick(self, button)
 end
 
 function MegaMacro_TextBox_TextChanged(self)
-    MegaMacro_Frame.textChanged = 1
+	if SelectedMacro ~= nil and SelectedMacro.Code ~= MegaMacro_FrameText:GetText() then
+		MegaMacro_SaveButton:Enable()
+		MegaMacro_CancelButton:Enable()
+	else
+		MegaMacro_SaveButton:Disable()
+		MegaMacro_CancelButton:Disable()
+	end
 
     if MegaMacro_PopupFrame.mode == "new" then
         MegaMacro_PopupFrame:Hide()
@@ -206,12 +223,18 @@ end
 
 function MegaMacro_CancelButton_OnClick()
 	PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON)
+
+	if SelectedMacro ~= nil then
+		MegaMacro_FrameText:SetText(SelectedMacro.Code)
+	end
+
 	MegaMacro_PopupFrame:Hide()
 	MegaMacro_FrameText:ClearFocus()
 end
 
 function MegaMacro_SaveButton_OnClick()
 	PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON)
+	SaveMacro()
 	MegaMacro_PopupFrame:Hide()
 	MegaMacro_FrameText:ClearFocus()
 end
