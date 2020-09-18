@@ -1,3 +1,5 @@
+.vscode\
 reference-code\
 scripts\
 .publishignore
+globals.lua

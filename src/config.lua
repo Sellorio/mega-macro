@@ -2,20 +2,14 @@ function MegaMacro_InitialiseConfig()
     if MegaMacroGlobalData == nil then
         MegaMacroGlobalData = {
             Activated = false,
-            Macros = {
-                {
-                    Id = "Test Macgg01",
-                    DisplayName = "Test Macro",
-                    Code = "#showtooltip\n/cast [combat] Shadowmeld\n"
-                },
-                {
-                    Id = "Second Tgg02",
-                    DisplayName = "Second Test Macro",
-                    Code = "#showtooltip\n/cast Immolation Aura\n"
-                }
-            },
+            Macros = {},
             Classes = {}
         }
+
+        local testMacro1 = MegaMacro.Create("Test Macro", MegaMacro.Scopes.Global)
+        testMacro1.Code = "#showtooltip\n/cast [combat] Shadowmeld\n"
+        local testMacro2 = MegaMacro.Create("Test Macro", MegaMacro.Scopes.Global)
+        testMacro2.Code = "#showtooltip\n/cast Immolation Aura\n"
     end
 
     if MegaMacroCharacterData == nil then

@@ -2,7 +2,7 @@
 	<Script file="src/windows/mega-macro.window.lua"/>
 	<CheckButton name="MegaMacro_ButtonTemplate" inherits="PopupButtonTemplate" virtual="true">
 		<Scripts>
-			<OnClick function="MegaMacro_MacroButton_OnClick" />
+			<OnClick>MegaMacro_MacroButton_OnClick(self);</OnClick>
 		</Scripts>
 	</CheckButton>
 	<CheckButton name="MegaMacro_PopupButtonTemplate" inherits="SimplePopupButtonTemplate" virtual="true">
@@ -123,19 +123,19 @@
 							<Anchor point="TOPLEFT"/>
 						</Anchors>
 						<Scripts>
-							<OnLoad function="MegaMacro_ButtonContainer_OnLoad"/>
-							<OnShow function="MegaMacro_ButtonContainer_OnShow"/>
+							<OnLoad>MegaMacro_ButtonContainer_OnLoad();</OnLoad>
+							<OnShow>MegaMacro_ButtonContainer_OnShow();</OnShow>
 						</Scripts>
 					</Frame>
 				</ScrollChild>
 			</ScrollFrame>
-			<Button name="MegaMacro_EditButton" frameStrata="HIGH" inherits="UIPanelButtonTemplate" text="Rename">
+			<Button name="MegaMacro_RenameButton" frameStrata="HIGH" inherits="UIPanelButtonTemplate" text="Rename">
 				<Size x="65" y="22"/>
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeTo="MegaMacro_FrameSelectedMacroBackground" x="55" y="-32"/>
 				</Anchors>
 				<Scripts>
-					<OnClick function="MegaMacro_EditButton_OnClick"/>
+					<OnClick>MegaMacro_RenameButton_OnClick();</OnClick>
 				</Scripts>
 			</Button>
 			<ScrollFrame name="MegaMacro_FrameScrollFrame" inherits="UIPanelScrollFrameTemplate">
@@ -148,7 +148,7 @@
 						<Size x="589" y="85"/>
 						<Scripts>
 							<OnLoad>ScrollingEdit_OnCursorChanged(self, 0, 0, 0, 0);</OnLoad>
-							<OnTextChanged function="MegaMacro_TextBox_TextChanged" />
+							<OnTextChanged>MegaMacro_TextBox_TextChanged(self);</OnTextChanged>
 							<OnCursorChanged function="ScrollingEdit_OnCursorChanged"/>
 							<OnUpdate>ScrollingEdit_OnUpdate(self, elapsed, self:GetParent());</OnUpdate>
 							<OnEscapePressed function="EditBox_ClearFocus"/>
@@ -172,7 +172,7 @@
 					<Anchor point="BOTTOMRIGHT" relativeTo="MegaMacro_FrameScrollFrame" relativePoint="TOPRIGHT" x="25" y="10"/>
 				</Anchors>
 				<Scripts>
-					<OnClick function="MegaMacro_CancelButton_OnClick"/>
+					<OnClick>MegaMacro_CancelButton_OnClick();</OnClick>
 				</Scripts>
 			</Button>
 			<Button name="MegaMacro_SaveButton" frameStrata="HIGH" inherits="UIPanelButtonTemplate" text="SAVE">
@@ -181,7 +181,7 @@
 					<Anchor point="BOTTOM" relativeTo="MegaMacro_CancelButton" relativePoint="TOP" x="0" y="15"/>
 				</Anchors>
 				<Scripts>
-					<OnClick function="MegaMacro_SaveButton_OnClick"/>
+					<OnClick>MegaMacro_SaveButton_OnClick();</OnClick>
 				</Scripts>
 			</Button>
             <Frame name="MegaMacro_FrameTextBackground">
@@ -207,10 +207,10 @@
 					<Anchor point="TOPLEFT" x="51" y="-28"/>
 				</Anchors>
 				<Scripts>
-					<OnShow>
+					<OnLoad>
 						PanelTemplates_TabResize(self, -8);
 						_G[self:GetName().."HighlightTexture"]:SetWidth(55);
-					</OnShow>
+					</OnLoad>
 					<OnClick>
 						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
 						PanelTemplates_SetTab(MegaMacro_Frame, self:GetID());
@@ -223,9 +223,11 @@
 					<Anchor point="LEFT" relativeTo="MegaMacro_FrameTab1" relativePoint="RIGHT" x="0" y="0"/>
 				</Anchors>
 				<Scripts>
-					<OnShow>
+					<OnLoad>
 						PanelTemplates_TabResize(self, 35);
 						_G[self:GetName().."HighlightTexture"]:SetWidth(103);
+					</OnLoad>
+					<OnShow>
                         self:SetText(UnitClass("player"));
 					</OnShow>
 					<OnClick>
@@ -240,9 +242,11 @@
 					<Anchor point="LEFT" relativeTo="MegaMacro_FrameTab2" relativePoint="RIGHT" x="0" y="0"/>
 				</Anchors>
 				<Scripts>
-					<OnShow>
+					<OnLoad>
 						PanelTemplates_TabResize(self, 20);
 						_G[self:GetName().."HighlightTexture"]:SetWidth(82);
+					</OnLoad>
+					<OnShow>
                         local currentSpec = GetSpecialization()
                         local currentSpecName = currentSpec and select(2, GetSpecializationInfo(currentSpec)) or "None"
                         self:SetText(currentSpecName);
@@ -259,9 +263,11 @@
 					<Anchor point="LEFT" relativeTo="MegaMacro_FrameTab3" relativePoint="RIGHT" x="0" y="0"/>
 				</Anchors>
 				<Scripts>
-					<OnShow>
+					<OnLoad>
 						PanelTemplates_TabResize(self, 20);
 						_G[self:GetName().."HighlightTexture"]:SetWidth(112);
+					</OnLoad>
+					<OnShow>
                         self:SetText(UnitName("player"));
 					</OnShow>
 					<OnClick>
@@ -276,9 +282,11 @@
 					<Anchor point="LEFT" relativeTo="MegaMacro_FrameTab4" relativePoint="RIGHT" x="0" y="0"/>
 				</Anchors>
 				<Scripts>
-					<OnShow>
+					<OnLoad>
 						PanelTemplates_TabResize(self, 60);
 						_G[self:GetName().."HighlightTexture"]:SetWidth(190);
+					</OnLoad>
+					<OnShow>
                         local currentSpec = GetSpecialization()
                         local currentSpecName = currentSpec and select(2, GetSpecializationInfo(currentSpec)) or "None"
                         self:SetText(UnitName("player") .. " " .. currentSpecName);
@@ -308,7 +316,7 @@
 					<Anchor point="BOTTOMRIGHT" x="-82" y="4"/>
 				</Anchors>
 				<Scripts>
-					<OnClick function="MegaMacro_NewButton_OnClick"/>
+					<OnClick>MegaMacro_NewButton_OnClick();</OnClick>
 				</Scripts>
 			</Button>
 			<Button name="MegaMacro_ExitButton" inherits="UIPanelButtonTemplate" text="EXIT">
@@ -322,7 +330,7 @@
 			</Button>
 		</Frames>
 		<Scripts>
-			<OnLoad function="MegaMacro_Window_OnLoad" />
+			<OnLoad>MegaMacro_Window_OnLoad();</OnLoad>
 			<OnShow>
                 PlaySound(SOUNDKIT.IG_CHARACTER_INFO_OPEN);
                 MegaMacro_Window_OnShow();
@@ -352,8 +360,8 @@
 		<Frames>
 			<Frame parentKey="BorderBox" inherits="SelectionFrameTemplate" frameLevel="50" hidden="false">
 				<KeyValues>
-					<KeyValue key="OnOkay" value="MegaMacro_EditOkButton_OnClick" type="global"/>
-					<KeyValue key="OnCancel" value="MegaMacro_EditCancelButton_OnClick" type="global"/>
+					<KeyValue key="OnOkay" value="MegaMacro_EditOkButton_OnClick_Wrapper" type="global"/>
+					<KeyValue key="OnCancel" value="MegaMacro_EditCancelButton_OnClick_Wrapper" type="global"/>
 				</KeyValues>
 				<Anchors>
 					<Anchor point="TOPLEFT"/>
@@ -400,18 +408,12 @@
 							</Layer>
 						</Layers>
 						<Scripts>
-							<!-- <OnTextChanged>
-								local text = self:GetText();
-								text = string.gsub(text, "\"", "");
-								MacroPopupOkayButton_Update();
-								MacroFrameSelectedMacroName:SetText(text);
-							</OnTextChanged>
-							<OnEscapePressed function="MegaMacro_PopupFrame_CancelEdit"/>
+							<OnEscapePressed>MegaMacro_EditCancelButton_OnClick();</OnEscapePressed>
 							<OnEnterPressed>
-								if ( MacroPopupFrame.BorderBox.OkayButton:IsEnabled() ) then
-									MacroPopupOkayButton_OnClick(MacroPopupFrame.BorderBox.OkayButton);
+								if MegaMacro_PopupFrame.BorderBox.OkayButton:IsEnabled() then
+									MegaMacro_EditOkButton_OnClick();
 								end
-							</OnEnterPressed> -->
+							</OnEnterPressed>
 						</Scripts>
 						<FontString inherits="ChatFontNormal"/>
 					</EditBox>
@@ -424,11 +426,5 @@
 				</Anchors>
 			</ScrollFrame>
 		</Frames>
-		<Scripts>
-			<!-- <OnLoad function="MegaMacro_PopupFrame_OnLoad"/>
-			<OnShow function="MegaMacro_PopupFrame_OnShow"/>
-			<OnUpdate function="MegaMacro_PopupFrame_OnUpdate"/>
-			<OnHide function="MegaMacro_PopupFrame_OnHide"/> -->
-		</Scripts>
 	</Frame>
 </Ui>

@@ -6,10 +6,9 @@
 ## SavedVariables: MegaMacroConfig, MegaMacroGlobalData
 ## SavedVariablesPerCharacter: MegaMacroCharacterData
 
-src/helpers/mega-macro-helper.lua
-
 src/config.lua
 src/macro-engine.lua
+src/mega-macro.lua
 src/windows/mega-macro.window.xml
 src/windows/mega-macro.window.lua
 
