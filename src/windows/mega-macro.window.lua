@@ -21,12 +21,6 @@ MACRO_ICON_ROW_HEIGHT = 36
 
 UIPanelWindows["MegaMacro_Frame"] = { area = "left", pushable = 1, whileDead = 1, width = PANEL_DEFAULT_WIDTH + 302 }
 
-MegaMacroWindow = {
-    Show = function()
-        ShowUIPanel(MegaMacro_Frame);
-	end
-}
-
 local function GetMacroButtonUI(index)
 	local buttonName = "MegaMacro_MacroButton" .. index
 	return _G[buttonName], _G[buttonName .. "Name"], _G[buttonName .. "Icon"]
@@ -109,24 +103,7 @@ local function SelectMacro(macro)
 end
 
 local function SetMacroItems()
-	local items = nil
-
-	local specIndex = GetSpecialization()
-	local Specialization = select(2, GetSpecializationInfo(specIndex))
-	local class = UnitClass("player")
-
-	if SelectedScope == MegaMacro.Scopes.Global then
-		items = MegaMacroGlobalData.Macros
-	elseif SelectedScope == MegaMacro.Scopes.Class then
-		items = MegaMacroGlobalData.Classes[class].Macros
-	elseif SelectedScope == MegaMacro.Scopes.Specialization then
-		items = MegaMacroGlobalData.Classes[class].Specializations[Specialization].Macros
-	elseif SelectedScope == MegaMacro.Scopes.Character then
-		items = MegaMacroCharacterData.Macros
-	elseif SelectedScope == MegaMacro.Scopes.CharacterSpecialization then
-		items = MegaMacroCharacterData.Specializations[Specialization].Macros
-	end
-
+	local items = MegaMacro.GetMacrosInScope(SelectedScope)
 	MacroItems = items or {}
 
 	table.sort(
@@ -150,7 +127,7 @@ local function SetMacroItems()
 			buttonFrame.Macro = macro
 			buttonFrame:Enable()
 			buttonName:SetText(macro.DisplayName)
-			buttonIcon:SetTexture("")
+			buttonIcon:SetTexture(MegaMacroIconEvaluator.GetTextureFromCache(macro.Id))
 		end
 	end
 
@@ -164,6 +141,23 @@ local function DeleteMacro()
 	end
 end
 
+local function OnIconUpdated(macroId, texture)
+	if IsOpen then
+		if SelectedMacro and SelectedMacro.Id == macroId then
+			MegaMacro_FrameSelectedMacroButtonIcon:SetTexture(texture)
+		end
+
+		local macroItemsLength = #MacroItems
+
+		for i=1, macroItemsLength do
+			if SelectedMacro[i].Id == macroId then
+				local _, _, buttonIcon = GetMacroButtonUI(i)
+				buttonIcon:SetTexture(texture)
+			end
+		end
+	end
+end
+
 StaticPopupDialogs["CONFIRM_DELETE_SELECTED_MEGA_MACRO"] = {
 	text = CONFIRM_DELETE_MACRO,
 	button1 = OKAY,
@@ -174,10 +168,17 @@ StaticPopupDialogs["CONFIRM_DELETE_SELECTED_MEGA_MACRO"] = {
 	showAlert = 1
 }
 
+MegaMacroWindow = {
+    Show = function()
+        ShowUIPanel(MegaMacro_Frame);
+	end
+}
+
 function MegaMacro_Window_OnLoad()
     -- Global, Class, ClassSpec, Character, CharacterSpec
 	PanelTemplates_SetNumTabs(MegaMacro_Frame, 5)
 	PanelTemplates_SetTab(MegaMacro_Frame, 1)
+	MegaMacroIconEvaluator.OnIconUpdated(OnIconUpdated)
 end
 
 function MegaMacro_Window_OnShow()
@@ -273,7 +274,6 @@ function MegaMacro_NewButton_OnClick()
 end
 
 function MegaMacro_EditOkButton_OnClick()
-	print("PopupMode: " .. PopupMode)
 	local enteredText = MegaMacro_PopupEditBox:GetText()
 
 	if PopupMode == PopupModes.Rename and SelectedMacro ~= nil then

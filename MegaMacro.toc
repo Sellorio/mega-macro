@@ -9,6 +9,7 @@
 src/config.lua
 src/macro-engine.lua
 src/mega-macro.lua
+src/mega-macro-icon-evaluator.lua
 src/windows/mega-macro.window.xml
 src/windows/mega-macro.window.lua
 

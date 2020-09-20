@@ -97,10 +97,7 @@ function MegaMacro.Create(displayName, scope, class, specialization)
         id = GenerateMacroId(displayName, scope, macroIndex)
     elseif scope == MegaMacro.Scopes.Class then
         if MegaMacroGlobalData.Classes[class] == nil then
-            MegaMacroGlobalData.Classes[class] = {
-                Macros = {},
-                Specializations = {}
-            }
+            MegaMacroGlobalData.Classes[class] = { Macros = {}, Specializations = {} }
         end
 
         macroList = MegaMacroGlobalData.Classes[class].Macros
@@ -115,9 +112,7 @@ function MegaMacro.Create(displayName, scope, class, specialization)
         result.Class = class
     elseif scope == MegaMacro.Scopes.Specialization then
         if MegaMacroGlobalData.Classes[class].Specializations[specialization] == nil then
-            MegaMacroGlobalData.Classes[class].Specializations[specialization] = {
-                Macros = {}
-            }
+            MegaMacroGlobalData.Classes[class].Specializations[specialization] = { Macros = {} }
         end
 
         macroList = MegaMacroGlobalData.Classes[class].Specializations[specialization].Macros
@@ -144,9 +139,7 @@ function MegaMacro.Create(displayName, scope, class, specialization)
         result.Class = class
     elseif scope == MegaMacro.Scopes.CharacterSpecialization then
         if MegaMacroCharacterData.Specializations[specialization] == nil then
-            MegaMacroCharacterData.Specializations[specialization] = {
-                Macros = {}
-            }
+            MegaMacroCharacterData.Specializations[specialization] = { Macros = {} }
         end
 
         macroList = MegaMacroCharacterData.Specializations[specialization].Macros
@@ -193,8 +186,15 @@ function MegaMacro.GetSlotCount(scope)
 end
 
 function MegaMacro.Rename(self, displayName)
+    local newId = GenerateMacroId(displayName, self.Scope, self.MacroIndex)
+    MegaMacroIconEvaluator.ChangeMacroKey(self.Id, newId)
     self.Id = GenerateMacroId(displayName, self.Scope, self.MacroIndex)
     self.DisplayName = displayName
+end
+
+function MegaMacro.UpdateCode(self, code)
+    self.Code = code
+    MegaMacroIconEvaluator.UpdateMacro(self)
 end
 
 function MegaMacro.Delete(self)
@@ -208,5 +208,39 @@ function MegaMacro.Delete(self)
         RemoveItemFromArray(MegaMacroCharacterData.Macros, self)
     elseif self.Scope == MegaMacro.Scopes.CharacterSpecialization then
         RemoveItemFromArray(MegaMacroCharacterData.Specializations[self.Specialization].Macros, self)
+    end
+
+    MegaMacroIconEvaluator.RemoveMacroFromCache(self.Id)
+end
+
+function MegaMacro.GetMacrosInScope(scope)
+    if scope == MegaMacro.Scopes.Global then
+		return MegaMacroGlobalData.Macros
+	elseif scope == MegaMacro.Scopes.Class then
+        local class = UnitClass("player")
+        if MegaMacroGlobalData.Classes[class] == nil then
+            MegaMacroGlobalData.Classes[class] = { Macros = {}, Specializations = {} }
+        end
+		return MegaMacroGlobalData.Classes[class].Macros
+	elseif scope == MegaMacro.Scopes.Specialization then
+        local class = UnitClass("player")
+        local specIndex = GetSpecialization()
+        local specialization = select(2, GetSpecializationInfo(specIndex))
+        if MegaMacroGlobalData.Classes[class] == nil then
+            MegaMacroGlobalData.Classes[class] = { Macros = {}, Specializations = {} }
+        end
+        if MegaMacroGlobalData.Classes[class].Specializations[specialization] == nil then
+            MegaMacroGlobalData.Classes[class].Specializations[specialization] = { Macros = {} }
+        end
+		return MegaMacroGlobalData.Classes[class].Specializations[specialization].Macros
+	elseif scope == MegaMacro.Scopes.Character then
+		return MegaMacroCharacterData.Macros
+	elseif scope == MegaMacro.Scopes.CharacterSpecialization then
+        local specIndex = GetSpecialization()
+        local specialization = select(2, GetSpecializationInfo(specIndex))
+        if MegaMacroCharacterData.Specializations[specialization] == nil then
+            MegaMacroCharacterData.Specializations[specialization] = { Macros = {} }
+        end
+		return MegaMacroCharacterData.Specializations[specialization].Macros
     end
 end
