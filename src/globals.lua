@@ -16,6 +16,8 @@ SOUNDKIT = {}
 mod = mod
 UIParent = {}
 SlashCmdList = {}
+BOOKTYPE_SPELL = nil
+BOOKTYPE_PET = nil
 
 ShowUIPanel = function(panel) panel._ = nil end
 CreateFrame = function(type, name, parent, template) type._ = name + parent + template; return nil end
@@ -26,6 +28,10 @@ PlaySound = function(soundId) soundId._ = nil end
 GetSpecialization = function() end
 GetSpecializationInfo = function(index) index._ = nil end
 UnitClass = function(unit) unit._ = nil end
+SecureCmdOptionParse = function(options) options._ = nil end
+GetSpellInfo = function(spellIdOrName) spellIdOrName._ = nil end -- returns: name, rank, icon, castTime, minRange, maxRange, spellId
+GetSpellTexture = function(spellIdOrName, bookType) spellIdOrName._ = bookType end
+GetItemInfo = function(itemIdOrName) itemIdOrName._ = nil end -- returns: itemName, itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture, itemSellPrice
 
 MegaMacro_Frame = {}
 MegaMacro_ButtonContainer = {}

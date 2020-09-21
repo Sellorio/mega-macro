@@ -9,8 +9,8 @@ local LastMacroList = nil
 local LastMacroIndex = 0
 
 local IconUpdatedCallbacks = {}
-local MacroIconCache = {}
-local MacroSpellCache = {}
+local MacroIconCache = {} -- icon ids
+local MacroSpellCache = {} -- spell ids
 
 local function IterateNextMacroInternal(nextScopeAttempts)
     LastMacroIndex = LastMacroIndex + 1
@@ -47,11 +47,40 @@ local function IterateNextMacro()
 end
 
 local function UpdateMacro(macro)
-    MacroIconCache[macro.Id] = DefaultMacroTexture
-    MacroSpellCache[macro.Id] = nil
+    local icon = DefaultMacroTexture
+    local spellName = nil
 
-    for i=1, #IconUpdatedCallbacks do
-        IconUpdatedCallbacks[i](macro.Id, MacroIconCache[macro.Id])
+    local codeInfo = MegaMacroCodeInfo.Get(macro)
+    local codeInfoLength = #codeInfo
+
+    for i=1, codeInfoLength do
+        local command = codeInfo[i]
+
+        if command.Type == "showtooltip" or command.Type == "use" or command.Type == "cast" then
+            local ability = SecureCmdOptionParse(command.Body)
+
+            if ability ~= nil then
+                local _, _, texture = GetSpellInfo(ability)
+
+                if texture == nil then
+                    _, _, _, _, _, _, _, _, _, texture = GetItemInfo(ability)
+                end
+                
+                if texture ~= nil then
+                    icon = texture
+                    spellName = ability
+                end
+            end
+        end
+    end
+
+    if MacroIconCache[macro.Id] ~= icon or MacroSpellCache[macro.Id] ~= spellName then
+        MacroIconCache[macro.Id] = icon
+        MacroSpellCache[macro.Id] = spellName
+
+        for i=1, #IconUpdatedCallbacks do
+            IconUpdatedCallbacks[i](macro.Id, MacroIconCache[macro.Id])
+        end
     end
 end
 
@@ -117,6 +146,7 @@ end
 
 -- callback takes 2 parameters: macroId and texture
 function MegaMacroIconEvaluator.OnIconUpdated(fn)
+    print("Inserting callback")
     table.insert(IconUpdatedCallbacks, fn)
 end
 

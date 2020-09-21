@@ -67,16 +67,17 @@ local function InitializeMacroSlots()
 end
 
 local function SaveMacro()
-	if SelectedMacro ~= nil then
-		SelectedMacro.Code = MegaMacro_FrameText:GetText()
+	local newCode = MegaMacro_FrameText:GetText()
+	if SelectedMacro ~= nil and SelectedMacro.Code ~= newCode then
+		MegaMacro.UpdateCode(SelectedMacro, newCode)
 	end
 
 	MegaMacro_SaveButton:Disable()
 end
 
 local function SelectMacro(macro)
-	SelectedMacro = nil
 	SaveMacro()
+	SelectedMacro = nil
 	MegaMacro_PopupFrame:Hide()
 	MegaMacro_FrameSelectedMacroName:SetText("")
 	MegaMacro_FrameSelectedMacroButtonIcon:SetTexture("")
@@ -141,23 +142,6 @@ local function DeleteMacro()
 	end
 end
 
-local function OnIconUpdated(macroId, texture)
-	if IsOpen then
-		if SelectedMacro and SelectedMacro.Id == macroId then
-			MegaMacro_FrameSelectedMacroButtonIcon:SetTexture(texture)
-		end
-
-		local macroItemsLength = #MacroItems
-
-		for i=1, macroItemsLength do
-			if SelectedMacro[i].Id == macroId then
-				local _, _, buttonIcon = GetMacroButtonUI(i)
-				buttonIcon:SetTexture(texture)
-			end
-		end
-	end
-end
-
 StaticPopupDialogs["CONFIRM_DELETE_SELECTED_MEGA_MACRO"] = {
 	text = CONFIRM_DELETE_MACRO,
 	button1 = OKAY,
@@ -171,14 +155,36 @@ StaticPopupDialogs["CONFIRM_DELETE_SELECTED_MEGA_MACRO"] = {
 MegaMacroWindow = {
     Show = function()
         ShowUIPanel(MegaMacro_Frame);
+	end,
+	IsOpen = function()
+		return IsOpen
 	end
 }
+
+function MegaMacro_OnIconUpdated(macroId, texture)
+	if IsOpen then
+		if SelectedMacro and SelectedMacro.Id == macroId then
+			MegaMacro_FrameSelectedMacroButtonIcon:SetTexture(texture)
+		end
+
+		local macroItemsLength = #MacroItems
+
+		for i=1, macroItemsLength do
+			if MacroItems[i].Id == macroId then
+				local _, _, buttonIcon = GetMacroButtonUI(i)
+				buttonIcon:SetTexture(texture)
+			end
+		end
+	end
+end
 
 function MegaMacro_Window_OnLoad()
     -- Global, Class, ClassSpec, Character, CharacterSpec
 	PanelTemplates_SetNumTabs(MegaMacro_Frame, 5)
 	PanelTemplates_SetTab(MegaMacro_Frame, 1)
-	MegaMacroIconEvaluator.OnIconUpdated(OnIconUpdated)
+	MegaMacroIconEvaluator.OnIconUpdated(function(macroId, texture)
+		MegaMacro_OnIconUpdated(macroId, texture)
+	end)
 end
 
 function MegaMacro_Window_OnShow()

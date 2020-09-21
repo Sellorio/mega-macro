@@ -194,6 +194,7 @@ end
 
 function MegaMacro.UpdateCode(self, code)
     self.Code = code
+    MegaMacroCodeInfo.Clear(self.Id)
     MegaMacroIconEvaluator.UpdateMacro(self)
 end
 
@@ -210,6 +211,7 @@ function MegaMacro.Delete(self)
         RemoveItemFromArray(MegaMacroCharacterData.Specializations[self.Specialization].Macros, self)
     end
 
+    MegaMacroCodeInfo.Clear(self.Id)
     MegaMacroIconEvaluator.RemoveMacroFromCache(self.Id)
 end
 
