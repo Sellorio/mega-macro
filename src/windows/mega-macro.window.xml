@@ -377,7 +377,7 @@
 					</Layer>
 				</Layers>
 				<Frames>
-					<EditBox name="MegaMacro_PopupEditBox" letters="16" historyLines="0">
+					<EditBox name="MegaMacro_PopupEditBox" letters="100" historyLines="0">
 						<Size x="182" y="20"/>
 						<Anchors>
 							<Anchor point="TOPLEFT" x="29" y="-35"/>
