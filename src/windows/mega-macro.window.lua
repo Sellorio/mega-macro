@@ -142,6 +142,39 @@ local function DeleteMacro()
 	end
 end
 
+local function ShowMacroToolTip(macro)
+	GameTooltip_SetDefaultAnchor(GameTooltip, UIParent)
+
+	local abilityName = MegaMacroIconEvaluator.GetSpellFromCache(macro.Id)
+
+	if abilityName then
+		local _, _, _, _, _, _, spellId = GetSpellInfo(abilityName)
+		
+		if spellId then
+			GameTooltip:SetSpellByID(spellId)
+		else
+			local itemId = GetItemInfoInstant(abilityName)
+			GameTooltip:SetItemByID(itemId)
+		end
+
+		GameTooltip:Show()
+	end
+end
+
+local function UpdateTooltipIfButtonIsHovered(updatedMacroId)
+	local focusFrame = GetMouseFocus():GetName()
+
+	if string.find(focusFrame, "^MegaMacro_MacroButton%d+$") then
+		local macro = _G[focusFrame].Macro
+
+		if macro.Id == updatedMacroId then
+			ShowMacroToolTip(macro)
+		end
+	elseif SelectedMacro.Id == updatedMacroId and focusFrame == "MegaMacro_FrameSelectedMacroButton" then
+		ShowMacroToolTip(SelectedMacro)
+	end
+end
+
 StaticPopupDialogs["CONFIRM_DELETE_SELECTED_MEGA_MACRO"] = {
 	text = CONFIRM_DELETE_MACRO,
 	button1 = OKAY,
@@ -175,6 +208,8 @@ function MegaMacro_OnIconUpdated(macroId, texture)
 				buttonIcon:SetTexture(texture)
 			end
 		end
+
+		UpdateTooltipIfButtonIsHovered(macroId)
 	end
 end
 
@@ -227,6 +262,22 @@ end
 
 function MegaMacro_MacroButton_OnClick(self)
 	SelectMacro(self.Macro)
+end
+
+function MegaMacro_MacroButton_OnEnter(self)
+	ShowMacroToolTip(self.Macro)
+end
+
+function MegaMacro_MacroButton_OnLeave()
+	GameTooltip:Hide()
+end
+
+function MegaMacro_FrameSelectedMacroButton_OnEnter()
+	ShowMacroToolTip(SelectedMacro)
+end
+
+function MegaMacro_FrameSelectedMacroButton_OnLeave()
+	GameTooltip:Hide()
 end
 
 function MegaMacro_TextBox_TextChanged(self)

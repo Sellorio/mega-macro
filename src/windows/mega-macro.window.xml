@@ -3,6 +3,8 @@
 	<CheckButton name="MegaMacro_ButtonTemplate" inherits="PopupButtonTemplate" virtual="true">
 		<Scripts>
 			<OnClick>MegaMacro_MacroButton_OnClick(self);</OnClick>
+			<OnEnter>MegaMacro_MacroButton_OnEnter(self);</OnEnter>
+			<OnLeave>MegaMacro_MacroButton_OnLeave();</OnLeave>
 		</Scripts>
 	</CheckButton>
 	<CheckButton name="MegaMacro_PopupButtonTemplate" inherits="SimplePopupButtonTemplate" virtual="true">
@@ -80,6 +82,8 @@
 				</Anchors>
 				<Scripts>
 					<OnClick>self:SetChecked(false);</OnClick>
+					<OnEnter>MegaMacro_FrameSelectedMacroButton_OnEnter();</OnEnter>
+					<OnLeave>MegaMacro_FrameSelectedMacroButton_OnLeave();</OnLeave>
 				</Scripts>
 			</CheckButton>
 			<ScrollFrame name="MegaMacro_ButtonScrollFrame" inherits="UIPanelScrollFrameTemplate">

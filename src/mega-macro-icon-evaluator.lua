@@ -50,7 +50,7 @@ local function GetIconFromAbility(ability)
     local _, _, texture = GetSpellInfo(ability)
 
     if texture == nil then
-        _, _, _, _, _, _, _, _, _, texture = GetItemInfo(ability)
+        _, _, _, _, texture = GetItemInfoInstant(ability)
     end
 
     return texture
@@ -197,7 +197,6 @@ end
 
 -- callback takes 2 parameters: macroId and texture
 function MegaMacroIconEvaluator.OnIconUpdated(fn)
-    print("Inserting callback")
     table.insert(IconUpdatedCallbacks, fn)
 end
 

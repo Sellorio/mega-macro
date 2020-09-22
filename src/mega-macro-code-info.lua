@@ -173,9 +173,9 @@ local function ParseShowtooltip(parsingContext)
 end
 
 local function AddFallbackAbility(macroId)
-    print("Adding fallback ability...")
     local codeInfo = CodeInfoCache[macroId]
     local codeInfoLength = #codeInfo
+
     for i=1, codeInfoLength do
         if codeInfo[i].Type == "showtooltip" then
             break
@@ -186,7 +186,6 @@ local function AddFallbackAbility(macroId)
 
             local abilityName = trim(string.sub(codeInfo[i].Body, endOfConditions, endOfAbility))
 
-            print("fallbackAbility for "..abilityName)
             table.insert(
                 codeInfo,
                 {
@@ -201,7 +200,6 @@ local function AddFallbackAbility(macroId)
 
             local sequence = trim(string.sub(codeInfo[i].Body, endOfConditions, endOfSequence))
 
-            print("fallbackSequence for "..sequence)
             table.insert(
                 codeInfo,
                 {
