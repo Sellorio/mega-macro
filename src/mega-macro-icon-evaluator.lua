@@ -46,6 +46,16 @@ local function IterateNextMacro()
     return IterateNextMacroInternal(0)
 end
 
+local function GetIconFromAbility(ability)
+    local _, _, texture = GetSpellInfo(ability)
+
+    if texture == nil then
+        _, _, _, _, _, _, _, _, _, texture = GetItemInfo(ability)
+    end
+
+    return texture
+end
+
 local function UpdateMacro(macro)
     local icon = DefaultMacroTexture
     local spellName = nil
@@ -60,16 +70,57 @@ local function UpdateMacro(macro)
             local ability = SecureCmdOptionParse(command.Body)
 
             if ability ~= nil then
-                local _, _, texture = GetSpellInfo(ability)
-
-                if texture == nil then
-                    _, _, _, _, _, _, _, _, _, texture = GetItemInfo(ability)
-                end
+                local texture = GetIconFromAbility(ability)
                 
                 if texture ~= nil then
                     icon = texture
                     spellName = ability
+                    break
                 end
+            end
+        elseif command.Type == "castsequence" then
+            local sequenceCode = SecureCmdOptionParse(command.Body)
+            
+            if sequenceCode ~= nil then
+                local _, item, spell = QueryCastSequence(sequenceCode)
+                local ability = item or spell
+
+                if ability ~= nil then
+                    local texture = GetIconFromAbility(ability)
+                    
+                    if texture ~= nil then
+                        icon = texture
+                        spellName = ability
+                        break
+                    end
+                end
+
+                break
+            end
+        elseif command.Type == "stopmacro" then
+            local shouldStop = SecureCmdOptionParse(command.Body)
+            if shouldStop == "TRUE" then
+                break
+            end
+        end
+    end
+
+    if icon == DefaultMacroTexture then
+        if codeInfo[codeInfoLength].Type == "fallbackAbility" then
+            local ability = codeInfo[codeInfoLength].Body
+            local texture = GetIconFromAbility(ability)
+                    
+            if texture ~= nil then
+                icon = texture
+                spellName = ability
+            end
+        elseif codeInfo[codeInfoLength].Type == "fallbackSequence" then
+            local ability = QueryCastSequence(codeInfo[codeInfoLength].Body)
+            local texture = GetIconFromAbility(ability)
+                    
+            if texture ~= nil then
+                icon = texture
+                spellName = ability
             end
         end
     end

@@ -32,6 +32,7 @@ SecureCmdOptionParse = function(options) options._ = nil end
 GetSpellInfo = function(spellIdOrName) spellIdOrName._ = nil end -- returns: name, rank, icon, castTime, minRange, maxRange, spellId
 GetSpellTexture = function(spellIdOrName, bookType) spellIdOrName._ = bookType end
 GetItemInfo = function(itemIdOrName) itemIdOrName._ = nil end -- returns: itemName, itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture, itemSellPrice
+QueryCastSequence = function(sequence) sequence._ = nil end
 
 MegaMacro_Frame = {}
 MegaMacro_ButtonContainer = {}

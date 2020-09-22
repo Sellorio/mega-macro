@@ -3,7 +3,7 @@ local CodeInfoCache = {}
 {
     "macroid": {
         {
-            type: "cast",               cast/stopmacro/use/castsequence/showtooltip
+            type: "cast",               cast/stopmacro/use/castsequence/showtooltip/fallback
             body: "[mod:alt] X; Y"
         },
         ...
@@ -15,8 +15,22 @@ local function trim(s)
     return s:gsub("^%s*(.-)%s*$", "%1")
 end
 
-local function Char(string, index)
-    return string.sub(string, index, index)
+local function lastIndexOf(str, match, maxIndex)
+    local index = string.find(str, match)
+
+    if index ~= nil then
+        local nextIndex = string.find(str, match, index + 1)
+        while nextIndex and (not maxIndex or nextIndex < maxIndex) do
+            index = nextIndex
+            nextIndex = string.find(str, match, index + 1)
+        end
+    end
+
+    return index
+end
+
+local function Char(str, index)
+    return string.sub(str, index, index)
 end
 
 local function ParseSpaces(parsingContext)
@@ -79,15 +93,33 @@ local function GrabRemainingLineCode(parsingContext)
 end
 
 local function ParseCastCommand(parsingContext)
-    -- todo
+    local castCode = trim(GrabRemainingLineCode(parsingContext))
+    table.insert(
+        CodeInfoCache[parsingContext.MacroId],
+        {
+            Type = "cast",
+            Body = castCode
+        })
 end
 
 local function ParseCastsequenceCommand(parsingContext)
-    -- todo
+    local body = trim(GrabRemainingLineCode(parsingContext))
+    table.insert(
+        CodeInfoCache[parsingContext.MacroId],
+        {
+            Type = "castsequence",
+            Body = body
+        })
 end
 
 local function ParseStopmacroCommand(parsingContext)
-    -- todo
+    local condition = trim(GrabRemainingLineCode(parsingContext))
+    table.insert(
+        CodeInfoCache[parsingContext.MacroId],
+        {
+            Type = "stopmacro",
+            Body = condition + "TRUE"
+        })
 end
 
 local function ParseCommand(parsingContext)
@@ -110,10 +142,10 @@ local function ParseCommand(parsingContext)
                 ParseStopmacroCommand(parsingContext)
             end
         end
-        
-        GrabRemainingLineCode(parsingContext)
-        ParseEndOfLine(parsingContext)
     end
+        
+    GrabRemainingLineCode(parsingContext)
+    ParseEndOfLine(parsingContext)
 
     return result
 end
@@ -124,18 +156,63 @@ local function ParseShowtooltip(parsingContext)
         local wordResult, word = ParseWord(parsingContext)
 
         if wordResult and string.lower(word) == "showtooltip" then
-            table.insert(
-                CodeInfoCache[parsingContext.MacroId],
-                {
-                    Type = "showtooltip",
-                    Body = trim(GrabRemainingLineCode(parsingContext))
-                })
-
-            return true
+            local body = trim(GrabRemainingLineCode(parsingContext))
+            if string.len(body) > 0 then
+                table.insert(
+                    CodeInfoCache[parsingContext.MacroId],
+                    {
+                        Type = "showtooltip",
+                        Body = body
+                    })
+                return true
+            end
         end
     end
 
     return false
+end
+
+local function AddFallbackAbility(macroId)
+    print("Adding fallback ability...")
+    local codeInfo = CodeInfoCache[macroId]
+    local codeInfoLength = #codeInfo
+    for i=1, codeInfoLength do
+        if codeInfo[i].Type == "showtooltip" then
+            break
+        elseif codeInfo[i].Type == "cast" or codeInfo[i].Type == "use" then
+            local endOfAbility = string.find(codeInfo[i].Body, ";")
+            endOfAbility = endOfAbility and (endOfAbility - 1)
+            local endOfConditions = (lastIndexOf(codeInfo[i].Body, "%]", endOfAbility) or 0) + 1
+
+            local abilityName = trim(string.sub(codeInfo[i].Body, endOfConditions, endOfAbility))
+
+            print("fallbackAbility for "..abilityName)
+            table.insert(
+                codeInfo,
+                {
+                    Type = "fallbackAbility",
+                    Body = abilityName
+                })
+            break
+        elseif codeInfo[i].Type == "castsequence" then
+            local endOfSequence = string.find(codeInfo[i].Body, ";")
+            endOfSequence = endOfSequence and (endOfSequence - 1)
+            local endOfConditions = (lastIndexOf(codeInfo[i].Body, "%]", endOfSequence) or 0) + 1
+
+            local sequence = trim(string.sub(codeInfo[i].Body, endOfConditions, endOfSequence))
+
+            print("fallbackSequence for "..sequence)
+            table.insert(
+                codeInfo,
+                {
+                    Type = "fallbackSequence",
+                    Body = sequence
+                })
+            break
+        elseif codeInfo[i].Type == "stopmacro" then
+            -- ignore
+        end
+    end
 end
 
 local function CalculateMacroInfo(macro)
@@ -148,10 +225,13 @@ local function CalculateMacroInfo(macro)
 
     if parsingContext.Index < string.len(parsingContext.Code) then
         if not ParseShowtooltip(parsingContext) then
-            while ParseCommand(parsingContext) do
+            while parsingContext.Index <= string.len(parsingContext.Code) do
+                ParseCommand(parsingContext)
             end
         end
     end
+
+    AddFallbackAbility(macro.Id)
 
     return CodeInfoCache[macro.Id]
 end
