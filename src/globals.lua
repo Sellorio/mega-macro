@@ -46,6 +46,8 @@ GetItemInfo = function(itemIdOrName) itemIdOrName._ = nil end -- returns: itemNa
 QueryCastSequence = function(sequence) sequence._ = nil end
 GameTooltip_SetDefaultAnchor = function(tooltip, parent) tooltip._ = parent end
 GetMouseFocus = function() end
+message = function(text) text._ = nil end
+InCombatLockdown = function() end
 
 MegaMacro_Frame = {}
 MegaMacro_ButtonContainer = {}

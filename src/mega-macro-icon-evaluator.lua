@@ -4,7 +4,7 @@ local MaxGlobalMacros = 120
 local MaxCharacterMacros = 18
 
 local MacrosToUpdatePerMs = 2
-local LastMacroScope = MegaMacro.Scopes.Global
+local LastMacroScope = MegaMacroScopes.Global
 local LastMacroList = nil
 local LastMacroIndex = 0
 
@@ -21,16 +21,16 @@ local function IterateNextMacroInternal(nextScopeAttempts)
             return false
         end
 
-        if LastMacroScope == MegaMacro.Scopes.Global then
-            LastMacroScope = MegaMacro.Scopes.Class
-        elseif LastMacroScope == MegaMacro.Scopes.Class then
-            LastMacroScope = MegaMacro.Scopes.Specialization
-        elseif LastMacroScope == MegaMacro.Scopes.Specialization then
-            LastMacroScope = MegaMacro.Scopes.Character
-        elseif LastMacroScope == MegaMacro.Scopes.Character then
-            LastMacroScope = MegaMacro.Scopes.CharacterSpecialization
-        elseif LastMacroScope == MegaMacro.Scopes.CharacterSpecialization then
-            LastMacroScope = MegaMacro.Scopes.Global
+        if LastMacroScope == MegaMacroScopes.Global then
+            LastMacroScope = MegaMacroScopes.Class
+        elseif LastMacroScope == MegaMacroScopes.Class then
+            LastMacroScope = MegaMacroScopes.Specialization
+        elseif LastMacroScope == MegaMacroScopes.Specialization then
+            LastMacroScope = MegaMacroScopes.Character
+        elseif LastMacroScope == MegaMacroScopes.Character then
+            LastMacroScope = MegaMacroScopes.CharacterSpecialization
+        elseif LastMacroScope == MegaMacroScopes.CharacterSpecialization then
+            LastMacroScope = MegaMacroScopes.Global
         end
 
         LastMacroIndex = 0
@@ -101,7 +101,7 @@ local function UpdateMacro(macro)
         end
     end
 
-    if icon == DefaultMacroTexture then
+    if icon == DefaultMacroTexture and codeInfoLength > 0 then
         if codeInfo[codeInfoLength].Type == "fallbackAbility" then
             local ability = codeInfo[codeInfoLength].Body
             local texture = GetIconFromAbility(ability)
@@ -146,7 +146,7 @@ local function UpdateAllMacros()
     MacroIconCache = {}
     MacroSpellCache = {}
 
-    LastMacroScope = MegaMacro.Scopes.Global
+    LastMacroScope = MegaMacroScopes.Global
     LastMacroList = MegaMacroGlobalData.Macros
     LastMacroIndex = 0
 

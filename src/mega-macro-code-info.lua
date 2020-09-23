@@ -30,7 +30,9 @@ local function lastIndexOf(str, match, maxIndex)
 end
 
 local function Char(str, index)
-    return string.sub(str, index, index)
+    if string.len(str) >= index then
+        return string.sub(str, index, index)
+    end
 end
 
 local function ParseSpaces(parsingContext)

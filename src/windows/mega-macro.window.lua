@@ -9,7 +9,7 @@ local PopupModes = {
 }
 
 local IsOpen = false
-local SelectedScope = MegaMacro.Scopes.Global
+local SelectedScope = MegaMacroScopes.Global
 local MacroItems = {}
 local SelectedMacro = nil
 local PopupMode = nil
@@ -28,7 +28,7 @@ end
 
 -- Creates the button frames for the macro slots
 local function CreateMacroSlotFrames()
-	for i=1, MegaMacro.HighestMaxMacroCount do
+	for i=1, HighestMaxMacroCount do
 		local button = CreateFrame("CheckButton", "MegaMacro_MacroButton" .. i, MegaMacro_ButtonContainer, "MegaMacro_ButtonTemplate")
 		button:SetID(i)
 		if i == 1 then
@@ -55,7 +55,7 @@ local function InitializeMacroSlots()
 		buttonFrame:Show()
 	end
 
-	for i=scopeSlotCount+1, MegaMacro.HighestMaxMacroCount do
+	for i=scopeSlotCount+1, HighestMaxMacroCount do
 		local buttonFrame = _G["MegaMacro_MacroButton" .. i]
 
 		if buttonFrame == nil then
@@ -84,8 +84,10 @@ local function SelectMacro(macro)
 	MegaMacro_FrameText:SetText("")
 	MegaMacro_RenameButton:Disable();
 	MegaMacro_DeleteButton:Disable();
+	MegaMacro_SaveButton:Disable()
+	MegaMacro_CancelButton:Disable()
 
-	for i=1, MegaMacro.HighestMaxMacroCount do
+	for i=1, HighestMaxMacroCount do
 		local buttonFrame, _, buttonIcon = GetMacroButtonUI(i)
 
 		if macro and buttonFrame.Macro == macro then
@@ -113,7 +115,7 @@ local function SetMacroItems()
 			return left.DisplayName < right.DisplayName
 		end)
 
-	for i=1, MegaMacro.HighestMaxMacroCount do
+	for i=1, HighestMaxMacroCount do
 		local buttonFrame, buttonName, buttonIcon = GetMacroButtonUI(i)
 
 		local macro = MacroItems[i]
@@ -170,16 +172,20 @@ local function ShowMacroToolTip(macro)
 end
 
 local function UpdateTooltipIfButtonIsHovered(updatedMacroId)
-	local focusFrame = GetMouseFocus():GetName()
+	local mouseFocus = GetMouseFocus()
 
-	if string.find(focusFrame, "^MegaMacro_MacroButton%d+$") then
-		local macro = _G[focusFrame].Macro
+	if mouseFocus then
+		local focusFrame = mouseFocus:GetName()
 
-		if macro.Id == updatedMacroId then
-			ShowMacroToolTip(macro)
+		if string.find(focusFrame, "^MegaMacro_MacroButton%d+$") then
+			local macro = _G[focusFrame].Macro
+
+			if macro.Id == updatedMacroId then
+				ShowMacroToolTip(macro)
+			end
+		elseif focusFrame == "MegaMacro_FrameSelectedMacroButton" and SelectedMacro and SelectedMacro.Id == updatedMacroId then
+			ShowMacroToolTip(SelectedMacro)
 		end
-	elseif SelectedMacro.Id == updatedMacroId and focusFrame == "MegaMacro_FrameSelectedMacroButton" then
-		ShowMacroToolTip(SelectedMacro)
 	end
 end
 
@@ -244,15 +250,15 @@ function MegaMacro_TabChanged(tabId)
 	MegaMacro_ButtonScrollFrame:SetVerticalScroll(0)
 
 	if tabId == 1 then
-		SelectedScope = MegaMacro.Scopes.Global
+		SelectedScope = MegaMacroScopes.Global
 	elseif tabId == 2 then
-		SelectedScope = MegaMacro.Scopes.Class
+		SelectedScope = MegaMacroScopes.Class
 	elseif tabId == 3 then
-		SelectedScope = MegaMacro.Scopes.Specialization
+		SelectedScope = MegaMacroScopes.Specialization
 	elseif tabId == 4 then
-		SelectedScope = MegaMacro.Scopes.Character
+		SelectedScope = MegaMacroScopes.Character
 	elseif tabId == 5 then
-		SelectedScope = MegaMacro.Scopes.CharacterSpecialization
+		SelectedScope = MegaMacroScopes.CharacterSpecialization
 	end
 
 	InitializeMacroSlots()
@@ -300,7 +306,7 @@ function MegaMacro_TextBox_TextChanged(self)
     MegaMacro_FrameCharLimitText:SetFormattedText(
 		rendering.CharLimitMessageFormat,
 		MegaMacro_FrameText:GetNumLetters(),
-		MegaMacro.CodeMaxLength)
+		MegaMacroCodeMaxLength)
 
     ScrollingEdit_OnTextChanged(self, self:GetParent())
 end
@@ -314,6 +320,7 @@ function MegaMacro_CancelButton_OnClick()
 
 	MegaMacro_PopupFrame:Hide()
 	MegaMacro_FrameText:ClearFocus()
+	MegaMacro_CancelButton:Disable()
 end
 
 function MegaMacro_SaveButton_OnClick()
@@ -347,10 +354,7 @@ function MegaMacro_EditOkButton_OnClick()
 		SetMacroItems()
 		SelectMacro(selectedMacro)
 	elseif PopupMode == PopupModes.New then
-		local specIndex = GetSpecialization()
-		local Specialization = select(2, GetSpecializationInfo(specIndex))
-		local class = UnitClass("player")
-		local createdMacro = MegaMacro.Create(enteredText, SelectedScope, class, Specialization)
+		local createdMacro = MegaMacro.Create(enteredText, SelectedScope)
 		SetMacroItems()
 		SelectMacro(createdMacro)
 	end

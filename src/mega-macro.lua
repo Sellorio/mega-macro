@@ -1,24 +1,5 @@
 local MacroIdDisplayNamePartLength = 8
 
-local MacroLimits = {
-	-- limit: 120 non-character specific macro slots
-	GlobalCount = 60,
-	PerClassCount = 30,
-	PerSpecializationCount = 30,
-	-- limit: 18 character specific macro slots
-	PerCharacterCount = 8,
-	PerCharacterSpecializationCount = 10
-}
-
-local MacroStartIndexes = {
-	Global = 1,
-	PerClass = 1 + MacroLimits.GlobalCount,
-	PerSpecialization = 1 + MacroLimits.GlobalCount + MacroLimits.PerClassCount,
-	-- restarting index due to different macro scope
-	PerCharacter = 1,
-	PerCharacterSpecialization = 1 + MacroLimits.PerCharacterCount
-}
-
 local function RemoveItemFromArray(t, item)
     local length = #t
 
@@ -30,29 +11,12 @@ local function RemoveItemFromArray(t, item)
     end
 end
 
-local function GenerateMacroId(displayName, scope, index)
-    local trimmedDisplayName = string.sub(displayName, 1, MacroIdDisplayNamePartLength)
-    local trimmedLength = string.len(trimmedDisplayName)
-
-    if trimmedLength < 8 then
-        trimmedDisplayName = trimmedDisplayName .. string.rep(" ", MacroIdDisplayNamePartLength - trimmedLength)
-    end
-
-    local formattedIndex = "" .. index
-
-    if #formattedIndex == 1 then
-        formattedIndex = "0" .. formattedIndex
-    end
-
-    return trimmedDisplayName .. scope .. index
-end
-
-local function GetNextAvailableMacroIndex(start, count, existingMacros)
+local function GetNextAvailableMacroId(start, count, existingMacros)
     for i=start, start + count - 1 do
         local isMatched = false
 
         for _, existingMacro in ipairs(existingMacros) do
-            if existingMacro.MacroIndex == i then
+            if existingMacro.Id == i then
                 isMatched = true
                 break
             end
@@ -64,28 +28,16 @@ local function GetNextAvailableMacroIndex(start, count, existingMacros)
     end
 end
 
--- Static Members
-MegaMacro = {
-    Scopes = {
-        Global = "gg",
-        Class = "gc",
-        Specialization = "gs",
-        Character = "ch",
-        CharacterSpecialization = "cs"
-    },
-    CodeMaxLength = 1024,
-    HighestMaxMacroCount = math.max(MacroLimits.GlobalCount, MacroLimits.PerClassCount, MacroLimits.PerSpecializationCount, MacroLimits.PerCharacterCount, MacroLimits.PerCharacterSpecializationCount),
-}
+MegaMacro = {}
 
-function MegaMacro.Create(displayName, scope, class, specialization)
+function MegaMacro.Create(displayName, scope)
     local result = {}
 
-    local macroIndex
-    local scopedIndex
     local id
+    local scopedIndex
     local macroList
 
-    if scope == MegaMacro.Scopes.Global then
+    if scope == MegaMacroScopes.Global then
         macroList = MegaMacroGlobalData.Macros
         scopedIndex = #macroList + 1
 
@@ -93,40 +45,37 @@ function MegaMacro.Create(displayName, scope, class, specialization)
             return nil
         end
 
-        macroIndex = GetNextAvailableMacroIndex(MacroStartIndexes.Global, MacroLimits.GlobalCount, macroList)
-        id = GenerateMacroId(displayName, scope, macroIndex)
-    elseif scope == MegaMacro.Scopes.Class then
-        if MegaMacroGlobalData.Classes[class] == nil then
-            MegaMacroGlobalData.Classes[class] = { Macros = {}, Specializations = {} }
+        id = GetNextAvailableMacroId(MacroStartIndexes.Global, MacroLimits.GlobalCount, macroList)
+    elseif scope == MegaMacroScopes.Class then
+        if MegaMacroGlobalData.Classes[MegaMacroCachedClass] == nil then
+            MegaMacroGlobalData.Classes[MegaMacroCachedClass] = { Macros = {}, Specializations = {} }
         end
 
-        macroList = MegaMacroGlobalData.Classes[class].Macros
+        macroList = MegaMacroGlobalData.Classes[MegaMacroCachedClass].Macros
         scopedIndex = #macroList + 1
 
         if scopedIndex > MacroLimits.PerClassCount then
             return nil
         end
 
-        macroIndex = GetNextAvailableMacroIndex(MacroStartIndexes.PerClass, MacroLimits.PerClassCount, macroList)
-        id = GenerateMacroId(displayName, scope, macroIndex)
-        result.Class = class
-    elseif scope == MegaMacro.Scopes.Specialization then
-        if MegaMacroGlobalData.Classes[class].Specializations[specialization] == nil then
-            MegaMacroGlobalData.Classes[class].Specializations[specialization] = { Macros = {} }
+        id = GetNextAvailableMacroId(MacroStartIndexes.PerClass, MacroLimits.PerClassCount, macroList)
+        result.Class = MegaMacroCachedClass
+    elseif scope == MegaMacroScopes.Specialization then
+        if MegaMacroGlobalData.Classes[MegaMacroCachedClass].Specializations[MegaMacroCachedSpecialization] == nil then
+            MegaMacroGlobalData.Classes[MegaMacroCachedClass].Specializations[MegaMacroCachedSpecialization] = { Macros = {} }
         end
 
-        macroList = MegaMacroGlobalData.Classes[class].Specializations[specialization].Macros
+        macroList = MegaMacroGlobalData.Classes[MegaMacroCachedClass].Specializations[MegaMacroCachedSpecialization].Macros
         scopedIndex = #macroList + 1
 
         if scopedIndex > MacroLimits.PerSpecializationCount then
             return nil
         end
 
-        macroIndex = GetNextAvailableMacroIndex(MacroStartIndexes.PerSpecialization, MacroLimits.PerSpecializationCount, macroList)
-        id = GenerateMacroId(displayName, scope, macroIndex)
-        result.Class = class
-        result.Specialization = specialization
-    elseif scope == MegaMacro.Scopes.Character then
+        id = GetNextAvailableMacroId(MacroStartIndexes.PerSpecialization, MacroLimits.PerSpecializationCount, macroList)
+        result.Class = MegaMacroCachedClass
+        result.Specialization = MegaMacroCachedSpecialization
+    elseif scope == MegaMacroScopes.Character then
         macroList = MegaMacroCharacterData.Macros
         scopedIndex = #macroList + 1
 
@@ -134,25 +83,23 @@ function MegaMacro.Create(displayName, scope, class, specialization)
             return nil
         end
 
-        macroIndex = GetNextAvailableMacroIndex(MacroStartIndexes.PerCharacter, MacroLimits.PerCharacterCount, macroList)
-        id = GenerateMacroId(displayName, scope, scope)
-        result.Class = class
-    elseif scope == MegaMacro.Scopes.CharacterSpecialization then
-        if MegaMacroCharacterData.Specializations[specialization] == nil then
-            MegaMacroCharacterData.Specializations[specialization] = { Macros = {} }
+        id = GetNextAvailableMacroId(MacroStartIndexes.PerCharacter, MacroLimits.PerCharacterCount, macroList)
+        result.Class = MegaMacroCachedClass
+    elseif scope == MegaMacroScopes.CharacterSpecialization then
+        if MegaMacroCharacterData.Specializations[MegaMacroCachedSpecialization] == nil then
+            MegaMacroCharacterData.Specializations[MegaMacroCachedSpecialization] = { Macros = {} }
         end
 
-        macroList = MegaMacroCharacterData.Specializations[specialization].Macros
+        macroList = MegaMacroCharacterData.Specializations[MegaMacroCachedSpecialization].Macros
         scopedIndex = #macroList + 1
 
         if scopedIndex > MacroLimits.PerCharacterSpecializationCount then
             return nil
         end
 
-        macroIndex = GetNextAvailableMacroIndex(MacroStartIndexes.PerCharacterSpecialization, MacroLimits.PerCharacterSpecializationCount, macroList)
-        id = GenerateMacroId(displayName, scope, macroIndex)
-        result.Class = class
-        result.Specialization = specialization
+        id = GetNextAvailableMacroId(MacroStartIndexes.PerCharacterSpecialization, MacroLimits.PerCharacterSpecializationCount, macroList)
+        result.Class = MegaMacroCachedClass
+        result.Specialization = MegaMacroCachedSpecialization
     else
         return nil
     end
@@ -160,25 +107,26 @@ function MegaMacro.Create(displayName, scope, class, specialization)
     table.insert(macroList, result)
 
     result.Id = id
-    result.MacroIndex = macroIndex
     result.Scope = scope
     result.ScopedIndex = scopedIndex
     result.DisplayName = displayName
     result.Code = ""
 
+    MegaMacroEngine.OnMacroCreated(result)
+
     return result
 end
 
 function MegaMacro.GetSlotCount(scope)
-    if scope == MegaMacro.Scopes.Global then
+    if scope == MegaMacroScopes.Global then
         return MacroLimits.GlobalCount
-    elseif scope == MegaMacro.Scopes.Class then
+    elseif scope == MegaMacroScopes.Class then
         return MacroLimits.PerClassCount
-    elseif scope == MegaMacro.Scopes.Specialization then
+    elseif scope == MegaMacroScopes.Specialization then
         return MacroLimits.PerSpecializationCount
-    elseif scope == MegaMacro.Scopes.Character then
+    elseif scope == MegaMacroScopes.Character then
         return MacroLimits.PerCharacterCount
-    elseif scope == MegaMacro.Scopes.CharacterSpecialization then
+    elseif scope == MegaMacroScopes.CharacterSpecialization then
         return MacroLimits.PerCharacterSpecializationCount
     end
 
@@ -186,63 +134,63 @@ function MegaMacro.GetSlotCount(scope)
 end
 
 function MegaMacro.Rename(self, displayName)
-    local newId = GenerateMacroId(displayName, self.Scope, self.MacroIndex)
-    MegaMacroIconEvaluator.ChangeMacroKey(self.Id, newId)
-    self.Id = GenerateMacroId(displayName, self.Scope, self.MacroIndex)
     self.DisplayName = displayName
+    MegaMacroEngine.OnMacroRenamed(self)
 end
 
 function MegaMacro.UpdateCode(self, code)
     self.Code = code
+    MegaMacroEngine.OnMacroUpdated(self)
     MegaMacroCodeInfo.Clear(self.Id)
     MegaMacroIconEvaluator.UpdateMacro(self)
 end
 
 function MegaMacro.Delete(self)
-    if self.Scope == MegaMacro.Scopes.Global then
+    if self.Scope == MegaMacroScopes.Global then
         RemoveItemFromArray(MegaMacroGlobalData.Macros, self)
-    elseif self.Scope == MegaMacro.Scopes.Class then
+    elseif self.Scope == MegaMacroScopes.Class then
         RemoveItemFromArray(MegaMacroGlobalData.Classes[self.Class].Macros, self)
-    elseif self.Scope == MegaMacro.Scopes.Specialization then
+    elseif self.Scope == MegaMacroScopes.Specialization then
         RemoveItemFromArray(MegaMacroGlobalData.Classes[self.Class].Specializations[self.Specialization].Macros, self)
-    elseif self.Scope == MegaMacro.Scopes.Character then
+    elseif self.Scope == MegaMacroScopes.Character then
         RemoveItemFromArray(MegaMacroCharacterData.Macros, self)
-    elseif self.Scope == MegaMacro.Scopes.CharacterSpecialization then
+    elseif self.Scope == MegaMacroScopes.CharacterSpecialization then
         RemoveItemFromArray(MegaMacroCharacterData.Specializations[self.Specialization].Macros, self)
     end
 
+    MegaMacroEngine.OnMacroDeleted(self)
     MegaMacroCodeInfo.Clear(self.Id)
     MegaMacroIconEvaluator.RemoveMacroFromCache(self.Id)
 end
 
 function MegaMacro.GetMacrosInScope(scope)
-    if scope == MegaMacro.Scopes.Global then
+    if scope == MegaMacroScopes.Global then
 		return MegaMacroGlobalData.Macros
-	elseif scope == MegaMacro.Scopes.Class then
-        local class = UnitClass("player")
-        if MegaMacroGlobalData.Classes[class] == nil then
-            MegaMacroGlobalData.Classes[class] = { Macros = {}, Specializations = {} }
+	elseif scope == MegaMacroScopes.Class then
+        if MegaMacroGlobalData.Classes[MegaMacroCachedClass] == nil then
+            MegaMacroGlobalData.Classes[MegaMacroCachedClass] = { Macros = {}, Specializations = {} }
         end
-		return MegaMacroGlobalData.Classes[class].Macros
-	elseif scope == MegaMacro.Scopes.Specialization then
-        local class = UnitClass("player")
-        local specIndex = GetSpecialization()
-        local specialization = select(2, GetSpecializationInfo(specIndex))
-        if MegaMacroGlobalData.Classes[class] == nil then
-            MegaMacroGlobalData.Classes[class] = { Macros = {}, Specializations = {} }
+		return MegaMacroGlobalData.Classes[MegaMacroCachedClass].Macros
+    elseif scope == MegaMacroScopes.Specialization then
+        if MegaMacroCachedSpecialization == nil then
+            return {}
         end
-        if MegaMacroGlobalData.Classes[class].Specializations[specialization] == nil then
-            MegaMacroGlobalData.Classes[class].Specializations[specialization] = { Macros = {} }
+        if MegaMacroGlobalData.Classes[MegaMacroCachedClass] == nil then
+            MegaMacroGlobalData.Classes[MegaMacroCachedClass] = { Macros = {}, Specializations = {} }
         end
-		return MegaMacroGlobalData.Classes[class].Specializations[specialization].Macros
-	elseif scope == MegaMacro.Scopes.Character then
+        if MegaMacroGlobalData.Classes[MegaMacroCachedClass].Specializations[MegaMacroCachedSpecialization] == nil then
+            MegaMacroGlobalData.Classes[MegaMacroCachedClass].Specializations[MegaMacroCachedSpecialization] = { Macros = {} }
+        end
+		return MegaMacroGlobalData.Classes[MegaMacroCachedClass].Specializations[MegaMacroCachedSpecialization].Macros
+	elseif scope == MegaMacroScopes.Character then
 		return MegaMacroCharacterData.Macros
-	elseif scope == MegaMacro.Scopes.CharacterSpecialization then
-        local specIndex = GetSpecialization()
-        local specialization = select(2, GetSpecializationInfo(specIndex))
-        if MegaMacroCharacterData.Specializations[specialization] == nil then
-            MegaMacroCharacterData.Specializations[specialization] = { Macros = {} }
+	elseif scope == MegaMacroScopes.CharacterSpecialization then
+        if MegaMacroCachedSpecialization == nil then
+            return {}
         end
-		return MegaMacroCharacterData.Specializations[specialization].Macros
+        if MegaMacroCharacterData.Specializations[MegaMacroCachedSpecialization] == nil then
+            MegaMacroCharacterData.Specializations[MegaMacroCachedSpecialization] = { Macros = {} }
+        end
+		return MegaMacroCharacterData.Specializations[MegaMacroCachedSpecialization].Macros
     end
 end

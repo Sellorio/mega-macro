@@ -148,7 +148,7 @@
 					<Anchor point="TOPLEFT" relativeTo="MegaMacro_FrameSelectedMacroBackground" relativePoint="BOTTOMLEFT" x="11" y="-13"/>
 				</Anchors>
 				<ScrollChild>
-					<EditBox name="MegaMacro_FrameText" multiLine="true" letters="1024" autoFocus="false" countInvisibleLetters="true">
+					<EditBox name="MegaMacro_FrameText" multiLine="true" letters="1023" autoFocus="false" countInvisibleLetters="true">
 						<Size x="589" y="85"/>
 						<Scripts>
 							<OnLoad>ScrollingEdit_OnCursorChanged(self, 0, 0, 0, 0);</OnLoad>
@@ -232,7 +232,7 @@
 						_G[self:GetName().."HighlightTexture"]:SetWidth(103);
 					</OnLoad>
 					<OnShow>
-                        self:SetText(UnitClass("player"));
+                        self:SetText(MegaMacroCachedClass);
 					</OnShow>
 					<OnClick>
 						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
@@ -251,9 +251,7 @@
 						_G[self:GetName().."HighlightTexture"]:SetWidth(82);
 					</OnLoad>
 					<OnShow>
-                        local currentSpec = GetSpecialization()
-                        local currentSpecName = currentSpec and select(2, GetSpecializationInfo(currentSpec)) or "None"
-                        self:SetText(currentSpecName);
+                        self:SetText(MegaMacroCachedSpecialization);
 					</OnShow>
 					<OnClick>
 						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
@@ -291,9 +289,7 @@
 						_G[self:GetName().."HighlightTexture"]:SetWidth(190);
 					</OnLoad>
 					<OnShow>
-                        local currentSpec = GetSpecialization()
-                        local currentSpecName = currentSpec and select(2, GetSpecializationInfo(currentSpec)) or "None"
-                        self:SetText(UnitName("player") .. " " .. currentSpecName);
+                        self:SetText(UnitName("player").." "..MegaMacroCachedSpecialization);
 					</OnShow>
 					<OnClick>
 						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
