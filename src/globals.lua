@@ -48,6 +48,12 @@ GameTooltip_SetDefaultAnchor = function(tooltip, parent) tooltip._ = parent end
 GetMouseFocus = function() end
 message = function(text) text._ = nil end
 InCombatLockdown = function() end
+GetNumMacros = function() end -- returns: numglobal, numperchar
+GetMacroBody = function(macroIndexOrName) macroIndexOrName._ = nil end
+GetMacroInfo = function(macroIndexOrName) macroIndexOrName._ = nil end -- returns: name, iconTexture, body, isLocal
+EditMacro = function(macroIndexOrName, name, icon, body, isLocal, perCharacter) end -- isLocal should always be passed in as true
+DeleteMacro = function(macroIndexOrName) macroIndexOrName._ = nil end
+CreateMacro = function(name, iconFileName, body, perCharacter) return 0 end
 
 MegaMacro_Frame = {}
 MegaMacro_ButtonContainer = {}

@@ -8,12 +8,13 @@ MacroLimits = {
 	PerCharacterSpecializationCount = 10
 }
 
-MacroStartIndexes = {
-	Global = 1,
-	PerClass = 1 + MacroLimits.GlobalCount,
-	PerSpecialization = 1 + MacroLimits.GlobalCount + MacroLimits.PerClassCount,
-	PerCharacter = 1 + MacroLimits.GlobalCount + MacroLimits.PerClassCount + MacroLimits.PerSpecializationCount,
-	PerCharacterSpecialization = 1 + MacroLimits.GlobalCount + MacroLimits.PerClassCount + MacroLimits.PerSpecializationCount + MacroLimits.PerCharacterCount
+MacroIndexOffsets = {
+	Global = 0,
+	PerClass = MacroLimits.GlobalCount,
+	PerSpecialization = MacroLimits.GlobalCount + MacroLimits.PerClassCount,
+	PerCharacter = MacroLimits.GlobalCount + MacroLimits.PerClassCount + MacroLimits.PerSpecializationCount,
+	PerCharacterSpecialization = MacroLimits.GlobalCount + MacroLimits.PerClassCount + MacroLimits.PerSpecializationCount + MacroLimits.PerCharacterCount,
+	NativeCharacterMacros = 120
 }
 
 MegaMacroScopes = {

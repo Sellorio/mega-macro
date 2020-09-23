@@ -6,18 +6,82 @@ local ClickyFramePool = {}
 local NextFrameId = 1
 
 local function TryImportGlobalMacros()
+    local numberOfGlobalMacros = GetNumMacros()
+    local globalMegaMacros = MegaMacro.GetMacrosInScope(MegaMacroScopes.Global)
+
+    if numberOfGlobalMacros + #globalMegaMacros > MacroLimits.GlobalCount then
+        return
+            false,
+            "Mega Macro: There isn't enough space to import your existing global macros. The limit "..
+            "for global macros when using Mega Macro is "..MacroLimits.GlobalCount.." to make room for per-class and per-spec macro slots. "..
+            "Please use /reload once you have manually copied over/sorted the macros."
+    end
+
+    for i=1, #globalMegaMacros do
+        globalMegaMacros[i].Id = i + numberOfGlobalMacros + MacroIndexOffsets.Global
+    end
+
+    for i=1, numberOfGlobalMacros do
+        local name, _, body, _ = GetMacroInfo(i)
+        local macro = MegaMacro.Create(name, MegaMacroScopes.Global)
+
+        if macro == nil then
+            return
+                false,
+                "Mega Macro: Failed to import all global macros. This is likely due to not having enough macro slots available. "..
+                "Please use /reload once you have manually copied over/sorted the macros."
+        end
+
+        MegaMacro.UpdateCode(macro, body)
+    end
+
     return true
 end
 
 local function TryImportCharacterMacros()
+    local _, numberOfCharacterMacros = GetNumMacros()
+    local characterMegaMacros = MegaMacro.GetMacrosInScope(MegaMacroScopes.Character)
+
+    if numberOfCharacterMacros + #characterMegaMacros > MacroLimits.PerCharacterCount then
+        return
+            false,
+            "Mega Macro: There isn't enough space to import your existing character-specific macros. The limit "..
+            "for character macros when using Mega Macro is "..MacroLimits.PerCharacterCount.." to make room for per-character per-spec macro slots. "..
+            "Please use /reload once you have manually copied over/sorted the macros."
+    end
+
+    for i=1, #characterMegaMacros do
+        characterMegaMacros[i].Id = i + numberOfCharacterMacros + MacroIndexOffsets.NativeCharacterMacros
+    end
+
+    for i=1, numberOfCharacterMacros do
+        local name, _, body, _ = GetMacroInfo(i + MacroIndexOffsets.NativeCharacterMacros)
+        local macro = MegaMacro.Create(name, MegaMacroScopes.Character)
+
+        if macro == nil then
+            return
+                false,
+                "Mega Macro: Failed to import all character macros. This is likely due to not having enough macro slots available. "..
+                "Please use /reload once you have manually copied over/sorted the macros."
+        end
+
+        MegaMacro.UpdateCode(macro, body)
+    end
+
     return true
 end
 
 local function SetupGlobalMacros()
+    -- existing macros are updated to be blank but with the id as their current index, display name is not changed
+    -- existing macro display names are blanked now after all ids are set
+    -- new macros are added to fill all available slots and have their ids set
     return
 end
 
 local function SetupCharacterMacros()
+    -- existing macros are updated to be blank but with the id as their current index, display name is not changed
+    -- existing macro display names are blanked now after all ids are set
+    -- new macros are added to fill all available slots and have their ids set
     return
 end
 
@@ -122,7 +186,7 @@ function MegaMacroEngine.OnMacroCreated(macro)
 end
 
 function MegaMacroEngine.OnMacroRenamed(macro)
-    -- update macro display name and cached macro index
+    -- update macro display name and cached macro indexes
 end
 
 function MegaMacroEngine.OnMacroUpdated(macro)

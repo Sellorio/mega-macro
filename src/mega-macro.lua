@@ -11,8 +11,8 @@ local function RemoveItemFromArray(t, item)
     end
 end
 
-local function GetNextAvailableMacroId(start, count, existingMacros)
-    for i=start, start + count - 1 do
+local function GetNextAvailableMacroId(startOffset, count, existingMacros)
+    for i=1 + startOffset, startOffset + count do
         local isMatched = false
 
         for _, existingMacro in ipairs(existingMacros) do
@@ -26,6 +26,8 @@ local function GetNextAvailableMacroId(start, count, existingMacros)
             return i
         end
     end
+
+    return nil
 end
 
 MegaMacro = {}
@@ -45,7 +47,7 @@ function MegaMacro.Create(displayName, scope)
             return nil
         end
 
-        id = GetNextAvailableMacroId(MacroStartIndexes.Global, MacroLimits.GlobalCount, macroList)
+        id = GetNextAvailableMacroId(MacroIndexOffsets.Global, MacroLimits.GlobalCount, macroList)
     elseif scope == MegaMacroScopes.Class then
         if MegaMacroGlobalData.Classes[MegaMacroCachedClass] == nil then
             MegaMacroGlobalData.Classes[MegaMacroCachedClass] = { Macros = {}, Specializations = {} }
@@ -58,7 +60,7 @@ function MegaMacro.Create(displayName, scope)
             return nil
         end
 
-        id = GetNextAvailableMacroId(MacroStartIndexes.PerClass, MacroLimits.PerClassCount, macroList)
+        id = GetNextAvailableMacroId(MacroIndexOffsets.PerClass, MacroLimits.PerClassCount, macroList)
         result.Class = MegaMacroCachedClass
     elseif scope == MegaMacroScopes.Specialization then
         if MegaMacroGlobalData.Classes[MegaMacroCachedClass].Specializations[MegaMacroCachedSpecialization] == nil then
@@ -72,7 +74,7 @@ function MegaMacro.Create(displayName, scope)
             return nil
         end
 
-        id = GetNextAvailableMacroId(MacroStartIndexes.PerSpecialization, MacroLimits.PerSpecializationCount, macroList)
+        id = GetNextAvailableMacroId(MacroIndexOffsets.PerSpecialization, MacroLimits.PerSpecializationCount, macroList)
         result.Class = MegaMacroCachedClass
         result.Specialization = MegaMacroCachedSpecialization
     elseif scope == MegaMacroScopes.Character then
@@ -83,7 +85,7 @@ function MegaMacro.Create(displayName, scope)
             return nil
         end
 
-        id = GetNextAvailableMacroId(MacroStartIndexes.PerCharacter, MacroLimits.PerCharacterCount, macroList)
+        id = GetNextAvailableMacroId(MacroIndexOffsets.PerCharacter, MacroLimits.PerCharacterCount, macroList)
         result.Class = MegaMacroCachedClass
     elseif scope == MegaMacroScopes.CharacterSpecialization then
         if MegaMacroCharacterData.Specializations[MegaMacroCachedSpecialization] == nil then
@@ -97,10 +99,14 @@ function MegaMacro.Create(displayName, scope)
             return nil
         end
 
-        id = GetNextAvailableMacroId(MacroStartIndexes.PerCharacterSpecialization, MacroLimits.PerCharacterSpecializationCount, macroList)
+        id = GetNextAvailableMacroId(MacroIndexOffsets.PerCharacterSpecialization, MacroLimits.PerCharacterSpecializationCount, macroList)
         result.Class = MegaMacroCachedClass
         result.Specialization = MegaMacroCachedSpecialization
     else
+        return nil
+    end
+
+    if id == nil then
         return nil
     end
 
