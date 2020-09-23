@@ -60,3 +60,11 @@ MegaMacro_FrameCharLimitText = {}
 MegaMacro_PopupEditBox = {}
 MegaMacro_RenameButton = {}
 MegaMacro_DeleteButton = {}
+
+C_ToyBox = {
+    GetNumToys = function() end,
+    GetNumFilteredToys = function() end,
+    ForceToyRefilter = function() end,
+    GetToyFromIndex = function(index) index._ = nil end,
+    GetToyInfo = function(itemID) itemID._ = nil end
+}

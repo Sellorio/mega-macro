@@ -148,16 +148,24 @@ local function ShowMacroToolTip(macro)
 	local abilityName = MegaMacroIconEvaluator.GetSpellFromCache(macro.Id)
 
 	if abilityName then
-		local _, _, _, _, _, _, spellId = GetSpellInfo(abilityName)
-		
+		local spellId = select(7, GetSpellInfo(abilityName))
 		if spellId then
 			GameTooltip:SetSpellByID(spellId)
-		else
-			local itemId = GetItemInfoInstant(abilityName)
-			GameTooltip:SetItemByID(itemId)
+			GameTooltip:Show()
+			return
 		end
 
-		GameTooltip:Show()
+		local itemId = GetItemInfoInstant(abilityName)
+
+		if itemId then
+			if C_ToyBox.GetToyInfo(itemId) then
+				GameTooltip:SetToyByItemID(itemId)
+				GameTooltip:Show()
+			else
+				GameTooltip:SetItemByID(itemId)
+				GameTooltip:Show()
+			end
+		end
 	end
 end
 

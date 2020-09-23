@@ -47,13 +47,9 @@ local function IterateNextMacro()
 end
 
 local function GetIconFromAbility(ability)
-    local _, _, texture = GetSpellInfo(ability)
-
-    if texture == nil then
-        _, _, _, _, texture = GetItemInfoInstant(ability)
-    end
-
-    return texture
+    return
+        select(3, GetSpellInfo(ability)) or
+        select(5, GetItemInfoInstant(ability))
 end
 
 local function UpdateMacro(macro)
@@ -71,7 +67,7 @@ local function UpdateMacro(macro)
 
             if ability ~= nil then
                 local texture = GetIconFromAbility(ability)
-                
+
                 if texture ~= nil then
                     icon = texture
                     spellName = ability
@@ -169,7 +165,7 @@ local function UpdateAllMacros()
             LastMacroIndex = previousLastMacroIndex
             break
         end
-    
+
         local macro = LastMacroList[LastMacroIndex]
         UpdateMacro(macro)
 
