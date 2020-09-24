@@ -160,6 +160,13 @@ local function BindMacrosList(macroList)
     end
 end
 
+local function UnbindMacrosList(macroList)
+    local count = #macroList
+    for i=1, count do
+        UnbindMacro(macroList[i])
+    end
+end
+
 local function BindMacros()
     BindMacrosList(MegaMacroGlobalData.Macros)
 
@@ -240,6 +247,9 @@ function MegaMacroEngine.OnMacroDeleted(macro)
 end
 
 function MegaMacroEngine.OnSpecializationChanged(oldValue, newValue)
-    -- unbind spec and character spec macros attributed to the old specialization
-    -- bind spec and character spec macros attributed to the new specialization
+    UnbindMacrosList(MegaMacroGlobalData.Classes[MegaMacroCachedClass].Specializations[oldValue].Macros)
+    UnbindMacrosList(MegaMacroCharacterData.Specializations[oldValue].Macros)
+
+    BindMacrosList(MegaMacroGlobalData.Classes[MegaMacroCachedClass].Specializations[newValue].Macros)
+    BindMacrosList(MegaMacroCharacterData.Specializations[newValue].Macros)
 end

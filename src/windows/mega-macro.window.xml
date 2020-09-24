@@ -231,9 +231,6 @@
 						PanelTemplates_TabResize(self, 35);
 						_G[self:GetName().."HighlightTexture"]:SetWidth(103);
 					</OnLoad>
-					<OnShow>
-                        self:SetText(MegaMacroCachedClass);
-					</OnShow>
 					<OnClick>
 						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
 						PanelTemplates_SetTab(MegaMacro_Frame, self:GetID());
@@ -250,9 +247,6 @@
 						PanelTemplates_TabResize(self, 20);
 						_G[self:GetName().."HighlightTexture"]:SetWidth(82);
 					</OnLoad>
-					<OnShow>
-                        self:SetText(MegaMacroCachedSpecialization);
-					</OnShow>
 					<OnClick>
 						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
 						PanelTemplates_SetTab(MegaMacro_Frame, self:GetID());
@@ -269,9 +263,6 @@
 						PanelTemplates_TabResize(self, 20);
 						_G[self:GetName().."HighlightTexture"]:SetWidth(112);
 					</OnLoad>
-					<OnShow>
-                        self:SetText(UnitName("player"));
-					</OnShow>
 					<OnClick>
 						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
 						PanelTemplates_SetTab(MegaMacro_Frame, self:GetID());
@@ -288,9 +279,6 @@
 						PanelTemplates_TabResize(self, 60);
 						_G[self:GetName().."HighlightTexture"]:SetWidth(190);
 					</OnLoad>
-					<OnShow>
-                        self:SetText(UnitName("player").." "..MegaMacroCachedSpecialization);
-					</OnShow>
 					<OnClick>
 						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
 						PanelTemplates_SetTab(MegaMacro_Frame, self:GetID());

@@ -41,6 +41,14 @@ local function CreateMacroSlotFrames()
 	end
 end
 
+local function InitializeTabTitles()
+	local playerName = UnitName("player")
+	MegaMacro_FrameTab2:SetText(MegaMacroCachedClass);
+	MegaMacro_FrameTab3:SetText(MegaMacroCachedSpecialization);
+	MegaMacro_FrameTab4:SetText(playerName);
+	MegaMacro_FrameTab5:SetText(playerName.." "..MegaMacroCachedSpecialization);
+end
+
 -- Shows and hides macro slot buttons based on the number of slots available in the scope
 local function InitializeMacroSlots()
 	local scopeSlotCount = MegaMacro.GetSlotCount(SelectedScope)
@@ -205,6 +213,13 @@ MegaMacroWindow = {
 	end,
 	IsOpen = function()
 		return IsOpen
+	end,
+	SaveMacro = function()
+		SaveMacro()
+	end,
+	OnSpecializationChanged = function(oldValue, newValue)
+		InitializeTabTitles()
+		SetMacroItems()
 	end
 }
 
@@ -238,6 +253,7 @@ end
 
 function MegaMacro_Window_OnShow()
 	IsOpen = true
+	InitializeTabTitles()
 end
 
 function MegaMacro_Window_OnHide()
