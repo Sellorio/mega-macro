@@ -1,9 +1,14 @@
 local ClickyFrameName = "MegaMacroClicky"
-
-local MegaMacroClickyMap = {}
 local MacroIndexCache = {} -- caches native macro indexes - these change based on macro name so they are not the id we'll use in the addon
-local ClickyFramePool = {}
-local NextFrameId = 1
+
+local function GenerateIdPrefix(id)
+    local result = "00"..id
+    return "#"..string.sub(result, -3)
+end
+
+local function GetIdFromMacroCode(macroCode)
+    return tonumber(string.sub(macroCode, 2, 4))
+end
 
 local function TryImportGlobalMacros()
     local numberOfGlobalMacros = GetNumMacros()
@@ -85,15 +90,11 @@ local function SetupCharacterMacros()
     return
 end
 
-local function AquireClicky()
-    local clicky
+local function GetOrCreateClicky(macroId)
+    local name = ClickyFrameName..macroId
+    local clicky = _G[name]
 
-    if ClickyFramePool[1] then
-        return table.remove(ClickyFramePool)
-    else
-        local name = ClickyFrameName..NextFrameId
-        NextFrameId = NextFrameId + 1
-
+    if not clicky then
         clicky = CreateFrame("Button", name, nil, "SecureActionButtonTemplate")
         clicky.Name = name
         clicky:SetAttribute("type", "macro")
@@ -103,14 +104,8 @@ local function AquireClicky()
     return clicky
 end
 
-local function ReleaseClicky(clicky)
-    clicky:SetAttribute("macrotext", "")
-    table.insert(ClickyFramePool, clicky)
-end
-
 local function CreateMacroButtonFrameForMacro(macro)
-    local clicky = AquireClicky()
-    MegaMacroClickyMap[macro.Id] = clicky
+    local clicky = GetOrCreateClicky(macro.Id)
     clicky:SetAttribute("macrotext", macro.Code)
 end
 
@@ -169,7 +164,7 @@ function MegaMacroEngine.SafeInitialize()
 
         if importSuccessful then
             SetupCharacterMacros()
-            MegaMacroGlobalData.Activated = true
+            MegaMacroCharacterData.Activated = true
         else
             message(errorMessage)
             return false
@@ -190,10 +185,9 @@ function MegaMacroEngine.OnMacroRenamed(macro)
 end
 
 function MegaMacroEngine.OnMacroUpdated(macro)
-    MegaMacroClickyMap[macro.Id]:SetAttribute("macrotext", macro.Code)
+    GetOrCreateClicky(macro.Id):SetAttribute("macrotext", macro.Code)
 end
 
 function MegaMacroEngine.OnMacroDeleted(macro)
-    ReleaseClicky(MegaMacroClickyMap[macro.Id])
-    MegaMacroClickyMap[macro.Id] = nil
+    GetOrCreateClicky(macro.Id):SetAttribute("macrotext", "")
 end
