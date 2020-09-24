@@ -3,3 +3,4 @@ reference-code\
 scripts\
 .publishignore
 globals.lua
+README.md
