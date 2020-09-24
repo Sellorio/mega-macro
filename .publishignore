@@ -1,4 +1,5 @@
 .vscode\
+macro-backup\
 reference-code\
 scripts\
 .publishignore

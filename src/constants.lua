@@ -5,7 +5,9 @@ MacroLimits = {
 	PerSpecializationCount = 30,
 	-- limit: 18 character specific macro slots
 	PerCharacterCount = 8,
-	PerCharacterSpecializationCount = 10
+	PerCharacterSpecializationCount = 10,
+	MaxGlobalMacros = 120,
+	MaxCharacterMacros = 18
 }
 
 MacroIndexOffsets = {
@@ -25,5 +27,6 @@ MegaMacroScopes = {
     CharacterSpecialization = "cs"
 }
 
+MegaMacroTexture = 134400
 MegaMacroCodeMaxLength = 1023
 HighestMaxMacroCount = math.max(MacroLimits.GlobalCount, MacroLimits.PerClassCount, MacroLimits.PerSpecializationCount, MacroLimits.PerCharacterCount, MacroLimits.PerCharacterSpecializationCount)

@@ -1,8 +1,3 @@
-local DefaultMacroTexture = 134400
-
-local MaxGlobalMacros = 120
-local MaxCharacterMacros = 18
-
 local MacrosToUpdatePerMs = 2
 local LastMacroScope = MegaMacroScopes.Global
 local LastMacroList = nil
@@ -53,7 +48,7 @@ local function GetIconFromAbility(ability)
 end
 
 local function UpdateMacro(macro)
-    local icon = DefaultMacroTexture
+    local icon = MegaMacroTexture
     local spellName = nil
 
     local codeInfo = MegaMacroCodeInfo.Get(macro)
@@ -101,7 +96,7 @@ local function UpdateMacro(macro)
         end
     end
 
-    if icon == DefaultMacroTexture and codeInfoLength > 0 then
+    if icon == MegaMacroTexture and codeInfoLength > 0 then
         if codeInfo[codeInfoLength].Type == "fallbackAbility" then
             local ability = codeInfo[codeInfoLength].Body
             local texture = GetIconFromAbility(ability)
@@ -150,7 +145,7 @@ local function UpdateAllMacros()
     LastMacroList = MegaMacroGlobalData.Macros
     LastMacroIndex = 0
 
-    for _=1, (MaxGlobalMacros + MaxCharacterMacros) do
+    for _=1, (MacroLimits.MaxGlobalMacros + MacroLimits.MaxCharacterMacros) do
         local previousLastMacroScope = LastMacroScope
         local previousLastMacroList = LastMacroList
         local previousLastMacroIndex = LastMacroIndex

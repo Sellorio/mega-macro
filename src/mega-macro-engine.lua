@@ -1,5 +1,6 @@
 local ClickyFrameName = "MegaMacroClicky"
 local MacroIndexCache = {} -- caches native macro indexes - these change based on macro name so they are not the id we'll use in the addon
+local Initialized = false
 
 local function GenerateIdPrefix(id)
     local result = "00"..id
@@ -8,6 +9,17 @@ end
 
 local function GetIdFromMacroCode(macroCode)
     return tonumber(string.sub(macroCode, 2, 4))
+end
+
+local function InitializeMacroIndexCache()
+    MacroIndexCache = {}
+
+    local maxMacroCount = MacroLimits.MaxGlobalMacros + MacroLimits.MaxCharacterMacros
+    for i=1, maxMacroCount do
+        local macroCode = GetMacroBody(i)
+        local macroId = GetIdFromMacroCode(macroCode)
+        MacroIndexCache[macroId] = i
+    end
 end
 
 local function TryImportGlobalMacros()
@@ -77,17 +89,29 @@ local function TryImportCharacterMacros()
 end
 
 local function SetupGlobalMacros()
-    -- existing macros are updated to be blank but with the id as their current index, display name is not changed
-    -- existing macro display names are blanked now after all ids are set
-    -- new macros are added to fill all available slots and have their ids set
-    return
+    local globalCount = GetNumMacros()
+
+    for i=1, globalCount do
+        EditMacro(i, nil, nil, GenerateIdPrefix(i).."\n".."/click "..ClickyFrameName..i, true, false)
+    end
+
+    for i=1 + globalCount, MacroLimits.MaxGlobalMacros do
+        CreateMacro(" ", MegaMacroTexture, GenerateIdPrefix(i).."\n".."/click "..ClickyFrameName..i, false)
+    end
 end
 
 local function SetupCharacterMacros()
-    -- existing macros are updated to be blank but with the id as their current index, display name is not changed
-    -- existing macro display names are blanked now after all ids are set
-    -- new macros are added to fill all available slots and have their ids set
-    return
+    local _, characterCount = GetNumMacros()
+
+    for i=1, characterCount do
+        local id = MacroLimits.MaxGlobalMacros + i
+        EditMacro(id, nil, nil, GenerateIdPrefix(id).."\n".."/click "..ClickyFrameName..id, true, true)
+    end
+
+    for i=1 + characterCount, MacroLimits.MaxCharacterMacros do
+        local id = MacroLimits.MaxGlobalMacros + i
+        CreateMacro(" ", MegaMacroTexture, GenerateIdPrefix(id).."\n".."/click "..ClickyFrameName..id, true)
+    end
 end
 
 local function GetOrCreateClicky(macroId)
@@ -96,7 +120,6 @@ local function GetOrCreateClicky(macroId)
 
     if not clicky then
         clicky = CreateFrame("Button", name, nil, "SecureActionButtonTemplate")
-        clicky.Name = name
         clicky:SetAttribute("type", "macro")
         clicky:SetAttribute("macrotext", "")
     end
@@ -104,33 +127,54 @@ local function GetOrCreateClicky(macroId)
     return clicky
 end
 
-local function CreateMacroButtonFrameForMacro(macro)
-    local clicky = GetOrCreateClicky(macro.Id)
-    clicky:SetAttribute("macrotext", macro.Code)
-end
+local function BindMacro(macro)
+    if Initialized then
+        local macroIndex = MacroIndexCache[macro.Id]
+        local isCharacter = macroIndex > MacroLimits.MaxGlobalMacros
 
-local function CreateMacroButtonFramesForList(macroList)
-    local length = #macroList
-    for i=1, length do
-        CreateMacroButtonFrameForMacro(macroList[i])
+        if not isCharacter and MegaMacroGlobalData.Activated or isCharacter and MegaMacroCharacterData.Activated then
+            GetOrCreateClicky(macro.Id):SetAttribute("macrotext", macro.Code)
+            EditMacro(macroIndex, macro.DisplayName, nil, nil, true, isCharacter)
+            InitializeMacroIndexCache()
+        end
     end
 end
 
-local function CreateMacroClickies()
-    CreateMacroButtonFramesForList(MegaMacroGlobalData.Macros)
+local function UnbindMacro(macro)
+    if Initialized then
+        local macroIndex = MacroIndexCache[macro.Id]
+        local isCharacter = macroIndex > MacroLimits.MaxGlobalMacros
+
+        if not isCharacter and MegaMacroGlobalData.Activated or isCharacter and MegaMacroCharacterData.Activated then
+            GetOrCreateClicky(macro.Id):SetAttribute("macrotext", "")
+            EditMacro(macroIndex, " ", nil, nil, true, isCharacter)
+            InitializeMacroIndexCache()
+        end
+    end
+end
+
+local function BindMacrosList(macroList)
+    local count = #macroList
+    for i=1, count do
+        BindMacro(macroList[i])
+    end
+end
+
+local function BindMacros()
+    BindMacrosList(MegaMacroGlobalData.Macros)
 
     if MegaMacroGlobalData.Classes[MegaMacroCachedClass] then
-        CreateMacroButtonFramesForList(MegaMacroGlobalData.Classes[MegaMacroCachedClass].Macros)
+        BindMacrosList(MegaMacroGlobalData.Classes[MegaMacroCachedClass].Macros)
 
         if MegaMacroGlobalData.Classes[MegaMacroCachedClass].Specializations[MegaMacroCachedSpecialization] then
-            CreateMacroButtonFramesForList(MegaMacroGlobalData.Classes[MegaMacroCachedClass].Specializations[MegaMacroCachedSpecialization].Macros)
+            BindMacrosList(MegaMacroGlobalData.Classes[MegaMacroCachedClass].Specializations[MegaMacroCachedSpecialization].Macros)
         end
     end
 
-    CreateMacroButtonFramesForList(MegaMacroCharacterData.Macros)
+    BindMacrosList(MegaMacroCharacterData.Macros)
 
     if MegaMacroCharacterData.Specializations[MegaMacroCachedSpecialization] then
-        CreateMacroButtonFramesForList(MegaMacroCharacterData.Specializations[MegaMacroCachedSpecialization].Macros)
+        BindMacrosList(MegaMacroCharacterData.Specializations[MegaMacroCachedSpecialization].Macros)
     end
 end
 
@@ -171,23 +215,31 @@ function MegaMacroEngine.SafeInitialize()
         end
     end
 
-    CreateMacroClickies()
+    InitializeMacroIndexCache()
+    Initialized = true
+
+    BindMacros()
 
     return true
 end
 
 function MegaMacroEngine.OnMacroCreated(macro)
-    CreateMacroButtonFrameForMacro(macro)
+    BindMacro(macro)
 end
 
 function MegaMacroEngine.OnMacroRenamed(macro)
-    -- update macro display name and cached macro indexes
+    BindMacro(macro)
 end
 
 function MegaMacroEngine.OnMacroUpdated(macro)
-    GetOrCreateClicky(macro.Id):SetAttribute("macrotext", macro.Code)
+    BindMacro(macro)
 end
 
 function MegaMacroEngine.OnMacroDeleted(macro)
-    GetOrCreateClicky(macro.Id):SetAttribute("macrotext", "")
+    UnbindMacro(macro)
+end
+
+function MegaMacroEngine.OnSpecializationChanged(oldValue, newValue)
+    -- unbind spec and character spec macros attributed to the old specialization
+    -- bind spec and character spec macros attributed to the new specialization
 end

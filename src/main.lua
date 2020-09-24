@@ -38,4 +38,6 @@ f:SetScript("OnEvent", function(self, event, arg1)
     elseif event == "PLAYER_LEAVING_WORLD" then
         f:SetScript("OnUpdate", nil)
     end
+
+    -- handle specialization changed and call MegaMacroEngine.OnSpecializationChanged(oldValue, newValue)
 end)
