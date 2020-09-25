@@ -9,6 +9,7 @@ f:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
 local function OnUpdate(_, elapsed)
     local elapsedMs = elapsed * 1000
     MegaMacroIconEvaluator.Update(elapsedMs)
+    MegaMacroActionBarEngine.OnUpdate()
 end
 
 local function Initialize()
@@ -23,7 +24,7 @@ local function Initialize()
         MegaMacroCachedSpecialization = select(2, GetSpecializationInfo(specIndex))
 
         MegaMacroIconEvaluator.Initialize()
-        MegaMacroActionBarWrapper.Initialize()
+        MegaMacroActionBarEngine.Initialize()
         MegaMacroEngine.SafeInitialize()
         f:SetScript("OnUpdate", OnUpdate)
     end

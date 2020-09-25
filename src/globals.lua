@@ -29,6 +29,7 @@ ANCHOR_CURSOR = nil
 ANCHOR_PRESERVE = nil
 ANCHOR_NONE = nil
 
+LibStub = function(major, minor) major._ = minor end
 ShowUIPanel = function(panel) panel._ = nil end
 CreateFrame = function(type, name, parent, template) type._ = name + parent + template; return nil end
 PanelTemplates_SetTab = function(frame, tabId) frame._ = tabId end
@@ -57,6 +58,7 @@ CreateMacro = function(name, iconFileName, body, perCharacter) return 0 end
 ActionButton_UpdateAction = function(self, force) self._ = force end
 ActionButton_SetTooltip = function(self) self._ = nil end
 GetActionInfo = function(actionId) actionId._ = nil end -- returns spellType, id, subType
+ActionButton_CalculateAction = function(self) self._ = nil end
 
 MegaMacro_Frame = {}
 MegaMacro_ButtonContainer = {}

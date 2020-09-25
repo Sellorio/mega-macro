@@ -1,6 +1,3 @@
-local Native_ActionButton_Update = ActionButton_Update
-local Native_ActionButton_SetTooltip = ActionButton_SetTooltip
-
 local MacroBoundButtons = {}
 
 local function OnIconUpdated(macroId, texture)
@@ -21,33 +18,25 @@ local function OnIconUpdated(macroId, texture)
     end
 end
 
-local function ActionBarUpdateWrapper(self)
-    Native_ActionButton_Update(self)
+local function ActionBarUpdateWrapper(original, self)
+    original(self)
 
     if not MegaMacroGlobalData and not MegaMacroCharacterData then
         return
     end
 
     local selfRef = tostring(self)
-    local action = self.action
-    local actionType, macroIndex = GetActionInfo(action)
+    local macroId = MegaMacroActionBarEngine.SetIconBasedOnAction(self.icon, self.action)
 
-    if actionType == "macro" then
-        if macroIndex <= MacroLimits.MaxGlobalMacros and not MegaMacroGlobalData.Activated or macroIndex > MacroLimits.MaxGlobalMacros and not MegaMacroCharacterData.Activated then
-            return
-        end
-
-        local macroId = MegaMacroEngine.GetMacroIdFromIndex(macroIndex)
-        local texture = MegaMacroIconEvaluator.GetTextureFromCache(macroId)
+    if macroId then
         MacroBoundButtons[selfRef] = { MacroId = macroId, Button = self }
-        self.icon:SetTexture(texture)
     else
         MacroBoundButtons[selfRef] = nil
     end
 end
 
-local function ActionBarSetTooltipWrapper(self)
-    Native_ActionButton_SetTooltip(self)
+local function ActionBarSetTooltipWrapper(original, self)
+    original(self)
 
     if not MegaMacroGlobalData and not MegaMacroCharacterData then
         return
@@ -73,13 +62,18 @@ local function ActionBarSetTooltipWrapper(self)
     end
 end
 
-MegaMacroActionBarWrapper = {}
+MegaMacroNativeUIActionBarProvider = {}
 
-function MegaMacroActionBarWrapper.Initialize()
-    ActionButton_Update = function(self) ActionBarUpdateWrapper(self) end
-    ActionButton_SetTooltip = function(self) ActionBarSetTooltipWrapper(self) end
+function MegaMacroNativeUIActionBarProvider.Initialize()
+    local originalUpdate = ActionButton_Update
+    ActionButton_Update = function(self) ActionBarUpdateWrapper(originalUpdate, self) end
+    local originalSetTooltip = ActionButton_SetTooltip
+    ActionButton_SetTooltip = function(self) ActionBarSetTooltipWrapper(originalSetTooltip, self) end
 
     MegaMacroIconEvaluator.OnIconUpdated(function(macroId, texture)
         OnIconUpdated(macroId, texture)
     end)
+end
+
+function MegaMacroNativeUIActionBarProvider.Update()
 end

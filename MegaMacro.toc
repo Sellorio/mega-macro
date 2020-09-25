@@ -9,12 +9,15 @@
 src/constants.lua
 src/config.lua
 src/tooltip-functions.lua
-src/mega-macro-action-bar-wrapper.lua
+src/mega-macro-action-bar-engine.lua
 src/mega-macro.lua
 src/mega-macro-code-info.lua
 src/mega-macro-icon-evaluator.lua
 src/mega-macro-engine.lua
 src/windows/mega-macro.window.xml
 src/windows/mega-macro.window.lua
+
+src/action-bar-providers/native-ui-action-bar-provider.lua
+src/action-bar-providers/bartender4-action-bar-provider.lua
 
 src/main.lua
