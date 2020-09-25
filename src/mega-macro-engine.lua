@@ -247,6 +247,10 @@ function MegaMacroEngine.GetMacroIdFromIndex(macroIndex)
     return nil
 end
 
+function MegaMacroEngine.GetMacroIndexFromId(macroId)
+    return MacroIndexCache[macroId]
+end
+
 function MegaMacroEngine.OnMacroCreated(macro)
     BindMacro(macro)
 end

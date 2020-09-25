@@ -2,9 +2,11 @@
 	<Script file="src/windows/mega-macro.window.lua"/>
 	<CheckButton name="MegaMacro_ButtonTemplate" inherits="PopupButtonTemplate" virtual="true">
 		<Scripts>
+			<OnLoad>self:RegisterForDrag("LeftButton");</OnLoad>
 			<OnClick>MegaMacro_MacroButton_OnClick(self);</OnClick>
 			<OnEnter>MegaMacro_MacroButton_OnEnter(self);</OnEnter>
 			<OnLeave>MegaMacro_MacroButton_OnLeave();</OnLeave>
+			<OnDragStart>MegaMacro_MacroButton_OnDragStart(self);</OnDragStart>
 		</Scripts>
 	</CheckButton>
 	<CheckButton name="MegaMacro_PopupButtonTemplate" inherits="SimplePopupButtonTemplate" virtual="true">
@@ -81,7 +83,12 @@
 					<Anchor point="TOPLEFT" relativeTo="MegaMacro_FrameSelectedMacroBackground" x="14" y="-14"/>
 				</Anchors>
 				<Scripts>
-					<OnClick>self:SetChecked(false);</OnClick>
+					<OnLoad>self:RegisterForDrag("LeftButton");</OnLoad>
+					<OnDragStart>MegaMacro_FrameSelectedMacroButton_OnDragStart();</OnDragStart>
+					<OnClick>
+						self:SetChecked(false);
+						MegaMacro_FrameSelectedMacroButton_OnDragStart();
+					</OnClick>
 					<OnEnter>MegaMacro_FrameSelectedMacroButton_OnEnter();</OnEnter>
 					<OnLeave>MegaMacro_FrameSelectedMacroButton_OnLeave();</OnLeave>
 				</Scripts>

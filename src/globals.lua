@@ -59,6 +59,7 @@ ActionButton_UpdateAction = function(self, force) self._ = force end
 ActionButton_SetTooltip = function(self) self._ = nil end
 GetActionInfo = function(actionId) actionId._ = nil end -- returns spellType, id, subType
 ActionButton_CalculateAction = function(self) self._ = nil end
+PickupMacro = function(macroIndexOrName) macroIndexOrName._ = nil end
 
 MegaMacro_Frame = {}
 MegaMacro_ButtonContainer = {}

@@ -172,6 +172,25 @@ local function UpdateTooltipIfButtonIsHovered(updatedMacroId)
 	end
 end
 
+local function PickupMegaMacro(macro)
+	local macroIndex = MegaMacroEngine.GetMacroIndexFromId(macro.Id)
+
+	if macroIndex then
+		local inCombat = InCombatLockdown()
+
+		if not inCombat then
+			EditMacro(macroIndex, nil, MegaMacroIconEvaluator.GetTextureFromCache(macro.Id), nil, true, macroIndex > MacroLimits.MaxGlobalMacros)
+		end
+
+		PickupMacro(macroIndex)
+
+		-- revert icon so that if a macro is dragged during combat, it will show the blank icon instead of an out-of-date macro icon
+		if not inCombat then
+			EditMacro(macroIndex, nil, MegaMacroTexture, nil, true, macroIndex > MacroLimits.MaxGlobalMacros)
+		end
+	end
+end
+
 StaticPopupDialogs["CONFIRM_DELETE_SELECTED_MEGA_MACRO"] = {
 	text = CONFIRM_DELETE_MACRO,
 	button1 = OKAY,
@@ -277,12 +296,24 @@ function MegaMacro_MacroButton_OnLeave()
 	GameTooltip:Hide()
 end
 
+function MegaMacro_MacroButton_OnDragStart(self)
+	if self.Macro then
+		PickupMegaMacro(self.Macro)
+	end
+end
+
 function MegaMacro_FrameSelectedMacroButton_OnEnter()
 	ShowToolTipForMegaMacro(SelectedMacro)
 end
 
 function MegaMacro_FrameSelectedMacroButton_OnLeave()
 	GameTooltip:Hide()
+end
+
+function MegaMacro_FrameSelectedMacroButton_OnDragStart()
+	if SelectedMacro then
+		PickupMegaMacro(SelectedMacro)
+	end
 end
 
 function MegaMacro_TextBox_TextChanged(self)
