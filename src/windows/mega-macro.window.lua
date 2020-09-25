@@ -185,14 +185,16 @@ local function UpdateTooltipIfButtonIsHovered(updatedMacroId)
 	if mouseFocus then
 		local focusFrame = mouseFocus:GetName()
 
-		if string.find(focusFrame, "^MegaMacro_MacroButton%d+$") then
-			local macro = _G[focusFrame].Macro
+		if focusFrame then
+			if string.find(focusFrame, "^MegaMacro_MacroButton%d+$") then
+				local macro = _G[focusFrame].Macro
 
-			if macro and macro.Id == updatedMacroId then
-				ShowMacroToolTip(macro)
+				if macro and macro.Id == updatedMacroId then
+					ShowMacroToolTip(macro)
+				end
+			elseif focusFrame == "MegaMacro_FrameSelectedMacroButton" and SelectedMacro and SelectedMacro.Id == updatedMacroId then
+				ShowMacroToolTip(SelectedMacro)
 			end
-		elseif focusFrame == "MegaMacro_FrameSelectedMacroButton" and SelectedMacro and SelectedMacro.Id == updatedMacroId then
-			ShowMacroToolTip(SelectedMacro)
 		end
 	end
 end

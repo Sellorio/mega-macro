@@ -17,8 +17,14 @@ local function InitializeMacroIndexCache()
     local maxMacroCount = MacroLimits.MaxGlobalMacros + MacroLimits.MaxCharacterMacros
     for i=1, maxMacroCount do
         local macroCode = GetMacroBody(i)
-        local macroId = GetIdFromMacroCode(macroCode)
-        MacroIndexCache[macroId] = i
+
+        if macroCode then
+            local macroId = GetIdFromMacroCode(macroCode)
+
+            if macroId then
+                MacroIndexCache[macroId] = i
+            end
+        end
     end
 end
 
@@ -130,12 +136,15 @@ end
 local function BindMacro(macro)
     if Initialized then
         local macroIndex = MacroIndexCache[macro.Id]
-        local isCharacter = macroIndex > MacroLimits.MaxGlobalMacros
 
-        if not isCharacter and MegaMacroGlobalData.Activated or isCharacter and MegaMacroCharacterData.Activated then
-            GetOrCreateClicky(macro.Id):SetAttribute("macrotext", macro.Code)
-            EditMacro(macroIndex, macro.DisplayName, nil, nil, true, isCharacter)
-            InitializeMacroIndexCache()
+        if macroIndex then
+            local isCharacter = macroIndex > MacroLimits.MaxGlobalMacros
+
+            if not isCharacter and MegaMacroGlobalData.Activated or isCharacter and MegaMacroCharacterData.Activated then
+                GetOrCreateClicky(macro.Id):SetAttribute("macrotext", macro.Code)
+                EditMacro(macroIndex, macro.DisplayName, nil, nil, true, isCharacter)
+                InitializeMacroIndexCache()
+            end
         end
     end
 end
@@ -202,7 +211,6 @@ function MegaMacroEngine.SafeInitialize()
             MegaMacroGlobalData.Activated = true
         else
             message(errorMessage)
-            return false
         end
     end
 
@@ -218,7 +226,6 @@ function MegaMacroEngine.SafeInitialize()
             MegaMacroCharacterData.Activated = true
         else
             message(errorMessage)
-            return false
         end
     end
 
@@ -228,6 +235,16 @@ function MegaMacroEngine.SafeInitialize()
     BindMacros()
 
     return true
+end
+
+function MegaMacroEngine.GetMacroIdFromIndex(macroIndex)
+    for id, index in pairs(MacroIndexCache) do
+        if index == macroIndex then
+            return id
+        end
+    end
+
+    return nil
 end
 
 function MegaMacroEngine.OnMacroCreated(macro)
