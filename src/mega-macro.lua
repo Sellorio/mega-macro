@@ -139,6 +139,33 @@ function MegaMacro.GetSlotCount(scope)
     return 0
 end
 
+function MegaMacro.GetById(macroId)
+    local scope
+
+    if macroId <= MacroIndexOffsets.PerClass then
+        scope = MegaMacroScopes.Global
+    elseif macroId <= MacroIndexOffsets.PerSpecialization then
+        scope = MegaMacroScopes.Class
+    elseif macroId <= MacroIndexOffsets.PerCharacter then
+        scope = MegaMacroScopes.Specialization
+    elseif macroId <= MacroIndexOffsets.PerCharacterSpecialization then
+        scope = MegaMacroScopes.Character
+    else
+        scope = MegaMacroScopes.CharacterSpecialization
+    end
+
+    local macros = MegaMacro.GetMacrosInScope(scope)
+    local macroCount = #macros
+
+    for i=1, macroCount do
+        if macros[i].Id == macroId then
+            return macros[i]
+        end
+    end
+
+    return nil
+end
+
 function MegaMacro.Rename(self, displayName)
     self.DisplayName = displayName
     MegaMacroEngine.OnMacroRenamed(self)

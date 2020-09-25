@@ -8,7 +8,8 @@
 
 src/constants.lua
 src/config.lua
-src/mega-macro-action-bar-helper.lua
+src/tooltip-functions.lua
+src/mega-macro-action-bar-wrapper.lua
 src/mega-macro.lua
 src/mega-macro-code-info.lua
 src/mega-macro-icon-evaluator.lua

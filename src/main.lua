@@ -23,7 +23,7 @@ local function Initialize()
         MegaMacroCachedSpecialization = select(2, GetSpecializationInfo(specIndex))
 
         MegaMacroIconEvaluator.Initialize()
-        MegaMacroActionBarHelper.Initialize()
+        MegaMacroActionBarWrapper.Initialize()
         MegaMacroEngine.SafeInitialize()
         f:SetScript("OnUpdate", OnUpdate)
     end

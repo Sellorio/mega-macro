@@ -152,33 +152,6 @@ local function DeleteMacro()
 	end
 end
 
-local function ShowMacroToolTip(macro)
-	GameTooltip_SetDefaultAnchor(GameTooltip, UIParent)
-
-	local abilityName = MegaMacroIconEvaluator.GetSpellFromCache(macro.Id)
-
-	if abilityName then
-		local spellId = select(7, GetSpellInfo(abilityName))
-		if spellId then
-			GameTooltip:SetSpellByID(spellId)
-			GameTooltip:Show()
-			return
-		end
-
-		local itemId = GetItemInfoInstant(abilityName)
-
-		if itemId then
-			if C_ToyBox.GetToyInfo(itemId) then
-				GameTooltip:SetToyByItemID(itemId)
-				GameTooltip:Show()
-			else
-				GameTooltip:SetItemByID(itemId)
-				GameTooltip:Show()
-			end
-		end
-	end
-end
-
 local function UpdateTooltipIfButtonIsHovered(updatedMacroId)
 	local mouseFocus = GetMouseFocus()
 
@@ -190,10 +163,10 @@ local function UpdateTooltipIfButtonIsHovered(updatedMacroId)
 				local macro = _G[focusFrame].Macro
 
 				if macro and macro.Id == updatedMacroId then
-					ShowMacroToolTip(macro)
+					ShowToolTipForMegaMacro(macro)
 				end
 			elseif focusFrame == "MegaMacro_FrameSelectedMacroButton" and SelectedMacro and SelectedMacro.Id == updatedMacroId then
-				ShowMacroToolTip(SelectedMacro)
+				ShowToolTipForMegaMacro(SelectedMacro)
 			end
 		end
 	end
@@ -297,7 +270,7 @@ function MegaMacro_MacroButton_OnClick(self)
 end
 
 function MegaMacro_MacroButton_OnEnter(self)
-	ShowMacroToolTip(self.Macro)
+	ShowToolTipForMegaMacro(self.Macro)
 end
 
 function MegaMacro_MacroButton_OnLeave()
@@ -305,7 +278,7 @@ function MegaMacro_MacroButton_OnLeave()
 end
 
 function MegaMacro_FrameSelectedMacroButton_OnEnter()
-	ShowMacroToolTip(SelectedMacro)
+	ShowToolTipForMegaMacro(SelectedMacro)
 end
 
 function MegaMacro_FrameSelectedMacroButton_OnLeave()
