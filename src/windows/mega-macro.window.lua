@@ -94,6 +94,7 @@ local function SelectMacro(macro)
 	MegaMacro_DeleteButton:Disable();
 	MegaMacro_SaveButton:Disable()
 	MegaMacro_CancelButton:Disable()
+	MegaMacro_FrameText:Disable()
 
 	for i=1, HighestMaxMacroCount do
 		local buttonFrame, _, buttonIcon = GetMacroButtonUI(i)
@@ -106,6 +107,7 @@ local function SelectMacro(macro)
 			MegaMacro_FrameText:SetText(macro.Code)
 			MegaMacro_RenameButton:Enable();
 			MegaMacro_DeleteButton:Enable();
+			MegaMacro_FrameText:Enable()
 		else
 			buttonFrame:SetChecked(false)
 		end
@@ -316,6 +318,12 @@ function MegaMacro_FrameSelectedMacroButton_OnDragStart()
 	end
 end
 
+function MegaMacro_FrameTextButton_OnClick()
+	if SelectedMacro then
+		MegaMacro_FrameText:SetFocus();
+	end
+end
+
 function MegaMacro_TextBox_TextChanged(self)
 	if SelectedMacro ~= nil and SelectedMacro.Code ~= MegaMacro_FrameText:GetText() then
 		MegaMacro_SaveButton:Enable()
@@ -379,6 +387,7 @@ function MegaMacro_EditOkButton_OnClick()
 		local createdMacro = MegaMacro.Create(enteredText, SelectedScope)
 		SetMacroItems()
 		SelectMacro(createdMacro)
+		MegaMacro_FrameText:SetFocus()
 	end
 
 	MegaMacro_PopupFrame:Hide()

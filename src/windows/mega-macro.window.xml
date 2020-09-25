@@ -20,7 +20,7 @@
 		<CheckedTexture alphaMode="ADD" file="Interface\Buttons\CheckButtonHilight"/>
 	</CheckButton>
 	<Frame name="MegaMacro_Frame" toplevel="true" movable="true" parent="UIParent" enableMouse="true" hidden="true" inherits="ButtonFrameTemplate">
-		<Size x="640" y="424"/>
+		<Size x="640" y="524"/>
 		<Layers>
 			<Layer level="OVERLAY" textureSubLevel="-1">
 				<Texture name="MegaMacro_FramePortrait" file="Interface\MacroFrame\MacroFrame-Icon">
@@ -150,13 +150,13 @@
 				</Scripts>
 			</Button>
 			<ScrollFrame name="MegaMacro_FrameScrollFrame" inherits="UIPanelScrollFrameTemplate">
-				<Size x="591" y="85"/>
+				<Size x="591" y="185"/>
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeTo="MegaMacro_FrameSelectedMacroBackground" relativePoint="BOTTOMLEFT" x="11" y="-13"/>
 				</Anchors>
 				<ScrollChild>
 					<EditBox name="MegaMacro_FrameText" multiLine="true" letters="1023" autoFocus="false" countInvisibleLetters="true">
-						<Size x="589" y="85"/>
+						<Size x="589" y="185"/>
 						<Scripts>
 							<OnLoad>ScrollingEdit_OnCursorChanged(self, 0, 0, 0, 0);</OnLoad>
 							<OnTextChanged>MegaMacro_TextBox_TextChanged(self);</OnTextChanged>
@@ -169,12 +169,12 @@
 				</ScrollChild>
 			</ScrollFrame>
 			<Button name="MegaMacro_FrameTextButton">
-				<Size x="589" y="85"/>
+				<Size x="589" y="185"/>
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeTo="MegaMacro_FrameText"/>
 				</Anchors>
 				<Scripts>
-					<OnClick>MegaMacro_FrameText:SetFocus();</OnClick>
+					<OnClick>MegaMacro_FrameTextButton_OnClick();</OnClick>
 				</Scripts>
 			</Button>
 			<Button name="MegaMacro_CancelButton" frameStrata="HIGH" inherits="UIPanelButtonTemplate" text="CANCEL">
@@ -208,7 +208,7 @@
                         <AbsInset left="4" right="4" top="4" bottom="4"/>
                     </BackgroundInsets>
                 </Backdrop>
-				<Size x="627" y="95"/>
+				<Size x="627" y="195"/>
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeTo="MegaMacro_Frame" x="6" y="-289"/>
 				</Anchors>
