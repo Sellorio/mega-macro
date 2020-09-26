@@ -1,5 +1,7 @@
 # Mega Macro (a World of Warcraft AddOn)
 
+[Screenshot 1](https://raw.githubusercontent.com/Sellorio/mega-macro/master/Screenshot1.png)
+
 **IMPORTANT:** Before you use this AddOn, make sure you read the `before you use` section!
 
 ## Features
