@@ -1,3 +1,5 @@
+local LibActionButton
+
 local function ShowTooltipForButton(action)
     local actionType, macroIndex = GetActionInfo(action)
 
@@ -18,6 +20,7 @@ end
 MegaMacroBartender4ActionBarProvider = {}
 
 function MegaMacroBartender4ActionBarProvider.Initialize()
+	LibActionButton = LibStub("LibActionButton-1.0")
 end
 
 function MegaMacroBartender4ActionBarProvider.Update()
@@ -35,7 +38,12 @@ function MegaMacroBartender4ActionBarProvider.Update()
                 ShowTooltipForButton(action)
             end
         end
-    end
+	end
+
+	-- forcing cooldowns to update each frame
+	local libActionButtonOnEvent = LibActionButton.eventFrame:GetScript("OnEvent")
+	libActionButtonOnEvent(LibActionButton.eventFrame, "ACTIONBAR_UPDATE_COOLDOWN", nil)
+	libActionButtonOnEvent(LibActionButton.eventFrame, "SPELL_UPDATE_CHARGES", nil)
 end
 
 --[[
