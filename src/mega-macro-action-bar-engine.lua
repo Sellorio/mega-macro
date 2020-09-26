@@ -1,5 +1,27 @@
 local ActionBarProvider = nil
 
+local function contains(tab, val)
+    for _, value in ipairs(tab) do
+        if value == val then
+            return true
+        end
+    end
+
+    return false
+end
+
+local function PlayerHasBuff(buffName)
+    local i = 1
+    while true do
+        local name = UnitBuff("player", i)
+
+        if name == buffName then return true end
+        if not buffName then return false end
+
+        i = i + 1
+    end
+end
+
 local function GetActionCooldownWrapper(original, action)
     local actionType, macroIndex = GetActionInfo(action)
 
@@ -114,7 +136,7 @@ function MegaMacroActionBarEngine.OnUpdate()
 end
 
 -- Returns: The macroId to which the action related
-function MegaMacroActionBarEngine.SetIconBasedOnAction(icon, action)
+function MegaMacroActionBarEngine.SetIconBasedOnAction(button, icon, action)
     local actionType, macroIndex = GetActionInfo(action)
 
     if actionType == "macro" then
@@ -123,8 +145,17 @@ function MegaMacroActionBarEngine.SetIconBasedOnAction(icon, action)
         end
 
         local macroId = MegaMacroEngine.GetMacroIdFromIndex(macroIndex)
-        local texture = MegaMacroIconEvaluator.GetTextureFromCache(macroId)
-        icon:SetTexture(texture)
+        local abilityName = MegaMacroIconEvaluator.GetSpellFromCache(macroId)
+
+        if abilityName and contains(MegaMacroStanceAbilities, string.lower(abilityName)) and PlayerHasBuff(abilityName) then
+            icon:SetTexture(MegaMacroActiveStanceTexture)
+            button:SetChecked(true)
+        else
+            button:SetChecked(false)
+            local texture = MegaMacroIconEvaluator.GetTextureFromCache(macroId)
+            icon:SetTexture(texture)
+        end
+
         return macroId
     end
 

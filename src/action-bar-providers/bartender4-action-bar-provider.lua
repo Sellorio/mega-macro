@@ -29,7 +29,7 @@ function MegaMacroBartender4ActionBarProvider.Update()
 
         if button then
             local action = ActionButton_CalculateAction(button)
-            MegaMacroActionBarEngine.SetIconBasedOnAction(button.icon, action)
+            MegaMacroActionBarEngine.SetIconBasedOnAction(button, button.icon, action)
 
             if focus == button then
                 ShowTooltipForButton(action)

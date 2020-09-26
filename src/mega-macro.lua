@@ -142,7 +142,9 @@ end
 function MegaMacro.GetById(macroId)
     local scope
 
-    if macroId <= MacroIndexOffsets.PerClass then
+    if not macroId then
+        return nil
+    elseif macroId <= MacroIndexOffsets.PerClass then
         scope = MegaMacroScopes.Global
     elseif macroId <= MacroIndexOffsets.PerSpecialization then
         scope = MegaMacroScopes.Class

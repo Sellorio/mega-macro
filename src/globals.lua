@@ -64,6 +64,10 @@ GetSpellCooldown = function(spellID) spellID._ = nil end -- returns: startTime, 
 GetItemCooldown = function(itemID) itemID._ = nil end -- returns: startTime, duration, enabled
 GetSpellCharges = function(spellID) spellID._ = nil end -- returns: charges, maxCharges, chargeStart, chargeDuration, chargeModRate
 GetItemCount = function(itemID) itemID._ = nil end -- returns: count
+IsCurrentSpell = function(spellID) spellID._ = nil end
+IsCurrentAction = function(action) action._ = nil end
+GetShapeshiftForm = function(flag) flag._ = nil end
+UnitBuff = function(unit, buffIndexOrName, filter) end -- returns: name, rank, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, shouldConsolidate, spellId
 
 MegaMacro_Frame = {}
 MegaMacro_ButtonContainer = {}

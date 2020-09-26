@@ -26,10 +26,10 @@ local function ActionBarUpdateWrapper(original, self)
     end
 
     local selfRef = tostring(self)
-    local macroId = MegaMacroActionBarEngine.SetIconBasedOnAction(self.icon, self.action)
+    local macroId = MegaMacroActionBarEngine.SetIconBasedOnAction(self, self.icon, self.action)
 
     if macroId then
-        MacroBoundButtons[selfRef] = { MacroId = macroId, Button = self }
+        MacroBoundButtons[selfRef] = { MacroId = macroId, Button = self, Checked = self:GetChecked() }
     else
         MacroBoundButtons[selfRef] = nil
     end
@@ -76,4 +76,9 @@ function MegaMacroNativeUIActionBarProvider.Initialize()
 end
 
 function MegaMacroNativeUIActionBarProvider.Update()
+    for _, data in pairs(MacroBoundButtons) do
+        -- force update since blizzard are quite stingy on action button updates which means
+        -- changing stances won't trigger the icon override and SetChecked logic
+        ActionButton_Update(data.Button)
+    end
 end

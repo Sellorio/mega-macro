@@ -27,6 +27,20 @@ MegaMacroScopes = {
     CharacterSpecialization = "cs"
 }
 
+MegaMacroStanceAbilities = {
+	-- Druid Forms
+	"bear form",
+	"cat form",
+	"travel form",
+	"moonkin form",
+	"treant form",
+	"stag form",
+
+	-- Shadow Priest
+	"shadowform"
+}
+
 MegaMacroTexture = 134400
+MegaMacroActiveStanceTexture = 136116
 MegaMacroCodeMaxLength = 1023
 HighestMaxMacroCount = math.max(MacroLimits.GlobalCount, MacroLimits.PerClassCount, MacroLimits.PerSpecializationCount, MacroLimits.PerCharacterCount, MacroLimits.PerCharacterSpecializationCount)
