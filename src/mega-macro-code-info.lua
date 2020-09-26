@@ -120,7 +120,7 @@ local function ParseStopmacroCommand(parsingContext)
         CodeInfoCache[parsingContext.MacroId],
         {
             Type = "stopmacro",
-            Body = condition + "TRUE"
+            Body = condition.."TRUE"
         })
 end
 
