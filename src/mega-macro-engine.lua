@@ -142,7 +142,7 @@ local function BindMacro(macro)
 
             if not isCharacter and MegaMacroGlobalData.Activated or isCharacter and MegaMacroCharacterData.Activated then
                 GetOrCreateClicky(macro.Id):SetAttribute("macrotext", macro.Code)
-                EditMacro(macroIndex, macro.DisplayName, nil, nil, true, isCharacter)
+                EditMacro(macroIndex, string.sub(macro.DisplayName, 1, 18), nil, nil, true, isCharacter)
                 InitializeMacroIndexCache()
             end
         end
