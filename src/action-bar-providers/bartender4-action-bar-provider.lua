@@ -7,9 +7,11 @@ local function ShowTooltipForButton(action)
         end
 
         local macroId = MegaMacroEngine.GetMacroIdFromIndex(macroIndex)
-        local macro = MegaMacro.GetById(macroId)
 
-        ShowToolTipForMegaMacro(macro)
+        if macroId then
+            local macro = MegaMacro.GetById(macroId)
+            ShowToolTipForMegaMacro(macro)
+        end
     end
 end
 
@@ -35,3 +37,42 @@ function MegaMacroBartender4ActionBarProvider.Update()
         end
     end
 end
+
+--[[
+
+function UpdateCooldown(self)
+	local locStart, locDuration = self:GetLossOfControlCooldown()
+	local start, duration, enable, modRate = self:GetCooldown()
+	local charges, maxCharges, chargeStart, chargeDuration, chargeModRate = self:GetCharges()
+
+	self.cooldown:SetDrawBling(self.cooldown:GetEffectiveAlpha() > 0.5)
+
+	if (locStart + locDuration) > (start + duration) then
+		if self.cooldown.currentCooldownType ~= COOLDOWN_TYPE_LOSS_OF_CONTROL then
+			self.cooldown:SetEdgeTexture("Interface\\Cooldown\\edge-LoC")
+			self.cooldown:SetSwipeColor(0.17, 0, 0)
+			self.cooldown:SetHideCountdownNumbers(true)
+			self.cooldown.currentCooldownType = COOLDOWN_TYPE_LOSS_OF_CONTROL
+		end
+		CooldownFrame_Set(self.cooldown, locStart, locDuration, true, true, modRate)
+	else
+		if self.cooldown.currentCooldownType ~= COOLDOWN_TYPE_NORMAL then
+			self.cooldown:SetEdgeTexture("Interface\\Cooldown\\edge")
+			self.cooldown:SetSwipeColor(0, 0, 0)
+			self.cooldown:SetHideCountdownNumbers(false)
+			self.cooldown.currentCooldownType = COOLDOWN_TYPE_NORMAL
+		end
+		if locStart > 0 then
+			self.cooldown:SetScript("OnCooldownDone", OnCooldownDone)
+		end
+
+		if charges and maxCharges and maxCharges > 1 and charges < maxCharges then
+			StartChargeCooldown(self, chargeStart, chargeDuration, chargeModRate)
+		elseif self.chargeCooldown then
+			EndChargeCooldown(self.chargeCooldown)
+		end
+		CooldownFrame_Set(self.cooldown, start, duration, enable, false, modRate)
+	end
+end
+
+]]

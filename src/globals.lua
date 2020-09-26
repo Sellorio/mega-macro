@@ -57,9 +57,13 @@ DeleteMacro = function(macroIndexOrName) macroIndexOrName._ = nil end
 CreateMacro = function(name, iconFileName, body, perCharacter) return 0 end
 ActionButton_UpdateAction = function(self, force) self._ = force end
 ActionButton_SetTooltip = function(self) self._ = nil end
-GetActionInfo = function(actionId) actionId._ = nil end -- returns spellType, id, subType
+GetActionInfo = function(actionId) actionId._ = nil end -- returns: spellType, id, subType
 ActionButton_CalculateAction = function(self) self._ = nil end
 PickupMacro = function(macroIndexOrName) macroIndexOrName._ = nil end
+GetSpellCooldown = function(spellID) spellID._ = nil end -- returns: startTime, duration, enabled
+GetItemCooldown = function(itemID) itemID._ = nil end -- returns: startTime, duration, enabled
+GetSpellCharges = function(spellID) spellID._ = nil end -- returns: charges, maxCharges, chargeStart, chargeDuration, chargeModRate
+GetItemCount = function(itemID) itemID._ = nil end -- returns: count
 
 MegaMacro_Frame = {}
 MegaMacro_ButtonContainer = {}
