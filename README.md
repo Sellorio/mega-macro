@@ -54,6 +54,9 @@ Then you don't need to prefix your macro code with `#showtooltip Heal` - the Add
 cuts down on some of the redundant manual work required to write a macro and reduces the amount of macro code
 capacity you have to use on non-functional code.
 
+As a bonus to the above improvement, cast-sequence commands will not only effortlessly display the correct icon,
+you'll also get the tooltip for the sequence abilities - impossible in the current macro implementation.
+
 ### Bigger macros!
 
 Write macros up to 1023 characters long. No more having to minify your macro code making it harder to

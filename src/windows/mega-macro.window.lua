@@ -280,7 +280,9 @@ function MegaMacro_MacroButton_OnClick(self)
 end
 
 function MegaMacro_MacroButton_OnEnter(self)
-	ShowToolTipForMegaMacro(self.Macro)
+	if self.Macro then
+		ShowToolTipForMegaMacro(self.Macro)
+	end
 end
 
 function MegaMacro_MacroButton_OnLeave()
@@ -294,7 +296,9 @@ function MegaMacro_MacroButton_OnDragStart(self)
 end
 
 function MegaMacro_FrameSelectedMacroButton_OnEnter()
-	ShowToolTipForMegaMacro(SelectedMacro)
+	if SelectedMacro then
+		ShowToolTipForMegaMacro(SelectedMacro)
+	end
 end
 
 function MegaMacro_FrameSelectedMacroButton_OnLeave()

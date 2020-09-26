@@ -11,8 +11,10 @@ local function ShowTooltipForButton(action)
         local macroId = MegaMacroEngine.GetMacroIdFromIndex(macroIndex)
 
         if macroId then
-            local macro = MegaMacro.GetById(macroId)
-            ShowToolTipForMegaMacro(macro)
+			local macro = MegaMacro.GetById(macroId)
+			if macro then
+				ShowToolTipForMegaMacro(macro)
+			end
         end
     end
 end
