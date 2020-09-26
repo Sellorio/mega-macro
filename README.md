@@ -48,7 +48,7 @@ Number 3 is the kicker here. This means if you are a healer and have heal-safe m
 /cast [help, no dead] Heal
 ```
 
-Then you don't need to prefix your macro code with `#showtooltip heal` - the AddOn handles that for you! This
+Then you don't need to prefix your macro code with `#showtooltip Heal` - the AddOn handles that for you! This
 cuts down on some of the redundant manual work required to write a macro and reduces the amount of macro code
 capacity you have to use on non-functional code.
 
@@ -83,6 +83,8 @@ won't do anything to your macros until it is successful.
 
 Once successfully imported, if you remove the AddOn you will have 138 stub macros and your old macros will
 be gone.
+
+To avoid this, follow the instructions below.
 
 ### When you install the AddOn
 
