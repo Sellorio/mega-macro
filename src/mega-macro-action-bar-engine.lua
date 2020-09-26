@@ -108,6 +108,29 @@ local function GetActionCountWrapper(original, action)
     return original(action)
 end
 
+local function PickupActionWrapper(original, action)
+    local actionType, macroIndex = GetActionInfo(action)
+
+    if not InCombatLockdown() and actionType == "macro" then
+        if macroIndex <= MacroLimits.MaxGlobalMacros and not MegaMacroGlobalData.Activated or macroIndex > MacroLimits.MaxGlobalMacros and not MegaMacroCharacterData.Activated then
+            original(action)
+            return
+        end
+
+        local macroId = MegaMacroEngine.GetMacroIdFromIndex(macroIndex)
+
+        if macroId then
+            EditMacro(macroIndex, nil, MegaMacroIconEvaluator.GetTextureFromCache(macroId), nil, true, macroIndex > MacroLimits.MaxGlobalMacros)
+            original(action)
+            -- revert icon so that if a macro is dragged during combat, it will show the blank icon instead of an out-of-date macro icon
+            EditMacro(macroIndex, nil, MegaMacroTexture, nil, true, macroIndex > MacroLimits.MaxGlobalMacros)
+            return
+        end
+    end
+
+    original(action)
+end
+
 MegaMacroActionBarEngine = {}
 
 function MegaMacroActionBarEngine.Initialize()
@@ -123,6 +146,8 @@ function MegaMacroActionBarEngine.Initialize()
     GetActionCharges = function(action) return GetActionChargesWrapper(originalGetActionCharges, action) end
     local originalGetActionCount = GetActionCount
     GetActionCount = function(action) return GetActionCountWrapper(originalGetActionCount, action) end
+    local originalPickupAction = PickupAction
+    PickupAction = function(action) PickupActionWrapper(originalPickupAction, action) end
 
     if ActionBarProvider then
         ActionBarProvider.Initialize()

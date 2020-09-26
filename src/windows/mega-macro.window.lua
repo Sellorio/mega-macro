@@ -178,18 +178,7 @@ local function PickupMegaMacro(macro)
 	local macroIndex = MegaMacroEngine.GetMacroIndexFromId(macro.Id)
 
 	if macroIndex then
-		local inCombat = InCombatLockdown()
-
-		if not inCombat then
-			EditMacro(macroIndex, nil, MegaMacroIconEvaluator.GetTextureFromCache(macro.Id), nil, true, macroIndex > MacroLimits.MaxGlobalMacros)
-		end
-
 		PickupMacro(macroIndex)
-
-		-- revert icon so that if a macro is dragged during combat, it will show the blank icon instead of an out-of-date macro icon
-		if not inCombat then
-			EditMacro(macroIndex, nil, MegaMacroTexture, nil, true, macroIndex > MacroLimits.MaxGlobalMacros)
-		end
 	end
 end
 

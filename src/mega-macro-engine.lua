@@ -194,6 +194,22 @@ local function BindMacros()
     end
 end
 
+local function PickupMacroWrapper(original, macroIndex)
+    local inCombat = InCombatLockdown()
+    local macroId = not inCombat and macroIndex and MegaMacroEngine.GetMacroIdFromIndex(macroIndex)
+
+    if macroId then
+        EditMacro(macroIndex, nil, MegaMacroIconEvaluator.GetTextureFromCache(macroId), nil, true, macroIndex > MacroLimits.MaxGlobalMacros)
+    end
+
+    original(macroIndex)
+
+    -- revert icon so that if a macro is dragged during combat, it will show the blank icon instead of an out-of-date macro icon
+    if macroId then
+        EditMacro(macroIndex, nil, MegaMacroTexture, nil, true, macroIndex > MacroLimits.MaxGlobalMacros)
+    end
+end
+
 MegaMacroEngine = {}
 
 function MegaMacroEngine.SafeInitialize()
@@ -233,6 +249,9 @@ function MegaMacroEngine.SafeInitialize()
     Initialized = true
 
     BindMacros()
+
+    local originalPickupMacro = PickupMacro
+    PickupMacro = function(macroIndex) PickupMacroWrapper(originalPickupMacro, macroIndex) end
 
     return true
 end
