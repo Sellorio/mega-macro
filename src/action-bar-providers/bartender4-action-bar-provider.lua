@@ -40,10 +40,11 @@ function MegaMacroBartender4ActionBarProvider.Update()
         end
 	end
 
-	-- forcing cooldowns to update each frame
+	-- forcing cooldowns, charges and usable to update each frame
 	local libActionButtonOnEvent = LibActionButton.eventFrame:GetScript("OnEvent")
 	libActionButtonOnEvent(LibActionButton.eventFrame, "ACTIONBAR_UPDATE_COOLDOWN", nil)
 	libActionButtonOnEvent(LibActionButton.eventFrame, "SPELL_UPDATE_CHARGES", nil)
+	libActionButtonOnEvent(LibActionButton.eventFrame, "ACTIONBAR_UPDATE_USABLE", nil)
 end
 
 --[[
