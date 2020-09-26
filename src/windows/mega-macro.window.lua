@@ -102,7 +102,7 @@ local function SelectMacro(macro)
 		if macro and buttonFrame.Macro == macro then
 			buttonFrame:SetChecked(true)
 			SelectedMacro = macro
-			MegaMacro_FrameSelectedMacroName:SetText("#"..macro.Id.." "..macro.DisplayName)
+			MegaMacro_FrameSelectedMacroName:SetText(macro.DisplayName)
 			MegaMacro_FrameSelectedMacroButtonIcon:SetTexture(buttonIcon:GetTexture())
 			MegaMacro_FrameText:SetText(macro.Code)
 			MegaMacro_RenameButton:Enable();
