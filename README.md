@@ -1,6 +1,6 @@
 # Mega Macro (a World of Warcraft AddOn)
 
-IMPORTANT: Before you use this AddOn, make sure you read the `before you use` section!
+**IMPORTANT:** Before you use this AddOn, make sure you read the `before you use` section!
 
 ## Features
 
