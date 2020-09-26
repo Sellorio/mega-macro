@@ -7,3 +7,4 @@ scripts\reset-data.bat
 .publishignore
 globals.lua
 README.md
+.png

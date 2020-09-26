@@ -16,7 +16,7 @@ local function PlayerHasBuff(buffName)
         local name = UnitBuff("player", i)
 
         if name == buffName then return true end
-        if not buffName then return false end
+        if not name then return false end
 
         i = i + 1
     end
@@ -88,7 +88,7 @@ local function GetActionCountWrapper(original, action)
 
     if actionType == "macro" then
         if macroIndex <= MacroLimits.MaxGlobalMacros and not MegaMacroGlobalData.Activated or macroIndex > MacroLimits.MaxGlobalMacros and not MegaMacroCharacterData.Activated then
-            return
+            return 0
         end
 
         local macroId = MegaMacroEngine.GetMacroIdFromIndex(macroIndex)
@@ -131,6 +131,36 @@ local function PickupActionWrapper(original, action)
     original(action)
 end
 
+local function IsUsableActionWrapper(original, action)
+    local actionType, macroIndex = GetActionInfo(action)
+
+    if actionType == "macro" then
+        if macroIndex <= MacroLimits.MaxGlobalMacros and not MegaMacroGlobalData.Activated or macroIndex > MacroLimits.MaxGlobalMacros and not MegaMacroCharacterData.Activated then
+            return original(action)
+        end
+
+        local macroId = MegaMacroEngine.GetMacroIdFromIndex(macroIndex)
+
+        if macroId then
+            local abilityName = MegaMacroIconEvaluator.GetSpellFromCache(macroId)
+
+            if abilityName then
+                local spellId = select(7, GetSpellInfo(abilityName))
+                if spellId then
+                    return IsUsableSpell(spellId)
+                end
+
+                local itemId = GetItemInfoInstant(abilityName)
+                if itemId then
+                    return IsUsableItem(itemId)
+                end
+            end
+        end
+    end
+
+    return original(action)
+end
+
 MegaMacroActionBarEngine = {}
 
 function MegaMacroActionBarEngine.Initialize()
@@ -148,6 +178,8 @@ function MegaMacroActionBarEngine.Initialize()
     GetActionCount = function(action) return GetActionCountWrapper(originalGetActionCount, action) end
     local originalPickupAction = PickupAction
     PickupAction = function(action) PickupActionWrapper(originalPickupAction, action) end
+    local originalIsUsableAction = IsUsableAction
+    IsUsableAction = function(action) return IsUsableActionWrapper(originalIsUsableAction, action) end
 
     if ActionBarProvider then
         ActionBarProvider.Initialize()
