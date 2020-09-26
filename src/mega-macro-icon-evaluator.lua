@@ -6,6 +6,7 @@ local LastMacroIndex = 0
 local IconUpdatedCallbacks = {}
 local MacroIconCache = {} -- icon ids
 local MacroSpellCache = {} -- spell ids
+local MacroTargetCache = {} -- unit strings
 
 local function IterateNextMacroInternal(nextScopeAttempts)
     LastMacroIndex = LastMacroIndex + 1
@@ -50,6 +51,7 @@ end
 local function UpdateMacro(macro)
     local icon = MegaMacroTexture
     local spellName = nil
+    local target = nil
 
     local codeInfo = MegaMacroCodeInfo.Get(macro)
     local codeInfoLength = #codeInfo
@@ -58,16 +60,17 @@ local function UpdateMacro(macro)
         local command = codeInfo[i]
 
         if command.Type == "showtooltip" or command.Type == "use" or command.Type == "cast" then
-            local ability = SecureCmdOptionParse(command.Body)
+            local ability, tar = SecureCmdOptionParse(command.Body)
 
             if ability ~= nil then
                 local texture = GetIconFromAbility(ability) or MegaMacroTexture
                 icon = texture
                 spellName = ability
+                target = tar
                 break
             end
         elseif command.Type == "castsequence" then
-            local sequenceCode = SecureCmdOptionParse(command.Body)
+            local sequenceCode, tar = SecureCmdOptionParse(command.Body)
 
             if sequenceCode ~= nil then
                 local _, item, spell = QueryCastSequence(sequenceCode)
@@ -77,6 +80,7 @@ local function UpdateMacro(macro)
                     local texture = GetIconFromAbility(ability) or MegaMacroTexture
                     icon = texture
                     spellName = ability
+                    target = tar
                     break
                 end
 
@@ -113,6 +117,7 @@ local function UpdateMacro(macro)
     if MacroIconCache[macro.Id] ~= icon or MacroSpellCache[macro.Id] ~= spellName then
         MacroIconCache[macro.Id] = icon
         MacroSpellCache[macro.Id] = spellName
+        MacroTargetCache[macro.Id] = target
 
         for i=1, #IconUpdatedCallbacks do
             IconUpdatedCallbacks[i](macro.Id, MacroIconCache[macro.Id])
@@ -134,6 +139,7 @@ end
 local function UpdateAllMacros()
     MacroIconCache = {}
     MacroSpellCache = {}
+    MacroTargetCache = {}
 
     LastMacroScope = MegaMacroScopes.Global
     LastMacroList = MegaMacroGlobalData.Macros
@@ -202,9 +208,14 @@ function MegaMacroIconEvaluator.GetSpellFromCache(macroId)
     return MacroSpellCache[macroId]
 end
 
+function MegaMacroIconEvaluator.GetTargetFromCache(macroId)
+    return MacroTargetCache[macroId]
+end
+
 function MegaMacroIconEvaluator.RemoveMacroFromCache(macroId)
     MacroIconCache[macroId] = nil
     MacroSpellCache[macroId] = nil
+    MacroTargetCache[macroId] = nil
 end
 
 function MegaMacroIconEvaluator.ResetCache()

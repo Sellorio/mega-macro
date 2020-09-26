@@ -67,10 +67,14 @@ GetItemCount = function(itemID) itemID._ = nil end -- returns: count
 IsCurrentSpell = function(spellID) spellID._ = nil end
 IsCurrentAction = function(action) action._ = nil end
 GetShapeshiftForm = function(flag) flag._ = nil end
-UnitBuff = function(unit, buffIndexOrName, filter) end -- returns: name, rank, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, shouldConsolidate, spellId
+UnitBuff = function(unit, buffIndexOrName, filter) unit[buffIndexOrName] = filter end -- returns: name, rank, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, shouldConsolidate, spellId
 IsUsableSpell = function(spellID) spellID._ = nil end -- returns: usable, noMana
 IsUsableAction = function(action) action._ = nil end -- returns: usable, noMana
 IsUsableItem = function(itemID) itemID._ = nil end -- returns: usable
+IsActionInRange = function(action) action._ = nil end -- returns: inRange (boolean)
+IsSpellInRange = function(index, bookType, target) bookType[index] = target end -- returns: inRange (boolean)
+IsItemInRange = function(itemID, target) itemID._ = target end -- returns: inRange (boolean)
+FindSpellBookSlotBySpellID = function(spellID) spellID._ = nil end -- returns: index
 
 MegaMacro_Frame = {}
 MegaMacro_ButtonContainer = {}

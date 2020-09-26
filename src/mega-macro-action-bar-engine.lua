@@ -161,6 +161,41 @@ local function IsUsableActionWrapper(original, action)
     return original(action)
 end
 
+local function IsActionInRangeWrapper(original, action)
+    local actionType, macroIndex = GetActionInfo(action)
+
+    if actionType == "macro" then
+        if macroIndex <= MacroLimits.MaxGlobalMacros and not MegaMacroGlobalData.Activated or macroIndex > MacroLimits.MaxGlobalMacros and not MegaMacroCharacterData.Activated then
+            return original(action)
+        end
+
+        local macroId = MegaMacroEngine.GetMacroIdFromIndex(macroIndex)
+
+        if macroId then
+            local abilityName = MegaMacroIconEvaluator.GetSpellFromCache(macroId)
+
+            if abilityName then
+                local spellId = select(7, GetSpellInfo(abilityName))
+                if spellId then
+                    local spellIndex = FindSpellBookSlotBySpellID(spellId)
+                    if spellIndex then
+                        local target = MegaMacroIconEvaluator.GetTargetFromCache(macroId)
+                        return IsSpellInRange(spellIndex, BOOKTYPE_SPELL, target)
+                    end
+                end
+
+                local itemId = GetItemInfoInstant(abilityName)
+                if itemId then
+                    local target = MegaMacroIconEvaluator.GetTargetFromCache(macroId)
+                    return IsItemInRange(itemId, target)
+                end
+            end
+        end
+    end
+
+    return original(action)
+end
+
 MegaMacroActionBarEngine = {}
 
 function MegaMacroActionBarEngine.Initialize()
@@ -180,6 +215,8 @@ function MegaMacroActionBarEngine.Initialize()
     PickupAction = function(action) PickupActionWrapper(originalPickupAction, action) end
     local originalIsUsableAction = IsUsableAction
     IsUsableAction = function(action) return IsUsableActionWrapper(originalIsUsableAction, action) end
+    local originalIsActionInRange = IsActionInRange
+    IsActionInRange = function(action) return IsActionInRangeWrapper(originalIsActionInRange, action) end
 
     if ActionBarProvider then
         ActionBarProvider.Initialize()
@@ -202,18 +239,28 @@ function MegaMacroActionBarEngine.SetIconBasedOnAction(button, icon, action)
         end
 
         local macroId = MegaMacroEngine.GetMacroIdFromIndex(macroIndex)
-        local abilityName = MegaMacroIconEvaluator.GetSpellFromCache(macroId)
 
-        if abilityName and contains(MegaMacroStanceAbilities, string.lower(abilityName)) and PlayerHasBuff(abilityName) then
-            icon:SetTexture(MegaMacroActiveStanceTexture)
-            button:SetChecked(true)
-        else
-            button:SetChecked(false)
-            local texture = MegaMacroIconEvaluator.GetTextureFromCache(macroId)
-            icon:SetTexture(texture)
+        if macroId then
+            local abilityName = MegaMacroIconEvaluator.GetSpellFromCache(macroId)
+            local isActive = false
+            local isActiveStance = false
+
+            if abilityName then
+                if contains(MegaMacroStanceAbilities, string.lower(abilityName)) and PlayerHasBuff(abilityName) then
+                    isActive = true
+                    isActiveStance = true
+                else
+                    local spellId = select(7, GetSpellInfo(abilityName))
+                    if spellId and IsCurrentSpell(spellId) then
+                        isActive = true
+                    end
+                end
+            end
+
+            button:SetChecked(isActive)
+            icon:SetTexture(isActiveStance and MegaMacroActiveStanceTexture or MegaMacroIconEvaluator.GetTextureFromCache(macroId))
+            return macroId
         end
-
-        return macroId
     end
 
     return nil
