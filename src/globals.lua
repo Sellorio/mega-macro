@@ -75,6 +75,7 @@ IsActionInRange = function(action) action._ = nil end -- returns: inRange (boole
 IsSpellInRange = function(index, bookType, target) bookType[index] = target end -- returns: inRange (boolean)
 IsItemInRange = function(itemID, target) itemID._ = target end -- returns: inRange (boolean)
 FindSpellBookSlotBySpellID = function(spellID) spellID._ = nil end -- returns: index
+GetItemSpell = function(itemIdOrName) itemIdOrName._ = nil end -- returns: spellName, spellID
 
 MegaMacro_Frame = {}
 MegaMacro_ButtonContainer = {}

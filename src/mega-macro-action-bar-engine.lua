@@ -152,6 +152,11 @@ local function IsUsableActionWrapper(original, action)
 
                 local itemId = GetItemInfoInstant(abilityName)
                 if itemId then
+                    _, spellId = GetItemSpell(itemId)
+                    if spellId then
+                        return IsUsableSpell(spellId)
+                    end
+
                     return IsUsableItem(itemId)
                 end
             end
