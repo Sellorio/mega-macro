@@ -97,6 +97,11 @@ local function GetActionCountWrapper(original, action)
             local abilityName = MegaMacroIconEvaluator.GetSpellFromCache(macroId)
 
             if abilityName then
+                local spellId = select(7, GetSpellInfo(abilityName))
+                if spellId then
+                    return GetSpellCount(spellId)
+                end
+
                 local itemId = GetItemInfoInstant(abilityName)
                 if itemId then
                     return GetItemCount(itemId) or 0
