@@ -1,7 +1,7 @@
 ## Interface: 80300
-## Title: Mega Macro ALPHA
+## Title: Mega Macro (Release Candidate)
 ## Author: Sellorio
-## Version: 0.1
+## Version: 1.0.0-rc
 
 ## SavedVariables: MegaMacroConfig, MegaMacroGlobalData
 ## SavedVariablesPerCharacter: MegaMacroCharacterData
