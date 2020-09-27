@@ -260,7 +260,7 @@ function MegaMacroActionBarEngine.SetIconBasedOnAction(button, icon, action)
                 if spellId then
                     local shapeshiftFormIndex = GetShapeshiftForm()
                     if shapeshiftFormIndex and shapeshiftFormIndex > 0 then
-                        if select(2, GetShapeshiftFormInfo(shapeshiftFormIndex)) then
+                        if spellId == select(4, GetShapeshiftFormInfo(shapeshiftFormIndex)) then
                             isActive = true
                             isActiveStance = true
                         end
