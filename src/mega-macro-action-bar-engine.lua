@@ -256,12 +256,17 @@ function MegaMacroActionBarEngine.SetIconBasedOnAction(button, icon, action)
             local isActiveStance = false
 
             if abilityName then
-                if contains(MegaMacroStanceAbilities, string.lower(abilityName)) and PlayerHasBuff(abilityName) then
-                    isActive = true
-                    isActiveStance = true
-                else
-                    local spellId = select(7, GetSpellInfo(abilityName))
-                    if spellId and IsCurrentSpell(spellId) then
+                local spellId = select(7, GetSpellInfo(abilityName))
+                if spellId then
+                    local shapeshiftFormIndex = GetShapeshiftForm()
+                    if shapeshiftFormIndex and shapeshiftFormIndex > 0 then
+                        if select(2, GetShapeshiftFormInfo(shapeshiftFormIndex)) then
+                            isActive = true
+                            isActiveStance = true
+                        end
+                    end
+
+                    if not isActive and IsCurrentSpell(spellId) then
                         isActive = true
                     end
                 end

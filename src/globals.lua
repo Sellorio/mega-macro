@@ -68,6 +68,7 @@ GetSpellCount = function(spellID) spellID._ = nil end -- returns: count
 IsCurrentSpell = function(spellID) spellID._ = nil end
 IsCurrentAction = function(action) action._ = nil end
 GetShapeshiftForm = function(flag) flag._ = nil end
+GetShapeshiftFormInfo = function(index) index._ = nil end -- returns: icon, active, castable, spellID
 UnitBuff = function(unit, buffIndexOrName, filter) unit[buffIndexOrName] = filter end -- returns: name, rank, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, shouldConsolidate, spellId
 IsUsableSpell = function(spellID) spellID._ = nil end -- returns: usable, noMana
 IsUsableAction = function(action) action._ = nil end -- returns: usable, noMana
