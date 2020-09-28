@@ -211,6 +211,8 @@ MegaMacroActionBarEngine = {}
 function MegaMacroActionBarEngine.Initialize()
     if _G["BT4Button1"] then
         ActionBarProvider = MegaMacroBartender4ActionBarProvider
+    elseif _G["ElvUI_Bar1Button1"] then
+        ActionBarProvider = MegaMacroElvUIActionBarProvider
     else
         ActionBarProvider = MegaMacroNativeUIActionBarProvider
     end

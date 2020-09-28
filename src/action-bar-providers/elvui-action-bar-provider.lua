@@ -19,25 +19,27 @@ local function ShowTooltipForButton(action)
     end
 end
 
-MegaMacroBartender4ActionBarProvider = {}
+MegaMacroElvUIActionBarProvider = {}
 
-function MegaMacroBartender4ActionBarProvider.Initialize()
-	LibActionButton = LibStub("LibActionButton-1.0")
+function MegaMacroElvUIActionBarProvider.Initialize()
+	LibActionButton = LibStub("LibActionButton-1.0-ElvUI")
 end
 
-function MegaMacroBartender4ActionBarProvider.Update()
+function MegaMacroElvUIActionBarProvider.Update()
     local focus = GetMouseFocus()
 
-    for i=1, 120 do
-        local buttonName = "BT4Button"..i
-        local button = _G[buttonName]
+    for i=1, 10 do
+        for j=1, 12 do
+            local buttonName = "ElvUI_Bar"..i.."Button"..j
+            local button = _G[buttonName]
 
-        if button then
-            local action = ActionButton_CalculateAction(button)
-            MegaMacroActionBarEngine.SetIconBasedOnAction(button, button.icon, action)
+            if button then
+                local action = ActionButton_CalculateAction(button)
+                MegaMacroActionBarEngine.SetIconBasedOnAction(button, button.icon, action)
 
-            if focus == button then
-                ShowTooltipForButton(action)
+                if focus == button then
+                    ShowTooltipForButton(action)
+                end
             end
         end
 	end

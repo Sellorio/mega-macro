@@ -2,6 +2,7 @@
 ## Title: Mega Macro (Release Candidate)
 ## Author: Sellorio
 ## Version: 1.0.0-rc
+## OptionalDeps: ElvUI
 
 ## SavedVariables: MegaMacroConfig, MegaMacroGlobalData
 ## SavedVariablesPerCharacter: MegaMacroCharacterData
@@ -19,5 +20,6 @@ src/windows/mega-macro.window.lua
 
 src/action-bar-providers/native-ui-action-bar-provider.lua
 src/action-bar-providers/bartender4-action-bar-provider.lua
+src/action-bar-providers/elvui-action-bar-provider.lua
 
 src/main.lua
