@@ -63,7 +63,7 @@ local function ParseWord(parsingContext)
     local word = ""
 
     local character = Char(parsingContext.Code, parsingContext.Index)
-    while string.match(character, "[a-z]") or string.match(character, "[A-Z]") or string.match(character, "[0-9]") or character == "_" do
+    while character and (string.match(character, "[a-z]") or string.match(character, "[A-Z]") or string.match(character, "[0-9]") or character == "_") do
         word = word .. character
         result = true
         parsingContext.Index = parsingContext.Index + 1
@@ -124,6 +124,18 @@ local function ParseStopmacroCommand(parsingContext)
         })
 end
 
+local function ParsePetCommand(parsingContext, command)
+    local condition = trim(GrabRemainingLineCode(parsingContext))
+    print("Adding pet command code info item for '"..command.."' with conditions: "..condition.."TRUE")
+    table.insert(
+        CodeInfoCache[parsingContext.MacroId],
+        {
+            Type = "petcommand",
+            Body = condition.."TRUE",
+            Command = command
+        })
+end
+
 local function ParseCommand(parsingContext)
     local result = false
 
@@ -142,6 +154,22 @@ local function ParseCommand(parsingContext)
                 ParseCastsequenceCommand(parsingContext)
             elseif word == "stopmacro" then
                 ParseStopmacroCommand(parsingContext)
+            elseif word == "petattack" then
+                ParsePetCommand(parsingContext, "attack")
+            elseif word == "petassist" then
+                ParsePetCommand(parsingContext, "assist")
+            elseif word == "petpassive" then
+                ParsePetCommand(parsingContext, "passive")
+            elseif word == "petdefensive" then
+                ParsePetCommand(parsingContext, "defensive")
+            elseif word == "petfollow" then
+                ParsePetCommand(parsingContext, "follow")
+            elseif word == "petmoveto" then
+                ParsePetCommand(parsingContext, "moveto")
+            elseif word == "petstay" then
+                ParsePetCommand(parsingContext, "stay")
+            elseif word == "petdismiss" then
+                ParsePetCommand(parsingContext, "dismiss")
             end
         end
     end
@@ -207,6 +235,14 @@ local function AddFallbackAbility(macroId)
                 {
                     Type = "fallbackSequence",
                     Body = sequence
+                })
+            break
+        elseif codeInfo[i].Type == "petcommand" then
+            table.insert(
+                codeInfo,
+                {
+                    Type = "fallbackPetCommand",
+                    Body = codeInfo[i].Command
                 })
             break
         elseif codeInfo[i].Type == "stopmacro" then

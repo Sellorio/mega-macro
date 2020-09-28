@@ -8,6 +8,26 @@ local MacroIconCache = {} -- icon ids
 local MacroSpellCache = {} -- spell ids
 local MacroTargetCache = {} -- unit strings
 
+local function GetTextureFromPetCommand(command)
+    if command == "dismiss" then
+        return PetActionTextures.Dismiss
+    elseif command == "attack" then
+        return PetActionTextures.Attack
+    elseif command == "assist" then
+        return PetActionTextures.Assist
+    elseif command == "passive" then
+        return PetActionTextures.Passive
+    elseif command == "defensive" then
+        return PetActionTextures.Defensive
+    elseif command == "follow" then
+        return PetActionTextures.Follow
+    elseif command == "moveto" then
+        return PetActionTextures.MoveTo
+    elseif command == "stay" then
+        return PetActionTextures.Stay
+    end
+end
+
 local function IterateNextMacroInternal(nextScopeAttempts)
     LastMacroIndex = LastMacroIndex + 1
 
@@ -91,10 +111,19 @@ local function UpdateMacro(macro)
             if shouldStop == "TRUE" then
                 break
             end
+        elseif command.Type == "petcommand" then
+            local shouldRun = SecureCmdOptionParse(command.Body)
+            if shouldRun == "TRUE" then
+                icon = GetTextureFromPetCommand(command.Command)
+                if command.Command == "dismiss" then
+                    spellName = "Dismiss Pet"
+                end
+                break
+            end
         end
     end
 
-    if spellName == nil and codeInfoLength > 0 then
+    if spellName == nil and icon == MegaMacroTexture and codeInfoLength > 0 then
         if codeInfo[codeInfoLength].Type == "fallbackAbility" then
             local ability = codeInfo[codeInfoLength].Body
             local texture = GetIconFromAbility(ability)
@@ -111,6 +140,8 @@ local function UpdateMacro(macro)
                 icon = texture
                 spellName = ability
             end
+        elseif codeInfo[codeInfoLength].Type == "fallbackPetCommand" then
+            icon = GetTextureFromPetCommand(codeInfo[codeInfoLength].Body)
         end
     end
 

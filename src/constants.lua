@@ -27,6 +27,17 @@ MegaMacroScopes = {
     CharacterSpecialization = "cs"
 }
 
+PetActionTextures = {
+	Attack = 132152,
+	Assist = 524348,
+	Passive = 132311,
+	Defensive = 132110,
+	Follow = 132328,
+	MoveTo = 457329,
+	Stay = 136106,
+	Dismiss = 136095
+}
+
 MegaMacroTexture = 134400
 MegaMacroActiveStanceTexture = 136116
 MegaMacroCodeMaxLength = 1023
