@@ -10,6 +10,9 @@
 		</Scripts>
 	</CheckButton>
 	<CheckButton name="MegaMacro_PopupButtonTemplate" inherits="SimplePopupButtonTemplate" virtual="true">
+		<Scripts>
+			<OnClick>MegaMacro_PopupButton_OnClick(self);</OnClick>
+		</Scripts>
 		<NormalTexture name="$parentIcon" nonBlocking="true">
 			<Size x="36" y="36"/>
 			<Anchors>
@@ -140,13 +143,13 @@
 					</Frame>
 				</ScrollChild>
 			</ScrollFrame>
-			<Button name="MegaMacro_RenameButton" frameStrata="HIGH" inherits="UIPanelButtonTemplate" text="Rename">
-				<Size x="65" y="22"/>
+			<Button name="MegaMacro_EditButton" frameStrata="HIGH" inherits="UIPanelButtonTemplate" text="Edit">
+				<Size x="50" y="22"/>
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeTo="MegaMacro_FrameSelectedMacroBackground" x="55" y="-32"/>
 				</Anchors>
 				<Scripts>
-					<OnClick>MegaMacro_RenameButton_OnClick();</OnClick>
+					<OnClick>MegaMacro_EditButton_OnClick();</OnClick>
 				</Scripts>
 			</Button>
 			<ScrollFrame name="MegaMacro_FrameScrollFrame" inherits="UIPanelScrollFrameTemplate">
@@ -337,6 +340,9 @@
 		</Scripts>
 	</Frame>
 	<Frame name="MegaMacro_PopupFrame" toplevel="true" frameStrata="HIGH" parent="UIParent" movable="true" enableMouse="true" hidden="true">
+		<Scripts>
+			<OnUpdate>MegaMacro_PopupFrame_OnUpdate();</OnUpdate>
+		</Scripts>
 		<Size x="525" y="495"/>
 		<Anchors>
 			<Anchor point="TOPLEFT" relativeTo="MegaMacro_Frame" relativePoint="TOPRIGHT" x="0" y="0"/>
@@ -419,6 +425,9 @@
 				<Anchors>
 					<Anchor point="TOPRIGHT" relativeTo="MegaMacro_PopupFrame" relativePoint="TOPRIGHT" x="-36" y="-70"/>
 				</Anchors>
+				<Scripts>
+					<OnVerticalScroll>FauxScrollFrame_OnVerticalScroll(self, offset, MACRO_ICON_ROW_HEIGHT, MacroPopupFrame_Update);</OnVerticalScroll>
+				</Scripts>
 			</ScrollFrame>
 		</Frames>
 	</Frame>

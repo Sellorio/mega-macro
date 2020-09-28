@@ -91,7 +91,7 @@ MegaMacro_ButtonScrollFrame = {}
 MegaMacro_CancelButton = {}
 MegaMacro_FrameCharLimitText = {}
 MegaMacro_PopupEditBox = {}
-MegaMacro_RenameButton = {}
+MegaMacro_EditButton = {}
 MegaMacro_DeleteButton = {}
 
 C_ToyBox = {

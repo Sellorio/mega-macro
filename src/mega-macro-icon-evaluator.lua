@@ -69,32 +69,19 @@ local function GetIconFromAbility(ability)
 end
 
 local function UpdateMacro(macro)
-    local icon = MegaMacroTexture
+    local icon = macro.StaticTexture or MegaMacroTexture
     local spellName = nil
     local target = nil
 
-    local codeInfo = MegaMacroCodeInfo.Get(macro)
-    local codeInfoLength = #codeInfo
+    if icon == MegaMacroTexture then
+        local codeInfo = MegaMacroCodeInfo.Get(macro)
+        local codeInfoLength = #codeInfo
 
-    for i=1, codeInfoLength do
-        local command = codeInfo[i]
+        for i=1, codeInfoLength do
+            local command = codeInfo[i]
 
-        if command.Type == "showtooltip" or command.Type == "use" or command.Type == "cast" then
-            local ability, tar = SecureCmdOptionParse(command.Body)
-
-            if ability ~= nil then
-                local texture = GetIconFromAbility(ability) or MegaMacroTexture
-                icon = texture
-                spellName = ability
-                target = tar
-                break
-            end
-        elseif command.Type == "castsequence" then
-            local sequenceCode, tar = SecureCmdOptionParse(command.Body)
-
-            if sequenceCode ~= nil then
-                local _, item, spell = QueryCastSequence(sequenceCode)
-                local ability = item or spell
+            if command.Type == "showtooltip" or command.Type == "use" or command.Type == "cast" then
+                local ability, tar = SecureCmdOptionParse(command.Body)
 
                 if ability ~= nil then
                     local texture = GetIconFromAbility(ability) or MegaMacroTexture
@@ -103,45 +90,60 @@ local function UpdateMacro(macro)
                     target = tar
                     break
                 end
+            elseif command.Type == "castsequence" then
+                local sequenceCode, tar = SecureCmdOptionParse(command.Body)
 
-                break
-            end
-        elseif command.Type == "stopmacro" then
-            local shouldStop = SecureCmdOptionParse(command.Body)
-            if shouldStop == "TRUE" then
-                break
-            end
-        elseif command.Type == "petcommand" then
-            local shouldRun = SecureCmdOptionParse(command.Body)
-            if shouldRun == "TRUE" then
-                icon = GetTextureFromPetCommand(command.Command)
-                if command.Command == "dismiss" then
-                    spellName = "Dismiss Pet"
+                if sequenceCode ~= nil then
+                    local _, item, spell = QueryCastSequence(sequenceCode)
+                    local ability = item or spell
+
+                    if ability ~= nil then
+                        local texture = GetIconFromAbility(ability) or MegaMacroTexture
+                        icon = texture
+                        spellName = ability
+                        target = tar
+                        break
+                    end
+
+                    break
                 end
-                break
+            elseif command.Type == "stopmacro" then
+                local shouldStop = SecureCmdOptionParse(command.Body)
+                if shouldStop == "TRUE" then
+                    break
+                end
+            elseif command.Type == "petcommand" then
+                local shouldRun = SecureCmdOptionParse(command.Body)
+                if shouldRun == "TRUE" then
+                    icon = GetTextureFromPetCommand(command.Command)
+                    if command.Command == "dismiss" then
+                        spellName = "Dismiss Pet"
+                    end
+                    break
+                end
             end
         end
-    end
 
-    if spellName == nil and icon == MegaMacroTexture and codeInfoLength > 0 then
-        if codeInfo[codeInfoLength].Type == "fallbackAbility" then
-            local ability = codeInfo[codeInfoLength].Body
-            local texture = GetIconFromAbility(ability)
+        if spellName == nil and icon == MegaMacroTexture and codeInfoLength > 0 then
+            if codeInfo[codeInfoLength].Type == "fallbackAbility" then
+                local ability = codeInfo[codeInfoLength].Body
+                local texture = GetIconFromAbility(ability)
 
-            if texture ~= nil then
-                icon = texture
-                spellName = ability
+                if texture ~= nil then
+                    icon = texture
+                    spellName = ability
+                end
+            elseif codeInfo[codeInfoLength].Type == "fallbackSequence" then
+                local ability = QueryCastSequence(codeInfo[codeInfoLength].Body)
+                local texture = GetIconFromAbility(ability)
+
+                if texture ~= nil then
+                    icon = texture
+                    spellName = ability
+                end
+            elseif codeInfo[codeInfoLength].Type == "fallbackPetCommand" then
+                icon = GetTextureFromPetCommand(codeInfo[codeInfoLength].Body)
             end
-        elseif codeInfo[codeInfoLength].Type == "fallbackSequence" then
-            local ability = QueryCastSequence(codeInfo[codeInfoLength].Body)
-            local texture = GetIconFromAbility(ability)
-
-            if texture ~= nil then
-                icon = texture
-                spellName = ability
-            end
-        elseif codeInfo[codeInfoLength].Type == "fallbackPetCommand" then
-            icon = GetTextureFromPetCommand(codeInfo[codeInfoLength].Body)
         end
     end
 

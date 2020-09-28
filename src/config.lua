@@ -5,11 +5,6 @@ function MegaMacro_InitialiseConfig()
             Macros = {},
             Classes = {}
         }
-
-        local testMacro1 = MegaMacro.Create("Test Macro", MegaMacroScopes.Global)
-        testMacro1.Code = "#showtooltip\n/cast [combat] Shadowmeld\n"
-        local testMacro2 = MegaMacro.Create("Test Macro 2", MegaMacroScopes.Global)
-        testMacro2.Code = "#showtooltip\n/cast Immolation Aura\n"
     end
 
     if MegaMacroCharacterData == nil then

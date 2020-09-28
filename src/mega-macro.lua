@@ -32,7 +32,7 @@ end
 
 MegaMacro = {}
 
-function MegaMacro.Create(displayName, scope)
+function MegaMacro.Create(displayName, scope, staticTexture)
     local result = {}
 
     local id
@@ -117,6 +117,7 @@ function MegaMacro.Create(displayName, scope)
     result.ScopedIndex = scopedIndex
     result.DisplayName = displayName
     result.Code = ""
+    result.StaticTexture = staticTexture
 
     MegaMacroEngine.OnMacroCreated(result)
 
@@ -168,9 +169,11 @@ function MegaMacro.GetById(macroId)
     return nil
 end
 
-function MegaMacro.Rename(self, displayName)
+function MegaMacro.UpdateDetails(self, displayName, staticTexture)
     self.DisplayName = displayName
+    self.StaticTexture = staticTexture
     MegaMacroEngine.OnMacroRenamed(self)
+    MegaMacroIconEvaluator.UpdateMacro(self)
 end
 
 function MegaMacro.UpdateCode(self, code)

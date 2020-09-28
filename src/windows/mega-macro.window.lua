@@ -5,7 +5,7 @@ local rendering = {
 
 local PopupModes = {
 	New = 0,
-	Rename = 1
+	Edit = 1
 }
 
 local IsOpen = false
@@ -13,6 +13,9 @@ local SelectedScope = MegaMacroScopes.Global
 local MacroItems = {}
 local SelectedMacro = nil
 local PopupMode = nil
+local IconListInitialized = false
+local SelectedIcon = nil
+local IconList = {}
 
 NUM_ICONS_PER_ROW = 10
 NUM_ICON_ROWS = 9
@@ -38,6 +41,66 @@ local function CreateMacroSlotFrames()
 		else
 			button:SetPoint("LEFT", "MegaMacro_MacroButton"..(i-1), "RIGHT", 13, 0)
 		end
+	end
+end
+
+function LoadIcons()
+	-- We need to avoid adding duplicate spellIDs from the spellbook tabs for your other specs.
+	local activeIcons = {};
+
+	for i = 1, GetNumSpellTabs() do
+		local tab, tabTex, offset, numSpells, _ = GetSpellTabInfo(i);
+		offset = offset + 1;
+		local tabEnd = offset + numSpells;
+		for j = offset, tabEnd - 1 do
+			--to get spell info by slot, you have to pass in a pet argument
+			local spellType, ID = GetSpellBookItemInfo(j, "player"); 
+			if (spellType ~= "FUTURESPELL") then
+				local fileID = GetSpellBookItemTexture(j, "player");
+				if (fileID) then
+					activeIcons[fileID] = true;
+				end
+			end
+			if (spellType == "FLYOUT") then
+				local _, _, numSlots, isKnown = GetFlyoutInfo(ID);
+				if (isKnown and numSlots > 0) then
+					for k = 1, numSlots do 
+						local spellID, overrideSpellID, isKnown = GetFlyoutSlotInfo(ID, k)
+						if (isKnown) then
+							local fileID = GetSpellTexture(spellID);
+							if (fileID) then
+								activeIcons[fileID] = true;
+							end
+						end
+					end
+				end
+			end
+		end
+	end
+
+	IconList = { MegaMacroTexture };
+	for fileDataID in pairs(activeIcons) do
+		IconList[#IconList + 1] = fileDataID;
+	end
+
+	GetLooseMacroIcons(IconList);
+	GetLooseMacroItemIcons(IconList);
+	GetMacroIcons(IconList);
+	GetMacroItemIcons(IconList);
+
+	local iconListLength = #IconList
+	for i=1, iconListLength do
+		if type(IconList[i]) ~= "number" then
+			IconList[i] = "INTERFACE\\ICONS\\"..IconList[i]
+		end
+	end
+end
+
+local function InitializeIconListPanel()
+	if not IconListInitialized then
+		BuildIconArray(MegaMacro_PopupFrame, "MegaMacro_PopupButton", "MegaMacro_PopupButtonTemplate", NUM_ICONS_PER_ROW, NUM_ICON_ROWS)
+		LoadIcons()
+		IconListInitialized = true
 	end
 end
 
@@ -83,6 +146,38 @@ local function SaveMacro()
 	MegaMacro_SaveButton:Disable()
 end
 
+local function RefreshSelectedMacroIcon()
+	local displayedTexture = ""
+
+	if SelectedMacro then
+		if SelectedIcon == MegaMacroTexture then
+			displayedTexture = MegaMacroIconEvaluator.GetTextureFromCache(SelectedMacro.Id) or MegaMacroTexture
+		else
+			displayedTexture = SelectedIcon
+		end
+	end
+
+	MegaMacro_FrameSelectedMacroButtonIcon:SetTexture(displayedTexture)
+end
+
+local function SelectIcon(texture)
+	SelectedIcon = texture or MegaMacroTexture
+	RefreshSelectedMacroIcon()
+
+	local i = 1
+	while true do
+		local iconButton = _G["MegaMacro_PopupButton"..i]
+		local iconButtonIcon = _G["MegaMacro_PopupButton"..i.."Icon"]
+
+		if not iconButton then
+			break
+		end
+
+		iconButton:SetChecked(SelectedIcon == iconButtonIcon:GetTexture())
+		i = i + 1
+	end
+end
+
 local function SelectMacro(macro)
 	SaveMacro()
 	SelectedMacro = nil
@@ -90,7 +185,7 @@ local function SelectMacro(macro)
 	MegaMacro_FrameSelectedMacroName:SetText("")
 	MegaMacro_FrameSelectedMacroButtonIcon:SetTexture("")
 	MegaMacro_FrameText:SetText("")
-	MegaMacro_RenameButton:Disable();
+	MegaMacro_EditButton:Disable();
 	MegaMacro_DeleteButton:Disable();
 	MegaMacro_SaveButton:Disable()
 	MegaMacro_CancelButton:Disable()
@@ -105,7 +200,7 @@ local function SelectMacro(macro)
 			MegaMacro_FrameSelectedMacroName:SetText(macro.DisplayName)
 			MegaMacro_FrameSelectedMacroButtonIcon:SetTexture(buttonIcon:GetTexture())
 			MegaMacro_FrameText:SetText(macro.Code)
-			MegaMacro_RenameButton:Enable();
+			MegaMacro_EditButton:Enable();
 			MegaMacro_DeleteButton:Enable();
 			MegaMacro_FrameText:Enable()
 		else
@@ -113,6 +208,7 @@ local function SelectMacro(macro)
 		end
 	end
 
+	SelectIcon(macro and macro.StaticTexture)
 end
 
 local function SetMacroItems()
@@ -211,7 +307,7 @@ MegaMacroWindow = {
 function MegaMacro_OnIconUpdated(macroId, texture)
 	if IsOpen then
 		if SelectedMacro and SelectedMacro.Id == macroId then
-			MegaMacro_FrameSelectedMacroButtonIcon:SetTexture(texture)
+			RefreshSelectedMacroIcon()
 		end
 
 		local macroItemsLength = #MacroItems
@@ -239,6 +335,7 @@ end
 function MegaMacro_Window_OnShow()
 	IsOpen = true
 	InitializeTabTitles()
+	InitializeIconListPanel()
 end
 
 function MegaMacro_Window_OnHide()
@@ -353,11 +450,11 @@ function MegaMacro_SaveButton_OnClick()
 	MegaMacro_FrameText:ClearFocus()
 end
 
-function MegaMacro_RenameButton_OnClick()
+function MegaMacro_EditButton_OnClick()
 	if SelectedMacro ~= nil then
 		MegaMacro_PopupEditBox:SetText(SelectedMacro.DisplayName)
 		MegaMacro_PopupFrame:Show()
-		PopupMode = PopupModes.Rename
+		PopupMode = PopupModes.Edit
 	end
 end
 
@@ -371,13 +468,13 @@ end
 function MegaMacro_EditOkButton_OnClick()
 	local enteredText = MegaMacro_PopupEditBox:GetText()
 
-	if PopupMode == PopupModes.Rename and SelectedMacro ~= nil then
+	if PopupMode == PopupModes.Edit and SelectedMacro ~= nil then
 		local selectedMacro = SelectedMacro
-		MegaMacro.Rename(SelectedMacro, enteredText)
+		MegaMacro.UpdateDetails(SelectedMacro, enteredText, SelectedIcon)
 		SetMacroItems()
 		SelectMacro(selectedMacro)
 	elseif PopupMode == PopupModes.New then
-		local createdMacro = MegaMacro.Create(enteredText, SelectedScope)
+		local createdMacro = MegaMacro.Create(enteredText, SelectedScope, SelectedIcon)
 		SetMacroItems()
 		SelectMacro(createdMacro)
 		MegaMacro_FrameText:SetFocus()
@@ -391,9 +488,43 @@ function MegaMacro_EditOkButton_OnClick_Wrapper()
 end
 
 function MegaMacro_EditCancelButton_OnClick()
+	SelectIcon(SelectedMacro.StaticTexture)
 	MegaMacro_PopupFrame:Hide()
 end
 
 function MegaMacro_EditCancelButton_OnClick_Wrapper()
 	MegaMacro_EditCancelButton_OnClick()
+end
+
+function MegaMacro_PopupFrame_OnUpdate()
+	local numMacroIcons = #IconList;
+	local macroPopupIcon, macroPopupButton;
+	local macroPopupOffset = FauxScrollFrame_GetOffset(MegaMacro_PopupScrollFrame);
+	local index;
+
+	-- Icon list
+	for i=1, NUM_MACRO_ICONS_SHOWN do
+		macroPopupButton = _G["MegaMacro_PopupButton"..i];
+		macroPopupIcon = _G["MegaMacro_PopupButton"..i.."Icon"];
+		index = (macroPopupOffset * NUM_ICONS_PER_ROW) + i;
+		local texture = IconList[i]
+
+		if index <= numMacroIcons and texture then
+			macroPopupIcon:SetTexture(texture);
+			macroPopupButton:Show();
+		else
+			macroPopupIcon:SetTexture("");
+			macroPopupButton:Hide();
+		end
+
+		macroPopupButton:SetChecked(SelectedIcon == texture)
+	end
+
+	-- Scrollbar stuff
+	FauxScrollFrame_Update(MegaMacro_PopupScrollFrame, ceil(numMacroIcons / NUM_ICONS_PER_ROW) + 1, NUM_ICON_ROWS, MACRO_ICON_ROW_HEIGHT );
+end
+
+function MegaMacro_PopupButton_OnClick(self)
+	local buttonIcon = _G[self:GetName().."Icon"]
+	SelectIcon(buttonIcon:GetTexture())
 end
