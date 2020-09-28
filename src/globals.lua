@@ -78,6 +78,7 @@ IsSpellInRange = function(index, bookType, target) bookType[index] = target end 
 IsItemInRange = function(itemID, target) itemID._ = target end -- returns: inRange (boolean)
 FindSpellBookSlotBySpellID = function(spellID) spellID._ = nil end -- returns: index
 GetItemSpell = function(itemIdOrName) itemIdOrName._ = nil end -- returns: spellName, spellID
+ShowMacroFrame = function() end
 
 MegaMacro_Frame = {}
 MegaMacro_ButtonContainer = {}

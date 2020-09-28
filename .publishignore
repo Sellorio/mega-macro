@@ -1,9 +1,7 @@
 .vscode\
 macro-backup\
 reference-code\
-scripts\depublish.bat
-scripts\publish.bat
-scripts\reset-data.bat
+scripts\
 .publishignore
 globals.lua
 README.md

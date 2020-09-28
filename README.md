@@ -6,7 +6,9 @@
 
 ## Features
 
-Use the `/mega` command to begin your new macro experience!
+Use the `/m` command to begin your new macro experience!
+
+Once macro import is complete, `/m` will only show the new macro UI.
 
 ### More macro slots!
 
@@ -93,8 +95,26 @@ To avoid this, follow the instructions below.
 
 ### When you install the AddOn
 
-Before you start the game, run the `backup-macros.bat` script in the AddOn folder.
+**Before you start the game**, you'll want to back up your macros. To do this:
+
+1. Windows + R (open the run dialog)
+2. Enter the following command:
+
+```
+robocopy "C:\Program Files (x86)\World of Warcraft\_retail_\WTF\Account" %USERPROFILE%\Games\wow-macro-backup macros-cache.txt /s
+```
+
+3. click OK
 
 ### When you want to remove the AddOn
 
-Run the `restore-macros.bat` script in the AddOn folder **after exiting the game**.
+Do the following steps **after exiting the game**.
+
+1. Windows + R (open the run dialog)
+2. Enter the following command:
+
+```
+xcopy /e /i /y %USERPROFILE%\Games\wow-macro-backup "C:\Program Files (x86)\World of Warcraft\_retail_\WTF\Account"
+```
+
+3. click OK

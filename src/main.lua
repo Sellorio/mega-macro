@@ -1,5 +1,6 @@
 MegaMacroCachedClass = nil
 MegaMacroCachedSpecialization = nil
+MegaMacroFullyActive = false
 
 local f = CreateFrame("Frame", "MegaMacro_EventFrame", UIParent)
 f:RegisterEvent("PLAYER_ENTERING_WORLD")
@@ -15,8 +16,15 @@ end
 local function Initialize()
     MegaMacro_InitialiseConfig()
 
-    SLASH_Mega1 = "/mega"
-    SlashCmdList["Mega"] = MegaMacroWindow.Show
+    SLASH_Mega1 = "/m"
+    SLASH_Mega2 = "/macro"
+    SlashCmdList["Mega"] = function()
+        MegaMacroWindow.Show()
+
+        if not MegaMacroFullyActive then
+            ShowMacroFrame()
+        end
+    end
 
     local specIndex = GetSpecialization()
     if specIndex then
@@ -26,6 +34,7 @@ local function Initialize()
         MegaMacroIconEvaluator.Initialize()
         MegaMacroActionBarEngine.Initialize()
         MegaMacroEngine.SafeInitialize()
+        MegaMacroFullyActive = MegaMacroGlobalData.Activated and MegaMacroCharacterData.Activated
         f:SetScript("OnUpdate", OnUpdate)
     end
 end
