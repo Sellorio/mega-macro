@@ -1,7 +1,7 @@
 ## Interface: 80300
-## Title: Mega Macro (Release Candidate)
+## Title: Mega Macro
 ## Author: Sellorio
-## Version: 1.0.0-rc
+## Version: 1.0.0
 ## OptionalDeps: ElvUI
 
 ## SavedVariables: MegaMacroConfig, MegaMacroGlobalData
