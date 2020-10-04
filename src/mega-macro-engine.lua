@@ -45,8 +45,8 @@ local function TryImportGlobalMacros()
     end
 
     for i=1, numberOfGlobalMacros do
-        local name, texture, body, _ = MegaMacroApiOverrides.Original.GetMacroInfo(i)
-        local macro = MegaMacro.Create(name, MegaMacroScopes.Global, texture)
+        local name, _, body, _ = MegaMacroApiOverrides.Original.GetMacroInfo(i)
+        local macro = MegaMacro.Create(name, MegaMacroScopes.Global, MegaMacroTexture)
 
         if macro == nil then
             return
@@ -78,8 +78,8 @@ local function TryImportCharacterMacros()
     end
 
     for i=1, numberOfCharacterMacros do
-        local name, texture, body, _ = MegaMacroApiOverrides.Original.GetMacroInfo(i + MacroIndexOffsets.NativeCharacterMacros)
-        local macro = MegaMacro.Create(name, MegaMacroScopes.Character, texture)
+        local name, _, body, _ = MegaMacroApiOverrides.Original.GetMacroInfo(i + MacroIndexOffsets.NativeCharacterMacros)
+        local macro = MegaMacro.Create(name, MegaMacroScopes.Character, MegaMacroTexture)
 
         if macro == nil then
             return
