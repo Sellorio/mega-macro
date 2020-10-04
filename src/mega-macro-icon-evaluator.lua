@@ -52,7 +52,7 @@ local function IterateNextMacroInternal(nextScopeAttempts)
         LastMacroIndex = 0
         LastMacroList = MegaMacro.GetMacrosInScope(LastMacroScope)
 
-        return IterateNextMacroInternal(nextScopeAttempts)
+        return IterateNextMacroInternal(nextScopeAttempts + 1)
     end
 
     return true
