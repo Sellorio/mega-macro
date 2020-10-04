@@ -10,7 +10,8 @@ MegaMacroApiOverrides = {
         IsUsableAction = IsUsableAction,
         IsActionInRange = IsActionInRange,
         PickupAction = PickupAction,
-        IsEquippedAction = IsEquippedAction
+        IsEquippedAction = IsEquippedAction,
+        IsCurrentAction = IsCurrentAction
     }
 }
 
@@ -236,6 +237,32 @@ function IsEquippedAction(action)
     end
 
     return MegaMacroApiOverrides.Original.IsEquippedAction(action)
+end
+
+function IsCurrentAction(action)
+    local type, id = GetActionInfo(action)
+
+    if type == "macro" then
+        local spellId = GetMacroSpell(id)
+        if spellId then
+            local isActive = IsCurrentSpell(spellId)
+
+            if not isActive then
+                local shapeshiftFormIndex = GetShapeshiftForm()
+                if shapeshiftFormIndex and shapeshiftFormIndex > 0 and spellId == select(4, GetShapeshiftFormInfo(shapeshiftFormIndex)) then
+                    isActive = true
+                end
+            end
+
+            return isActive
+        end
+        local itemId = GetMacroItem(id)
+        if itemId then
+            return IsCurrentItem(itemId)
+        end
+    end
+
+    return MegaMacroApiOverrides.Original.IsCurrentAction(action)
 end
 
 local OriginalGameToolTipSetAction = GameTooltip.SetAction

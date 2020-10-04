@@ -66,6 +66,7 @@ GetSpellCharges = function(spellID) spellID._ = nil end -- returns: charges, max
 GetItemCount = function(itemID) itemID._ = nil end -- returns: count
 GetSpellCount = function(spellID) spellID._ = nil end -- returns: count
 IsCurrentSpell = function(spellID) spellID._ = nil end
+IsCurrentItem = function(itemID) itemID._ = nil end
 IsCurrentAction = function(action) action._ = nil end
 GetShapeshiftForm = function(flag) flag._ = nil end
 GetShapeshiftFormInfo = function(index) index._ = nil end -- returns: icon, active, castable, spellID
