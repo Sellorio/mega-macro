@@ -1,7 +1,8 @@
-function ShowToolTipForMegaMacro(macro)
+function ShowToolTipForMegaMacro(macroId)
+	GameTooltip:Hide()
 	GameTooltip_SetDefaultAnchor(GameTooltip, UIParent)
 
-	local abilityName = MegaMacroIconEvaluator.GetSpellFromCache(macro.Id)
+	local abilityName = MegaMacroIconEvaluator.GetSpellFromCache(macroId)
 
 	if abilityName then
 		local spellId = select(7, GetSpellInfo(abilityName))

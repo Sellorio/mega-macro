@@ -261,10 +261,10 @@ local function UpdateTooltipIfButtonIsHovered(updatedMacroId)
 				local macro = _G[focusFrame].Macro
 
 				if macro and macro.Id == updatedMacroId then
-					ShowToolTipForMegaMacro(macro)
+					ShowToolTipForMegaMacro(macro.Id)
 				end
 			elseif focusFrame == "MegaMacro_FrameSelectedMacroButton" and SelectedMacro and SelectedMacro.Id == updatedMacroId then
-				ShowToolTipForMegaMacro(SelectedMacro)
+				ShowToolTipForMegaMacro(SelectedMacro.Id)
 			end
 		end
 	end
@@ -378,7 +378,7 @@ end
 
 function MegaMacro_MacroButton_OnEnter(self)
 	if self.Macro then
-		ShowToolTipForMegaMacro(self.Macro)
+		ShowToolTipForMegaMacro(self.Macro.Id)
 	end
 end
 
@@ -394,7 +394,7 @@ end
 
 function MegaMacro_FrameSelectedMacroButton_OnEnter()
 	if SelectedMacro then
-		ShowToolTipForMegaMacro(SelectedMacro)
+		ShowToolTipForMegaMacro(SelectedMacro.Id)
 	end
 end
 

@@ -80,6 +80,14 @@ FindSpellBookSlotBySpellID = function(spellID) spellID._ = nil end -- returns: i
 GetItemSpell = function(itemIdOrName) itemIdOrName._ = nil end -- returns: spellName, spellID
 ShowMacroFrame = function() end
 GetInventoryItemID = function(unit, slotId) unit._ = slotId end
+GetMacroSpell = function(macroNameOrIndex) macroNameOrIndex._ = nil end -- returns: spellID
+GetMacroIndexByName = function(macroName) macroName._ = nil end -- returns: macroIndex
+GetActionCooldown = function(action) action._ = nil end -- returns: start, duration, enable
+GetActionCount = function(action) action._ = nil end -- returns: count
+GetActionTexture = function(action) action._ = nil end -- returns: texture
+GetActionCharges = function(action) action._ = nil end -- returns: charges, maxCharges, chargeStart, chargeDuration, chargeModRate
+IsEquippedAction = function(action) action._ = nil end -- returns: isEquipped
+IsEquippedItem = function(itemID) itemID._ = nil end -- returns: isEquipped
 
 MegaMacro_Frame = {}
 MegaMacro_ButtonContainer = {}
