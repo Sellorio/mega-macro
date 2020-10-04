@@ -53,19 +53,14 @@ local function UpdateActionBar(button)
 	end
 end
 
--- required overrides
--- IsEquippedAction
--- 
-
 MegaMacroActionBarEngine = {}
 
 function MegaMacroActionBarEngine.Initialize()
-    if _G["BT4Button1"] or _G["ElvUI_Bar1Button1"] then
+    if _G["BT4Button1"] then
         LibActionButton = LibStub("LibActionButton-1.0")
+    elseif _G["ElvUI_Bar1Button1"] then
+        LibActionButton = LibStub("LibActionButton-1.0-ElvUI")
     end
-
-    -- local Original_ActionButton_SetTooltip = ActionButton_SetTooltip
-    -- ActionButton_SetTooltip = function(self) ActionBarSetTooltipWrapper(Original_ActionButton_SetTooltip, self) end
 
     MegaMacroIconEvaluator.OnIconUpdated(function()
         TriggerUpdate = true
