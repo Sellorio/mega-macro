@@ -1,6 +1,5 @@
 local LibActionButton = nil
 local BoundMacroButtons = {}
-local TriggerUpdate = false
 
 -- local function ActionBarSetTooltipWrapper(original, self)
 --     original(self)
@@ -61,35 +60,28 @@ function MegaMacroActionBarEngine.Initialize()
     elseif _G["ElvUI_Bar1Button1"] then
         LibActionButton = LibStub("LibActionButton-1.0-ElvUI")
     end
-
-    MegaMacroIconEvaluator.OnIconUpdated(function()
-        TriggerUpdate = true
-    end)
 end
 
 function MegaMacroActionBarEngine.OnUpdate()
-    if TriggerUpdate then
-        if LibActionButton then
-            local libActionButtonOnEvent = LibActionButton.eventFrame:GetScript("OnEvent")
-            libActionButtonOnEvent(LibActionButton.eventFrame, "PLAYER_ENTERING_WORLD", nil)
-        else
-            for _, button in pairs(BoundMacroButtons) do
-                UpdateActionBar(button)
-            end
+    if LibActionButton then
+        local libActionButtonOnEvent = LibActionButton.eventFrame:GetScript("OnEvent")
+        libActionButtonOnEvent(LibActionButton.eventFrame, "PLAYER_ENTERING_WORLD", nil)
+    else
+        for _, button in pairs(BoundMacroButtons) do
+            UpdateActionBar(button)
         end
+    end
 
-        local focus = GetMouseFocus()
-        if focus and focus.action then
-            local action = focus.action == 0 and ActionButton_CalculateAction(focus) or focus.action
-            local type, id = GetActionInfo(action)
-            if type == "macro" then
-                local macroId = MegaMacroEngine.GetMacroIdFromIndex(id)
-                if macroId then
-                    ShowToolTipForMegaMacro(macroId)
-                end
+    local focus = GetMouseFocus()
+    if focus and focus.action then
+        local action = focus.action == 0 and ActionButton_CalculateAction(focus) or focus.action
+        local type, id = GetActionInfo(action)
+        if type == "macro" then
+            local macroId = MegaMacroEngine.GetMacroIdFromIndex(id)
+            if macroId then
+                ShowToolTipForMegaMacro(macroId)
             end
         end
-        TriggerUpdate = false
     end
 end
 
