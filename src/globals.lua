@@ -89,6 +89,8 @@ GetActionTexture = function(action) action._ = nil end -- returns: texture
 GetActionCharges = function(action) action._ = nil end -- returns: charges, maxCharges, chargeStart, chargeDuration, chargeModRate
 IsEquippedAction = function(action) action._ = nil end -- returns: isEquipped
 IsEquippedItem = function(itemID) itemID._ = nil end -- returns: isEquipped
+PutItemInBackpack = function() end
+ClearCursor = function() end
 
 MegaMacro_Frame = {}
 MegaMacro_ButtonContainer = {}

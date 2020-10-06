@@ -283,6 +283,17 @@ function MegaMacroEngine.OnMacroUpdated(macro)
 end
 
 function MegaMacroEngine.OnMacroDeleted(macro)
+    -- unbind the macro from any action bar slots its bound to
+    if not InCombatLockdown() then
+        for i=1, 120 do
+            local type, id = GetActionInfo(i)
+            if type == "macro" and MegaMacroEngine.GetMacroIdFromIndex(id) == macro.Id then
+                PickupAction(i)
+                ClearCursor()
+            end
+        end
+    end
+
     UnbindMacro(macro)
 end
 
