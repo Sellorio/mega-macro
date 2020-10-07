@@ -37,7 +37,7 @@ local function GetMegaMacroSpell(macroId)
         end
 
         local itemId = GetItemInfoInstant(abilityName)
-        if itemId and IsEquippedItem(itemId) then
+        if itemId and (IsEquippedItem(itemId) or C_ToyBox.GetToyInfo(itemId)) then
             _, spellId = GetItemSpell(itemId)
             if spellId then
                 return spellId
