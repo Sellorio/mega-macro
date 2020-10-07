@@ -94,15 +94,25 @@ local function TryImportCharacterMacros()
     return true
 end
 
+local function GetMacroStubCode(macroId)
+    return
+        GenerateIdPrefix(macroId).."\n"..
+        "/click [btn:1] "..ClickyFrameName..macroId.."\n"..
+        "/click [btn:2] "..ClickyFrameName..macroId.." RightButton\n"..
+        "/click [btn:3] "..ClickyFrameName..macroId.." MiddleButton\n"..
+        "/click [btn:4] "..ClickyFrameName..macroId.." Button4\n"..
+        "/click [btn:5] "..ClickyFrameName..macroId.." Button5\n"
+end
+
 local function SetupGlobalMacros()
     local globalCount = GetNumMacros()
 
     for i=1, globalCount do
-        EditMacro(i, nil, nil, GenerateIdPrefix(i).."\n".."/click "..ClickyFrameName..i, true, false)
+        EditMacro(i, nil, nil, GenerateIdPrefix(i).."\n", true, false)
     end
 
     for i=1 + globalCount, MacroLimits.MaxGlobalMacros do
-        CreateMacro(" ", MegaMacroTexture, GenerateIdPrefix(i).."\n".."/click "..ClickyFrameName..i, false)
+        CreateMacro(" ", MegaMacroTexture, GenerateIdPrefix(i).."\n", false)
     end
 end
 
@@ -111,12 +121,22 @@ local function SetupCharacterMacros()
 
     for i=1, characterCount do
         local id = MacroLimits.MaxGlobalMacros + i
-        EditMacro(id, nil, nil, GenerateIdPrefix(id).."\n".."/click "..ClickyFrameName..id, true, true)
+        EditMacro(id, nil, nil, GenerateIdPrefix(id).."\n", true, true)
     end
 
     for i=1 + characterCount, MacroLimits.MaxCharacterMacros do
         local id = MacroLimits.MaxGlobalMacros + i
-        CreateMacro(" ", MegaMacroTexture, GenerateIdPrefix(id).."\n".."/click "..ClickyFrameName..id, true)
+        CreateMacro(" ", MegaMacroTexture, GenerateIdPrefix(id).."\n", true)
+    end
+end
+
+local function SetupOrUpdateMacroCode()
+    if not InCombatLockdown() then
+        for i=1, MacroLimits.MaxGlobalMacros + MacroLimits.MaxCharacterMacros do
+            local code = GetMacroBody(i)
+            local macroId = GetIdFromMacroCode(code)
+            EditMacro(i, nil, nil, GetMacroStubCode(macroId), true, i > MacroLimits.MaxGlobalMacros)
+        end
     end
 end
 
@@ -245,6 +265,8 @@ function MegaMacroEngine.SafeInitialize()
         end
     end
 
+    -- Ensures the macro code is the latest version. it was required to change macro stub code in 1.2. this will also allow for future changes.
+    SetupOrUpdateMacroCode()
     InitializeMacroIndexCache()
     Initialized = true
 
