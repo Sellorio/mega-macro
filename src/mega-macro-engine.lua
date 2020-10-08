@@ -133,10 +133,9 @@ end
 local function SetupOrUpdateMacroCode()
     if not InCombatLockdown() then
         for i=1, MacroLimits.MaxGlobalMacros + MacroLimits.MaxCharacterMacros do
-            local isCharacterSpecific = i > MacroLimits.MaxGlobalMacros
-            if not isCharacterSpecific and MegaMacroGlobalData.Activated or isCharacterSpecific and MegaMacroCharacterData.Activated then
-                local code = GetMacroBody(i)
-                local macroId = GetIdFromMacroCode(code)
+            local code = GetMacroBody(i)
+            local macroId = GetIdFromMacroCode(code)
+            if macroId then
                 EditMacro(i, nil, nil, GetMacroStubCode(macroId), true, i > MacroLimits.MaxGlobalMacros)
             end
         end
