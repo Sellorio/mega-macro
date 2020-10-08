@@ -201,6 +201,14 @@ function MegaMacro.Delete(self)
     MegaMacroIconEvaluator.RemoveMacroFromCache(self.Id)
 end
 
+function MegaMacro.Move(self, newScope)
+    local newMacro = MegaMacro.Create(self.DisplayName, newScope, self.StaticTexture)
+    MegaMacro.UpdateCode(newMacro, self.Code)
+    MegaMacroEngine.OnMacroMoved(self, newMacro)
+    MegaMacro.Delete(self)
+    return newMacro
+end
+
 function MegaMacro.GetMacrosInScope(scope)
     if scope == MegaMacroScopes.Global then
 		return MegaMacroGlobalData.Macros

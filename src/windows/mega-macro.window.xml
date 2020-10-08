@@ -5,8 +5,9 @@
 			<OnLoad>self:RegisterForDrag("LeftButton");</OnLoad>
 			<OnClick>MegaMacro_MacroButton_OnClick(self);</OnClick>
 			<OnEnter>MegaMacro_MacroButton_OnEnter(self);</OnEnter>
-			<OnLeave>MegaMacro_MacroButton_OnLeave();</OnLeave>
+			<OnLeave>MegaMacro_MacroButton_OnLeave(self);</OnLeave>
 			<OnDragStart>MegaMacro_MacroButton_OnDragStart(self);</OnDragStart>
+			<OnReceiveDrag>MegaMacro_MacroButton_OnReceiveDrag(self);</OnReceiveDrag>
 		</Scripts>
 	</CheckButton>
 	<CheckButton name="MegaMacro_PopupButtonTemplate" inherits="SimplePopupButtonTemplate" virtual="true">
@@ -139,6 +140,7 @@
 						<Scripts>
 							<OnLoad>MegaMacro_ButtonContainer_OnLoad();</OnLoad>
 							<OnShow>MegaMacro_ButtonContainer_OnShow();</OnShow>
+							<OnReceiveDrag>MegaMacro_ButtonContainer_OnReceiveDrag();</OnReceiveDrag>
 						</Scripts>
 					</Frame>
 				</ScrollChild>
@@ -227,9 +229,9 @@
 					</OnLoad>
 					<OnClick>
 						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
-						PanelTemplates_SetTab(MegaMacro_Frame, self:GetID());
-						MegaMacro_TabChanged(self:GetID());
+						MegaMacro_FrameTab_OnClick(self);
 					</OnClick>
+					<OnReceiveDrag>MegaMacro_FrameTab_OnReceiveDrag(self);</OnReceiveDrag>
 				</Scripts>
 			</Button>
 			<Button name="MegaMacro_FrameTab2" inherits="TabButtonTemplate" text="{Class}" id="2">
@@ -243,9 +245,9 @@
 					</OnLoad>
 					<OnClick>
 						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
-						PanelTemplates_SetTab(MegaMacro_Frame, self:GetID());
-						MegaMacro_TabChanged(self:GetID());
+						MegaMacro_FrameTab_OnClick(self);
 					</OnClick>
+					<OnReceiveDrag>MegaMacro_FrameTab_OnReceiveDrag(self);</OnReceiveDrag>
 				</Scripts>
 			</Button>
 			<Button name="MegaMacro_FrameTab3" inherits="TabButtonTemplate" text="{Spec}" id="3">
@@ -259,9 +261,9 @@
 					</OnLoad>
 					<OnClick>
 						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
-						PanelTemplates_SetTab(MegaMacro_Frame, self:GetID());
-						MegaMacro_TabChanged(self:GetID());
+						MegaMacro_FrameTab_OnClick(self);
 					</OnClick>
+					<OnReceiveDrag>MegaMacro_FrameTab_OnReceiveDrag(self);</OnReceiveDrag>
 				</Scripts>
 			</Button>
 			<Button name="MegaMacro_FrameTab4" inherits="TabButtonTemplate" text="{Character}" id="4">
@@ -275,9 +277,9 @@
 					</OnLoad>
 					<OnClick>
 						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
-						PanelTemplates_SetTab(MegaMacro_Frame, self:GetID());
-						MegaMacro_TabChanged(self:GetID());
+						MegaMacro_FrameTab_OnClick(self);
 					</OnClick>
+					<OnReceiveDrag>MegaMacro_FrameTab_OnReceiveDrag(self);</OnReceiveDrag>
 				</Scripts>
 			</Button>
 			<Button name="MegaMacro_FrameTab5" inherits="TabButtonTemplate" text="{Character Spec}" id="5">
@@ -291,9 +293,9 @@
 					</OnLoad>
 					<OnClick>
 						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
-						PanelTemplates_SetTab(MegaMacro_Frame, self:GetID());
-						MegaMacro_TabChanged(self:GetID());
+						MegaMacro_FrameTab_OnClick(self);
 					</OnClick>
+					<OnReceiveDrag>MegaMacro_FrameTab_OnReceiveDrag(self);</OnReceiveDrag>
 				</Scripts>
 			</Button>
 			<Button name="MegaMacro_DeleteButton" inherits="UIPanelButtonTemplate" text="DELETE">

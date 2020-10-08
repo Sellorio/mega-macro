@@ -91,6 +91,11 @@ IsEquippedAction = function(action) action._ = nil end -- returns: isEquipped
 IsEquippedItem = function(itemID) itemID._ = nil end -- returns: isEquipped
 PutItemInBackpack = function() end
 ClearCursor = function() end
+GetCursorInfo = function() end -- returns: type, action1, action2, spellID
+IsControlKeyDown = function() end
+IsAltKeyDown = function() end
+IsShiftKeyDown = function() end
+PlaceAction = function(slot) slot._ = nil end
 
 MegaMacro_Frame = {}
 MegaMacro_ButtonContainer = {}

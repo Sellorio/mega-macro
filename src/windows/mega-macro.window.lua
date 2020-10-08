@@ -24,6 +24,20 @@ MACRO_ICON_ROW_HEIGHT = 36
 
 UIPanelWindows["MegaMacro_Frame"] = { area = "left", pushable = 1, whileDead = 1, width = PANEL_DEFAULT_WIDTH + 302 }
 
+local function GetScopeFromTabIndex(tabIndex)
+	if tabIndex == 1 then
+		return MegaMacroScopes.Global
+	elseif tabIndex == 2 then
+		return MegaMacroScopes.Class
+	elseif tabIndex == 3 then
+		return MegaMacroScopes.Specialization
+	elseif tabIndex == 4 then
+		return MegaMacroScopes.Character
+	elseif tabIndex == 5 then
+		return MegaMacroScopes.CharacterSpecialization
+	end
+end
+
 local function GetMacroButtonUI(index)
 	local buttonName = "MegaMacro_MacroButton" .. index
 	return _G[buttonName], _G[buttonName .. "Name"], _G[buttonName .. "Icon"]
@@ -44,7 +58,7 @@ local function CreateMacroSlotFrames()
 	end
 end
 
-function LoadIcons()
+local function LoadIcons()
 	-- We need to avoid adding duplicate spellIDs from the spellbook tabs for your other specs.
 	local activeIcons = {};
 
@@ -229,12 +243,10 @@ local function SetMacroItems()
 		if macro == nil then
 			buttonFrame.Macro = nil
 			buttonFrame:SetChecked(false)
-			buttonFrame:Disable()
 			buttonName:SetText("")
 			buttonIcon:SetTexture("")
 		else
 			buttonFrame.Macro = macro
-			buttonFrame:Enable()
 			buttonName:SetText(macro.DisplayName)
 			buttonIcon:SetTexture(MegaMacroIconEvaluator.GetTextureFromCache(macro.Id))
 		end
@@ -276,6 +288,40 @@ local function PickupMegaMacro(macro)
 	if macroIndex then
 		PickupMacro(macroIndex)
 	end
+end
+
+local function HandleReceiveDrag(targetScope)
+	local type, macroIndex = GetCursorInfo()
+	local macroId = type == "macro" and MegaMacroEngine.GetMacroIdFromIndex(macroIndex)
+
+	if macroId then
+		local macro = MegaMacro.GetById(macroId)
+		ClearCursor()
+
+		if IsControlKeyDown() then
+			local newDisplayName = macro.Scope == targetScope and macro.DisplayName.." copy" or macro.DisplayName
+			local newMacro = MegaMacro.Create(newDisplayName, targetScope, macro.StaticTexture)
+			MegaMacro.UpdateCode(newMacro, macro.Code)
+
+			if targetScope == SelectedScope then
+				SetMacroItems()
+				SelectMacro(newMacro)
+			end
+		elseif targetScope == macro.Scope then
+			-- do nothing
+		else
+			local newMacro = MegaMacro.Move(macro, targetScope)
+
+			if targetScope == SelectedScope then
+				SetMacroItems()
+				SelectMacro(newMacro)
+			elseif macro.Scope == SelectedScope then
+				SetMacroItems()
+			end
+		end
+	end
+
+	return type ~= nil
 end
 
 StaticPopupDialogs["CONFIRM_DELETE_SELECTED_MEGA_MACRO"] = {
@@ -344,23 +390,25 @@ function MegaMacro_Window_OnHide()
     MegaMacro_PopupFrame:Hide()
 end
 
-function MegaMacro_TabChanged(tabId)
-	MegaMacro_ButtonScrollFrame:SetVerticalScroll(0)
+function MegaMacro_FrameTab_OnClick(self)
+	local tabIndex = self:GetID()
+	local scope = GetScopeFromTabIndex(tabIndex)
 
-	if tabId == 1 then
-		SelectedScope = MegaMacroScopes.Global
-	elseif tabId == 2 then
-		SelectedScope = MegaMacroScopes.Class
-	elseif tabId == 3 then
-		SelectedScope = MegaMacroScopes.Specialization
-	elseif tabId == 4 then
-		SelectedScope = MegaMacroScopes.Character
-	elseif tabId == 5 then
-		SelectedScope = MegaMacroScopes.CharacterSpecialization
+	if not HandleReceiveDrag(scope) then
+		PanelTemplates_SetTab(MegaMacro_Frame, tabIndex);
+		MegaMacro_ButtonScrollFrame:SetVerticalScroll(0)
+
+		SelectedScope = scope
+
+		InitializeMacroSlots()
+		SetMacroItems()
 	end
+end
 
-	InitializeMacroSlots()
-	SetMacroItems()
+function MegaMacro_FrameTab_OnReceiveDrag(self)
+	local tabIndex = self:GetID()
+	local scope = GetScopeFromTabIndex(tabIndex)
+	HandleReceiveDrag(scope)
 end
 
 function MegaMacro_ButtonContainer_OnLoad()
@@ -372,8 +420,18 @@ function MegaMacro_ButtonContainer_OnShow()
 	SetMacroItems()
 end
 
+function MegaMacro_ButtonContainer_OnReceiveDrag()
+	HandleReceiveDrag(SelectedScope)
+end
+
 function MegaMacro_MacroButton_OnClick(self)
-	SelectMacro(self.Macro)
+	if not self.Macro then
+		self:SetChecked(false)
+	end
+
+	if not HandleReceiveDrag(SelectedScope) and self.Macro then
+		SelectMacro(self.Macro)
+	end
 end
 
 function MegaMacro_MacroButton_OnEnter(self)
@@ -382,7 +440,7 @@ function MegaMacro_MacroButton_OnEnter(self)
 	end
 end
 
-function MegaMacro_MacroButton_OnLeave()
+function MegaMacro_MacroButton_OnLeave(self)
 	GameTooltip:Hide()
 end
 
@@ -390,6 +448,10 @@ function MegaMacro_MacroButton_OnDragStart(self)
 	if self.Macro then
 		PickupMegaMacro(self.Macro)
 	end
+end
+
+function MegaMacro_MacroButton_OnReceiveDrag(self)
+	HandleReceiveDrag(SelectedScope)
 end
 
 function MegaMacro_FrameSelectedMacroButton_OnEnter()
@@ -488,7 +550,12 @@ function MegaMacro_EditOkButton_OnClick_Wrapper()
 end
 
 function MegaMacro_EditCancelButton_OnClick()
-	SelectIcon(SelectedMacro.StaticTexture)
+	if SelectedMacro then
+		SelectIcon(SelectedMacro.StaticTexture)
+	else
+		SelectMacro(MacroItems[1])
+	end
+
 	MegaMacro_PopupFrame:Hide()
 end
 

@@ -322,6 +322,20 @@ function MegaMacroEngine.OnMacroDeleted(macro)
     UnbindMacro(macro)
 end
 
+function MegaMacroEngine.OnMacroMoved(oldMacro, newMacro)
+    -- update binding from old macro to new macro (move is actually a create+delete)
+    if not InCombatLockdown() then
+        for i=1, 120 do
+            local type, id = GetActionInfo(i)
+            if type == "macro" and MegaMacroEngine.GetMacroIdFromIndex(id) == oldMacro.Id then
+                PickupMacro(MacroIndexCache[newMacro.Id])
+                PlaceAction(i)
+                ClearCursor()
+            end
+        end
+    end
+end
+
 function MegaMacroEngine.OnSpecializationChanged(oldValue, newValue)
     UnbindMacrosList(MegaMacroGlobalData.Classes[MegaMacroCachedClass].Specializations[oldValue].Macros)
     UnbindMacrosList(MegaMacroCharacterData.Specializations[oldValue].Macros)

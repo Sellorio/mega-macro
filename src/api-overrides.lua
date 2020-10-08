@@ -20,14 +20,10 @@ local function GetMegaMacroId(macroIndexOrName)
         macroIndexOrName = GetMacroIndexByName(macroIndexOrName)
     end
 
-    if macroIndexOrName <= MacroLimits.MaxGlobalMacros and not MegaMacroGlobalData.Activated or macroIndexOrName > MacroLimits.MaxGlobalMacros and not MegaMacroCharacterData.Activated then
-        return nil
-    end
-
     return MegaMacroEngine.GetMacroIdFromIndex(macroIndexOrName)
 end
 
-local function GetMegaMacroSpell(macroId)
+local function GetMacroSpellById(macroId)
     local abilityName = MegaMacroIconEvaluator.GetSpellFromCache(macroId)
 
     if abilityName then
@@ -48,7 +44,7 @@ local function GetMegaMacroSpell(macroId)
     return nil
 end
 
-local function GetMegaMacroItem(macroId)
+local function GetMacroItemById(macroId)
     local abilityName = MegaMacroIconEvaluator.GetSpellFromCache(macroId)
 
     if abilityName then
@@ -66,6 +62,32 @@ local function GetMegaMacroItem(macroId)
     return nil
 end
 
+local function GetMacroSpellByIndex(macroNameOrIndex)
+    local macroId = GetMegaMacroId(macroNameOrIndex)
+
+    if macroId then
+        local spellId = GetMacroSpellById(macroId)
+        if spellId then
+            return spellId
+        end
+    end
+
+    return MegaMacroApiOverrides.Original.GetMacroSpell(macroNameOrIndex)
+end
+
+local function GetMacroItemByIndex(macroNameOrIndex)
+    local macroId = GetMegaMacroId(macroNameOrIndex)
+
+    if macroId then
+        local itemId = GetMacroItemById(macroId)
+        if itemId then
+            return itemId
+        end
+    end
+
+    return MegaMacroApiOverrides.Original.GetMacroItem(macroNameOrIndex)
+end
+
 function GetMacroInfo(macroNameOrIndex)
     local macroId = GetMegaMacroId(macroNameOrIndex)
 
@@ -78,41 +100,15 @@ function GetMacroInfo(macroNameOrIndex)
     return MegaMacroApiOverrides.Original.GetMacroInfo(macroNameOrIndex)
 end
 
-function GetMacroSpell(macroNameOrIndex)
-    local macroId = GetMegaMacroId(macroNameOrIndex)
-
-    if macroId then
-        local spellId = GetMegaMacroSpell(macroId)
-        if spellId then
-            return spellId
-        end
-    end
-
-    return MegaMacroApiOverrides.Original.GetMacroSpell(macroNameOrIndex)
-end
-
-function GetMacroItem(macroNameOrIndex)
-    local macroId = GetMegaMacroId(macroNameOrIndex)
-
-    if macroId then
-        local itemId = GetMegaMacroItem(macroId)
-        if itemId then
-            return itemId
-        end
-    end
-
-    return MegaMacroApiOverrides.Original.GetMacroItem(macroNameOrIndex)
-end
-
 function GetActionCooldown(action)
     local type, id = GetActionInfo(action)
 
     if type == "macro" then
-        local spellId = GetMacroSpell(id)
+        local spellId = GetMacroSpellByIndex(id)
         if spellId then
             return GetSpellCooldown(spellId)
         end
-        local itemId = GetMacroItem(id)
+        local itemId = GetMacroItemByIndex(id)
         if itemId then
             return GetItemCooldown(itemId)
         end
@@ -125,11 +121,11 @@ function GetActionCount(action)
     local type, id = GetActionInfo(action)
 
     if type == "macro" then
-        local spellId = GetMacroSpell(id)
+        local spellId = GetMacroSpellByIndex(id)
         if spellId then
             return GetSpellCount(spellId)
         end
-        local itemId = GetMacroItem(id)
+        local itemId = GetMacroItemByIndex(id)
         if itemId then
             return GetItemCount(itemId) or 0
         end
@@ -155,7 +151,7 @@ function GetActionCharges(action)
     local type, id = GetActionInfo(action)
 
     if type == "macro" then
-        local spellId = GetMacroSpell(id)
+        local spellId = GetMacroSpellByIndex(id)
         if spellId then
             local charges, maxCharges, chargeStart, chargeDuration, chargeModRate = GetSpellCharges(spellId)
             maxCharges = maxCharges or 0
@@ -170,11 +166,11 @@ function IsUsableAction(action)
     local type, id = GetActionInfo(action)
 
     if type == "macro" then
-        local spellId = GetMacroSpell(id)
+        local spellId = GetMacroSpellByIndex(id)
         if spellId then
             return IsUsableSpell(spellId)
         end
-        local itemId = GetMacroItem(id)
+        local itemId = GetMacroItemByIndex(id)
         if itemId then
             return IsUsableItem(itemId)
         end
@@ -187,7 +183,7 @@ function IsActionInRange(action)
     local type, id = GetActionInfo(action)
 
     if type == "macro" then
-        local spellId = GetMacroSpell(id)
+        local spellId = GetMacroSpellByIndex(id)
         if spellId then
             local spellIndex = FindSpellBookSlotBySpellID(spellId)
             if spellIndex then
@@ -196,7 +192,7 @@ function IsActionInRange(action)
                 return IsSpellInRange(spellIndex, BOOKTYPE_SPELL, target) ~= 0
             end
         end
-        local itemId = GetMacroItem(id)
+        local itemId = GetMacroItemByIndex(id)
         if itemId then
             local macroId = MegaMacroEngine.GetMacroIdFromIndex(id)
             local target = macroId and MegaMacroIconEvaluator.GetTargetFromCache(macroId)
@@ -229,7 +225,7 @@ function IsEquippedAction(action)
     if type == "macro" then
         local macroId = MegaMacroEngine.GetMacroIdFromIndex(id)
         if macroId then
-            local itemId = GetMegaMacroItem(macroId)
+            local itemId = GetMacroItemById(macroId)
             if itemId then
                 return IsEquippedItem(itemId)
             end
@@ -243,7 +239,7 @@ function IsCurrentAction(action)
     local type, id = GetActionInfo(action)
 
     if type == "macro" then
-        local spellId = GetMacroSpell(id)
+        local spellId = GetMacroSpellByIndex(id)
         if spellId then
             local isActive = IsCurrentSpell(spellId)
 
@@ -256,7 +252,7 @@ function IsCurrentAction(action)
 
             return isActive
         end
-        local itemId = GetMacroItem(id)
+        local itemId = GetMacroItemByIndex(id)
         if itemId then
             return IsCurrentItem(itemId)
         end
