@@ -8,7 +8,7 @@ local function GenerateIdPrefix(id)
 end
 
 local function GetIdFromMacroCode(macroCode)
-    return tonumber(string.sub(macroCode, 2, 4))
+    return macroCode and tonumber(string.sub(macroCode, 2, 4))
 end
 
 local function InitializeMacroIndexCache()
