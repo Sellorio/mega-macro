@@ -211,7 +211,7 @@ end
 
 local function UpdateCount(button, functions, abilityId)
     local text = button.Count;
-    if functions == MegaMacroInfoFunctions.Item and IsConsumableItem(abilityId) then
+    if functions == MegaMacroInfoFunctions.Item and not IsEquippedItem(abilityId) then
         local count = GetItemCount(abilityId)
         text:SetText(count > (button.maxDisplayCount or 9999) and "*" or count)
     elseif functions == MegaMacroInfoFunctions.Spell then
