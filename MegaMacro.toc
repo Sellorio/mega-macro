@@ -9,7 +9,6 @@
 
 src/constants.lua
 src/config.lua
-src/api-overrides.lua
 src/tooltip-functions.lua
 src/mega-macro-action-bar-engine.lua
 src/mega-macro.lua

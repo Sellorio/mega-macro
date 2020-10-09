@@ -6,11 +6,12 @@ local f = CreateFrame("Frame", "MegaMacro_EventFrame", UIParent)
 f:RegisterEvent("PLAYER_ENTERING_WORLD")
 f:RegisterEvent("PLAYER_LEAVING_WORLD")
 f:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
+f:RegisterEvent("PLAYER_TARGET_CHANGED")
 
 local function OnUpdate(_, elapsed)
     local elapsedMs = elapsed * 1000
     MegaMacroIconEvaluator.Update(elapsedMs)
-    MegaMacroActionBarEngine.OnUpdate()
+    MegaMacroActionBarEngine.OnUpdate(elapsed)
 end
 
 local function Initialize()
@@ -54,5 +55,7 @@ f:SetScript("OnEvent", function(self, event)
         MegaMacroIconEvaluator.ResetCache()
         MegaMacroEngine.OnSpecializationChanged(oldValue, MegaMacroCachedSpecialization)
         MegaMacroWindow.OnSpecializationChanged(oldValue, MegaMacroCachedSpecialization)
+    elseif "PLAYER_TARGET_CHANGED" then
+        MegaMacroActionBarEngine.OnTargetChanged()
     end
 end)

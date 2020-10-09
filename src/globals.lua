@@ -96,6 +96,13 @@ IsControlKeyDown = function() end
 IsAltKeyDown = function() end
 IsShiftKeyDown = function() end
 PlaceAction = function(slot) slot._ = nil end
+IsAutoRepeatAction = function(action) action._ = nil end -- returns: isRepeating
+IsAutoRepeatSpell = function(spellId) spellId._ = nil end -- returns: isRepeating
+GetSpellLossOfControlCooldown = function(spellID) spellID._ = nil end -- returns: start, duration
+IsConsumableItem = function(itemID) itemID._ = nil end -- returns: isConsumable
+C_LevelLink = {
+    IsSpellLocked = function(spellID) spellID._ = nil end -- returns: isLocked
+}
 
 MegaMacro_Frame = {}
 MegaMacro_ButtonContainer = {}
