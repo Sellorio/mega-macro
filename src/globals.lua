@@ -63,7 +63,7 @@ PickupMacro = function(macroIndexOrName) macroIndexOrName._ = nil end
 GetSpellCooldown = function(spellID) spellID._ = nil end -- returns: startTime, duration, enabled
 GetItemCooldown = function(itemID) itemID._ = nil end -- returns: startTime, duration, enabled
 GetSpellCharges = function(spellID) spellID._ = nil end -- returns: charges, maxCharges, chargeStart, chargeDuration, chargeModRate
-GetItemCount = function(itemID) itemID._ = nil end -- returns: count
+GetItemCount = function(itemID, includeBank, includeCharges) itemID._ = nil end -- returns: count
 GetSpellCount = function(spellID) spellID._ = nil end -- returns: count
 IsCurrentSpell = function(spellID) spellID._ = nil end
 IsCurrentItem = function(itemID) itemID._ = nil end
@@ -100,6 +100,7 @@ IsAutoRepeatAction = function(action) action._ = nil end -- returns: isRepeating
 IsAutoRepeatSpell = function(spellId) spellId._ = nil end -- returns: isRepeating
 GetSpellLossOfControlCooldown = function(spellID) spellID._ = nil end -- returns: start, duration
 IsConsumableItem = function(itemID) itemID._ = nil end -- returns: isConsumable
+IsConsumableSpell = function(itemID) itemID._ = nil end -- returns: isConsumable
 C_LevelLink = {
     IsSpellLocked = function(spellID) spellID._ = nil end -- returns: isLocked
 }

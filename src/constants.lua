@@ -66,11 +66,13 @@ MegaMacroInfoFunctions = {
 		IsAutoRepeat = IsAutoRepeatSpell,
 		IsLocked = C_LevelLink.IsSpellLocked,
 		GetLossOfControlCooldown = GetSpellLossOfControlCooldown,
-		IsOverlayed = IsSpellOverlayed
+		IsOverlayed = IsSpellOverlayed,
+		IsConsumable = IsConsumableSpell,
+		IsStackable = function(_) return false end
 	},
-	Item = {
+ 	Item = {
 		GetCooldown = GetItemCooldown,
-		GetCount = GetItemCount,
+		GetCount = function(itemId) return GetItemCount(itemId, false, true) end,
 		GetCharges = function(_) return 0, 0, -1, 0, 1 end, -- charges, maxCharges, chargeStart, chargeDuration, chargeModRate
 		IsUsable = function(itemId) return IsUsableItem(itemId), false end,
 		IsInRange = IsItemInRange,
@@ -79,7 +81,12 @@ MegaMacroInfoFunctions = {
 		IsAutoRepeat = function(_) return false end,
 		IsLocked = function(_) return false end,
 		GetLossOfControlCooldown = function(_) return -1, 0 end,
-		IsOverlayed = function(_) return false end
+		IsOverlayed = function(_) return false end,
+		IsConsumable = IsConsumableItem,
+		IsStackable = function(itemId)
+			local stackSize = select(8, GetItemInfo(itemId))
+			return stackSize and stackSize > 1
+		end
 	},
 	Unknown = {
 		GetCooldown = function(_) return -1, 0, true end,
@@ -92,6 +99,8 @@ MegaMacroInfoFunctions = {
 		IsAutoRepeat = function(_) return false end,
 		IsLocked = function(_) return false end,
 		GetLossOfControlCooldown = function(_) return -1, 0 end,
-		IsOverlayed = function(_) return false end
+		IsOverlayed = function(_) return false end,
+		IsConsumable = function(_) return false end,
+		IsStackable = function(_) return false end
 	}
 }

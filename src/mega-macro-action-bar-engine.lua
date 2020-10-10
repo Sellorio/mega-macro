@@ -34,7 +34,7 @@ local function GetMacroAbilityInfo(macroId)
         end
 
         local itemId = GetItemInfoInstant(abilityName)
-        if itemId and (IsEquippedItem(itemId) or C_ToyBox.GetToyInfo(itemId)) then
+        if itemId and not IsConsumableItem(itemId) and (IsEquippedItem(itemId) or C_ToyBox.GetToyInfo(itemId)) then
             _, spellId = GetItemSpell(itemId)
             if spellId then
                 return "spell", spellId
@@ -158,7 +158,6 @@ local function UpdateCooldownLibActionButton(button, functions, abilityId)
 		end
 		if locStart > 0 then
             button.cooldown:SetScript("OnCooldownDone", function()
-                button:SetScript("OnCooldownDone", nil)
                 UpdateCooldownLibActionButton(button, functions, abilityId)
             end)
 		end
@@ -210,24 +209,18 @@ local function UpdateCooldownBlizzard(button, functions, abilityId)
 end
 
 local function UpdateCount(button, functions, abilityId)
-    local text = button.Count;
-    if functions == MegaMacroInfoFunctions.Item and not IsEquippedItem(abilityId) then
-        local count = GetItemCount(abilityId)
-        text:SetText(count > (button.maxDisplayCount or 9999) and "*" or count)
-    elseif functions == MegaMacroInfoFunctions.Spell then
-        local charges, maxCharges, _, _ = functions.GetCharges(abilityId)
-        if maxCharges and maxCharges > 0 then
-            text:SetText(charges)
-        else
-            local count = functions.GetCount(abilityId)
-            if count ~= nil and count > 0 then
-                text:SetText(count)
-            else
-                text:SetText("")
-            end
-        end
+    local countLabel = button.Count
+    local count = functions.GetCount(abilityId)
+
+    if functions.IsConsumable(abilityId) or functions.IsStackable(abilityId) or functions ~= MegaMacroInfoFunctions.Item and count > 0 then
+        countLabel:SetText(count > (button.maxDisplayCount or 9999) and "*" or count)
     else
-        text:SetText("")
+        local charges, maxCharges = functions.GetCharges(abilityId)
+		if charges and maxCharges and maxCharges > 1 then
+			countLabel:SetText(charges)
+		else
+			countLabel:SetText("")
+        end
     end
 end
 
