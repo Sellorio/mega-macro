@@ -28,14 +28,14 @@ local function GetMacroAbilityInfo(macroId)
     local abilityName = MegaMacroIconEvaluator.GetSpellFromCache(macroId)
 
     if abilityName then
-        local spellId = select(7, GetSpellInfo(abilityName))
+        local spellId = select(7, MM.GetSpellInfo(abilityName))
         if spellId then
             return "spell", spellId
         end
 
-        local itemId = GetItemInfoInstant(abilityName)
-        if itemId and not IsConsumableItem(itemId) and (IsEquippedItem(itemId) or C_ToyBox.GetToyInfo(itemId)) then
-            _, spellId = GetItemSpell(itemId)
+        local itemId = MM.GetItemInfoInstant(abilityName)
+        if itemId and (MM.IsEquippedItem(itemId) or MM.GetToyInfo(itemId)) then
+            _, spellId = MM.GetItemSpell(itemId)
             if spellId then
                 return "spell", spellId
             end
@@ -85,14 +85,14 @@ local function UpdateUsable(button, functions, abilityId)
 		normalTexture:SetVertexColor(1.0, 1.0, 1.0)
 	end
 
-	local isLevelLinkLocked = functions.IsLocked(abilityId)
-	if not icon:IsDesaturated() then
-		icon:SetDesaturated(isLevelLinkLocked)
-	end
+	-- local isLevelLinkLocked = functions.IsLocked(abilityId)
+	-- if not icon:IsDesaturated() then
+	-- 	icon:SetDesaturated(isLevelLinkLocked)
+	-- end
 
-	if button.LevelLinkLockIcon then
-		button.LevelLinkLockIcon:SetShown(isLevelLinkLocked)
-	end
+	-- if button.LevelLinkLockIcon then
+	-- 	button.LevelLinkLockIcon:SetShown(isLevelLinkLocked)
+	-- end
 end
 
 local function LibActionButton_EndChargeCooldown(self)
@@ -212,7 +212,10 @@ local function UpdateCount(button, functions, abilityId)
     local countLabel = button.Count
     local count = functions.GetCount(abilityId)
 
-    if functions.IsConsumable(abilityId) or functions.IsStackable(abilityId) or functions ~= MegaMacroInfoFunctions.Item and count > 0 then
+    local isNonEquippableItem = functions == MegaMacroInfoFunctions.Item and not MM.IsEquippableItem(abilityId)
+    local isNonItemWithCount = functions ~= MegaMacroInfoFunctions.Item and count > 0
+
+    if isNonEquippableItem or isNonItemWithCount then
         countLabel:SetText(count > (button.maxDisplayCount or 9999) and "*" or count)
     else
         local charges, maxCharges = functions.GetCharges(abilityId)
@@ -282,7 +285,7 @@ local function UpdateTexture(button, macroId)
     button.icon:SetTexture(MegaMacroIconEvaluator.GetTextureFromCache(macroId))
 end
 
-local function UpdateActionBar(button, macroId, elapsed)
+local function UpdateActionBar(button, macroId)
     local abilityType, abilityId = GetMacroAbilityInfo(macroId)
     local functions = MegaMacroInfoFunctions.Unknown
 
@@ -354,7 +357,7 @@ function MegaMacroActionBarEngine.OnUpdate(elapsed)
         local macroId = type == "macro" and MegaMacroEngine.GetMacroIdFromIndex(macroIndex)
 
         if macroId then
-            UpdateActionBar(button, macroId, elapsed)
+            UpdateActionBar(button, macroId)
 
             if button == focus then
                 ShowToolTipForMegaMacro(macroId)

@@ -1,6 +1,7 @@
 MegaMacroCachedClass = nil
 MegaMacroCachedSpecialization = nil
 MegaMacroFullyActive = false
+MegaMacroSystemTime = GetTime()
 
 local f = CreateFrame("Frame", "MegaMacro_EventFrame", UIParent)
 f:RegisterEvent("PLAYER_ENTERING_WORLD")
@@ -9,6 +10,7 @@ f:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
 f:RegisterEvent("PLAYER_TARGET_CHANGED")
 
 local function OnUpdate(_, elapsed)
+    MegaMacroSystemTime = GetTime()
     local elapsedMs = elapsed * 1000
     MegaMacroIconEvaluator.Update(elapsedMs)
     MegaMacroActionBarEngine.OnUpdate(elapsed)

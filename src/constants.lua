@@ -47,7 +47,7 @@ MegaMacroInfoFunctions = {
 	Spell = {
 		GetCooldown = GetSpellCooldown,
 		GetCount = GetSpellCount,
-		GetCharges = GetSpellCharges,
+		GetCharges = function(spellId) return MM.GetSpellCharges(spellId) end,
 		IsUsable = IsUsableSpell,
 		IsInRange = function(spellId, target)
 			local spellIndex = FindSpellBookSlotBySpellID(spellId)
@@ -66,9 +66,7 @@ MegaMacroInfoFunctions = {
 		IsAutoRepeat = IsAutoRepeatSpell,
 		IsLocked = C_LevelLink.IsSpellLocked,
 		GetLossOfControlCooldown = GetSpellLossOfControlCooldown,
-		IsOverlayed = IsSpellOverlayed,
-		IsConsumable = IsConsumableSpell,
-		IsStackable = function(_) return false end
+		IsOverlayed = IsSpellOverlayed
 	},
  	Item = {
 		GetCooldown = GetItemCooldown,
@@ -77,16 +75,11 @@ MegaMacroInfoFunctions = {
 		IsUsable = function(itemId) return IsUsableItem(itemId), false end,
 		IsInRange = IsItemInRange,
 		IsCurrent = IsCurrentItem,
-		IsEquipped = IsEquippedItem,
+		IsEquipped = function(itemId) return MM.IsEquippedItem(itemId) end,
 		IsAutoRepeat = function(_) return false end,
 		IsLocked = function(_) return false end,
 		GetLossOfControlCooldown = function(_) return -1, 0 end,
-		IsOverlayed = function(_) return false end,
-		IsConsumable = IsConsumableItem,
-		IsStackable = function(itemId)
-			local stackSize = select(8, GetItemInfo(itemId))
-			return stackSize and stackSize > 1
-		end
+		IsOverlayed = function(_) return false end
 	},
 	Unknown = {
 		GetCooldown = function(_) return -1, 0, true end,
@@ -99,8 +92,6 @@ MegaMacroInfoFunctions = {
 		IsAutoRepeat = function(_) return false end,
 		IsLocked = function(_) return false end,
 		GetLossOfControlCooldown = function(_) return -1, 0 end,
-		IsOverlayed = function(_) return false end,
-		IsConsumable = function(_) return false end,
-		IsStackable = function(_) return false end
+		IsOverlayed = function(_) return false end
 	}
 }

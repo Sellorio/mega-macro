@@ -74,7 +74,7 @@ local function GetIconAndNameFromAbility(ability)
             return MegaMacroTexture, nil
         end
     else
-        local spellId = select(7, GetSpellInfo(ability))
+        local spellId = select(7, MM.GetSpellInfo(ability))
         if spellId then
             local shapeshiftFormIndex = GetShapeshiftForm()
             if shapeshiftFormIndex and shapeshiftFormIndex > 0 and spellId == select(4, GetShapeshiftFormInfo(shapeshiftFormIndex)) then
@@ -83,7 +83,7 @@ local function GetIconAndNameFromAbility(ability)
         end
 
         return
-            select(3, GetSpellInfo(ability)) or select(5, GetItemInfoInstant(ability)) or MegaMacroTexture,
+            select(3, MM.GetSpellInfo(ability)) or select(5, MM.GetItemInfoInstant(ability)) or MegaMacroTexture,
             ability
     end
 end

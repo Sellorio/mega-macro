@@ -89,6 +89,7 @@ GetActionTexture = function(action) action._ = nil end -- returns: texture
 GetActionCharges = function(action) action._ = nil end -- returns: charges, maxCharges, chargeStart, chargeDuration, chargeModRate
 IsEquippedAction = function(action) action._ = nil end -- returns: isEquipped
 IsEquippedItem = function(itemID) itemID._ = nil end -- returns: isEquipped
+IsEquippableItem = function(itemID) itemID._ = nil end -- returns: isEquippable
 PutItemInBackpack = function() end
 ClearCursor = function() end
 GetCursorInfo = function() end -- returns: type, action1, action2, spellID
