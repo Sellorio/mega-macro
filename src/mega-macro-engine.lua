@@ -160,13 +160,9 @@ local function BindMacro(macro)
         local macroIndex = MacroIndexCache[macro.Id]
 
         if macroIndex then
-            local isCharacter = macroIndex > MacroLimits.MaxGlobalMacros
-
-            if not isCharacter and MegaMacroGlobalData.Activated or isCharacter and MegaMacroCharacterData.Activated then
-                GetOrCreateClicky(macro.Id):SetAttribute("macrotext", macro.Code)
-                EditMacro(macroIndex, string.sub(macro.DisplayName, 1, 18), nil, nil, true, isCharacter)
-                InitializeMacroIndexCache()
-            end
+            GetOrCreateClicky(macro.Id):SetAttribute("macrotext", macro.Code)
+            EditMacro(macroIndex, string.sub(macro.DisplayName, 1, 18), nil, nil, true, macroIndex > MacroLimits.MaxGlobalMacros)
+            InitializeMacroIndexCache()
         end
     end
 end
@@ -174,11 +170,10 @@ end
 local function UnbindMacro(macro)
     if Initialized then
         local macroIndex = MacroIndexCache[macro.Id]
-        local isCharacter = macroIndex > MacroLimits.MaxGlobalMacros
 
-        if not isCharacter and MegaMacroGlobalData.Activated or isCharacter and MegaMacroCharacterData.Activated then
+        if macroIndex then
             GetOrCreateClicky(macro.Id):SetAttribute("macrotext", "")
-            EditMacro(macroIndex, " ", nil, nil, true, isCharacter)
+            EditMacro(macroIndex, " ", nil, nil, true, macroIndex > MacroLimits.MaxGlobalMacros)
             InitializeMacroIndexCache()
         end
     end
