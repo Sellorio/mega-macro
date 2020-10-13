@@ -351,8 +351,8 @@ function MegaMacroActionBarEngine.OnUpdate(elapsed)
     local focus = GetMouseFocus()
     local iterator = LibActionButton and ForEachLibActionButton or ForEachBlizzardActionButton
 
-    iterator(function(button)
-        button.action = button.action == 0 and ActionButton_CalculateAction(button) or button.action
+	iterator(function(button)
+		button.action = button.action == 0 and button:GetAttribute("action") or button.action
         local type, macroIndex = GetActionInfo(button.action)
         local macroId = type == "macro" and MegaMacroEngine.GetMacroIdFromIndex(macroIndex)
 

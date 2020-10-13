@@ -200,19 +200,7 @@
 					<OnClick>MegaMacro_SaveButton_OnClick();</OnClick>
 				</Scripts>
 			</Button>
-            <Frame name="MegaMacro_FrameTextBackground">
-                <Backdrop bgFile="Interface\Tooltips\UI-Tooltip-Background" edgeFile="Interface\Tooltips\UI-Tooltip-Border" tile="true">
-                    <EdgeSize>
-                        <AbsValue val="16"/>
-                    </EdgeSize>
-                    <TileSize>
-                        <AbsValue val="16"/>
-                    </TileSize>
-                    <Color a="1" r="0.1" g="0.1" b="0.2" />
-                    <BackgroundInsets>
-                        <AbsInset left="4" right="4" top="4" bottom="4"/>
-                    </BackgroundInsets>
-                </Backdrop>
+			<Frame name="MacroFrameTextBackground" inherits="TooltipBackdropTemplate">
 				<Size x="627" y="195"/>
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeTo="MegaMacro_Frame" x="6" y="-289"/>
