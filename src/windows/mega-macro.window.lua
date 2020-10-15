@@ -574,7 +574,7 @@ function MegaMacro_PopupFrame_OnUpdate()
 		macroPopupButton = _G["MegaMacro_PopupButton"..i];
 		macroPopupIcon = _G["MegaMacro_PopupButton"..i.."Icon"];
 		index = (macroPopupOffset * NUM_ICONS_PER_ROW) + i;
-		local texture = IconList[i]
+		local texture = IconList[index]
 
 		if index <= numMacroIcons and texture then
 			macroPopupIcon:SetTexture(texture);
