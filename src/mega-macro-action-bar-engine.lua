@@ -369,3 +369,7 @@ end
 function MegaMacroActionBarEngine.OnTargetChanged()
     rangeTimer = -1
 end
+
+hooksecurefunc("ActionButton_UpdateRangeIndicator", function()
+	rangeTimer = -1
+end)
