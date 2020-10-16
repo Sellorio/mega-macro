@@ -36,7 +36,7 @@ local function GetMacroAbilityInfo(macroId)
         end
 
         local itemId = MM.GetItemInfoInstant(abilityName)
-        if itemId and (MM.IsEquippedItem(itemId) or MM.GetToyInfo(itemId)) then
+        if itemId and MM.GetToyInfo(itemId) then
             _, spellId = MM.GetItemSpell(itemId)
             if spellId then
                 return "spell", spellId
