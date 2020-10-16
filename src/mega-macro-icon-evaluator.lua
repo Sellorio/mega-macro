@@ -69,29 +69,34 @@ local function GetIconAndNameFromAbility(ability)
         local itemId = GetInventoryItemID("player", slotId)
         if itemId then
             local itemName, _, _, _, _, _, _, _, _, itemTexture = GetItemInfo(itemId)
-            return itemTexture, itemName
+            return itemTexture, itemName, "item"
         else
-            return MegaMacroTexture, nil
+            return MegaMacroTexture, nil, nil
         end
     else
-        local spellId = select(7, MM.GetSpellInfo(ability))
+        local spellName, _, texture, _, _, _, spellId = MM.GetSpellInfo(ability)
         if spellId then
             local shapeshiftFormIndex = GetShapeshiftForm()
             if shapeshiftFormIndex and shapeshiftFormIndex > 0 and spellId == select(4, GetShapeshiftFormInfo(shapeshiftFormIndex)) then
-                return MegaMacroActiveStanceTexture, ability
+                return MegaMacroActiveStanceTexture, spellName, "spell"
             end
+            return texture, spellName, "spell"
         end
 
-        return
-            select(3, MM.GetSpellInfo(ability)) or select(5, MM.GetItemInfoInstant(ability)) or MegaMacroTexture,
-            ability
+        texture = select(5, MM.GetItemInfoInstant(ability))
+        if texture then
+            return texture, ability, "item"
+        end
+
+        return MegaMacroTexture, nil, nil
     end
 end
 
 local function UpdateMacro(macro)
     local icon = macro.StaticTexture or MegaMacroTexture
-    local spellName = nil
+    local abilityName = nil
     local target = nil
+    local abilityType = nil
 
     if icon == MegaMacroTexture then
         local codeInfo = MegaMacroCodeInfo.Get(macro)
@@ -104,7 +109,7 @@ local function UpdateMacro(macro)
                 local ability, tar = SecureCmdOptionParse(command.Body)
 
                 if ability ~= nil then
-                    icon, spellName = GetIconAndNameFromAbility(ability)
+                    icon, abilityName, abilityType = GetIconAndNameFromAbility(ability)
                     target = tar
                     break
                 end
@@ -116,7 +121,7 @@ local function UpdateMacro(macro)
                     local ability = item or spell
 
                     if ability ~= nil then
-                        icon, spellName = GetIconAndNameFromAbility(ability)
+                        icon, abilityName, abilityType = GetIconAndNameFromAbility(ability)
                         target = tar
                         break
                     end
@@ -133,30 +138,42 @@ local function UpdateMacro(macro)
                 if shouldRun == "TRUE" then
                     icon = GetTextureFromPetCommand(command.Command)
                     if command.Command == "dismiss" then
-                        spellName = "Dismiss Pet"
+                        abilityName = "Dismiss Pet"
                     end
                     break
                 end
             end
         end
 
-        if spellName == nil and icon == MegaMacroTexture and codeInfoLength > 0 then
+        if abilityName == nil and icon == MegaMacroTexture and codeInfoLength > 0 then
             if codeInfo[codeInfoLength].Type == "fallbackAbility" then
                 local ability = codeInfo[codeInfoLength].Body
-                icon, spellName = GetIconAndNameFromAbility(ability)
+                icon, abilityName, abilityType = GetIconAndNameFromAbility(ability)
             elseif codeInfo[codeInfoLength].Type == "fallbackSequence" then
                 local ability = QueryCastSequence(codeInfo[codeInfoLength].Body)
-                icon, spellName = GetIconAndNameFromAbility(ability)
+                icon, abilityName, abilityType = GetIconAndNameFromAbility(ability)
             elseif codeInfo[codeInfoLength].Type == "fallbackPetCommand" then
                 icon = GetTextureFromPetCommand(codeInfo[codeInfoLength].Body)
             end
         end
     end
 
-    if MacroIconCache[macro.Id] ~= icon or MacroSpellCache[macro.Id] ~= spellName then
+    if MacroIconCache[macro.Id] ~= icon or MacroSpellCache[macro.Id] ~= abilityName then
         MacroIconCache[macro.Id] = icon
-        MacroSpellCache[macro.Id] = spellName
+        MacroSpellCache[macro.Id] = abilityName
         MacroTargetCache[macro.Id] = target
+
+        local macroIndex = MegaMacroEngine.GetMacroIndexFromId(macro.Id)
+        if macroIndex then
+            if abilityType == "spell" then
+                SetMacroSpell(macroIndex, abilityName, target)
+            elseif abilityType == "item" then
+                SetMacroItem(macroIndex, abilityName, target)
+            else
+                -- clear
+                SetMacroSpell(macroIndex, "", nil)
+            end
+        end
 
         for i=1, #IconUpdatedCallbacks do
             IconUpdatedCallbacks[i](macro.Id, MacroIconCache[macro.Id])
