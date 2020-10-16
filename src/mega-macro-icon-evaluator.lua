@@ -88,7 +88,7 @@ local function GetIconAndNameFromAbility(ability)
             return texture, ability, "item"
         end
 
-        return MegaMacroTexture, nil, nil
+        return MegaMacroTexture, ability, nil
     end
 end
 

@@ -8,6 +8,7 @@ f:RegisterEvent("PLAYER_ENTERING_WORLD")
 f:RegisterEvent("PLAYER_LEAVING_WORLD")
 f:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
 f:RegisterEvent("PLAYER_TARGET_CHANGED")
+f:RegisterEvent("PLAYER_TALENT_UPDATE")
 
 local function OnUpdate(_, elapsed)
     MegaMacroSystemTime = GetTime()
@@ -59,5 +60,7 @@ f:SetScript("OnEvent", function(self, event)
         MegaMacroWindow.OnSpecializationChanged(oldValue, MegaMacroCachedSpecialization)
     elseif "PLAYER_TARGET_CHANGED" then
         MegaMacroActionBarEngine.OnTargetChanged()
+    elseif "PLAYER_TALENT_UPDATE" then
+        MM.ResetCacheForSpells()
     end
 end)

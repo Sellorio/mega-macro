@@ -78,3 +78,8 @@ function MM.GetSpellCharges(spellId)
             maxCharges and 0 or 999999
     end)
 end
+
+function MM.ResetCacheForSpells()
+    Cache.SpellInfo = {}
+    Cache.SpellCharges = {}
+end
