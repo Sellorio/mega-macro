@@ -24,6 +24,8 @@ local BlizzardActionBars = { "Action", "MultiBarBottomLeft", "MultiBarBottomRigh
 local rangeTimer = 5
 local updateRange = false
 
+local ActionsBoundToMegaMacros = {}
+
 local function GetMacroAbilityInfo(macroId)
     local abilityName = MegaMacroIconEvaluator.GetSpellFromCache(macroId)
 
@@ -314,6 +316,21 @@ local function UpdateActionBar(button, macroId)
     end
 end
 
+local function ResetActionBar(button)
+	button:SetChecked(false)
+	button.Count:SetText("")
+	button.Border:Hide() -- reset eqipped border
+	ActionButton_HideOverlayGlow(button)
+	ClearChargeCooldown(button)
+	UpdateRange(button, MegaMacroInfoFunctions.Unknown)
+	button.icon:SetVertexColor(1.0, 1.0, 1.0) -- reset opacity (is usable visuals)
+
+	local normalTexture = button.NormalTexture
+	if normalTexture then
+		normalTexture:SetVertexColor(1.0, 1.0, 1.0) -- reset blue shift
+	end
+end
+
 local function ForEachLibActionButton(func)
     for button, _ in pairs(LibActionButton.buttonRegistry) do
         func(button)
@@ -352,17 +369,24 @@ function MegaMacroActionBarEngine.OnUpdate(elapsed)
     local iterator = LibActionButton and ForEachLibActionButton or ForEachBlizzardActionButton
 
 	iterator(function(button)
-		button.action = button.action == 0 and button:GetAttribute("action") or button.action
-        local type, macroIndex = GetActionInfo(button.action)
-        local macroId = type == "macro" and MegaMacroEngine.GetMacroIdFromIndex(macroIndex)
+		local action = button:GetAttribute("action") or button.action
+        local type, actionArg1 = GetActionInfo(action)
+        local macroId = type == "macro" and MegaMacroEngine.GetMacroIdFromIndex(actionArg1)
 
-        if macroId then
+		if macroId then
+			ActionsBoundToMegaMacros[button] = true
             UpdateActionBar(button, macroId)
 
             if button == focus then
                 ShowToolTipForMegaMacro(macroId)
-            end
-        end
+			end
+		elseif ActionsBoundToMegaMacros[button] then
+			ActionsBoundToMegaMacros[button] = nil
+			if not actionArg1 then
+				-- was a mega macro, now unbound, make sure to reset a few values
+				ResetActionBar(button)
+			end
+		end
     end)
 end
 
