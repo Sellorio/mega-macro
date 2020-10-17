@@ -14,15 +14,30 @@ end
 local function InitializeMacroIndexCache()
     MacroIndexCache = {}
 
-    local maxMacroCount = MacroLimits.MaxGlobalMacros + MacroLimits.MaxCharacterMacros
-    for i=1, maxMacroCount do
-        local macroCode = GetMacroBody(i)
+    if MegaMacroGlobalData.Activated then
+        for i=1, MacroLimits.MaxGlobalMacros do
+            local macroCode = GetMacroBody(i)
 
-        if macroCode then
-            local macroId = GetIdFromMacroCode(macroCode)
+            if macroCode then
+                local macroId = GetIdFromMacroCode(macroCode)
 
-            if macroId then
-                MacroIndexCache[macroId] = i
+                if macroId then
+                    MacroIndexCache[macroId] = i
+                end
+            end
+        end
+    end
+
+    if MegaMacroCharacterData.Activated then
+        for i=1 + MacroLimits.MaxGlobalMacros, MacroLimits.MaxCharacterMacros do
+            local macroCode = GetMacroBody(i)
+    
+            if macroCode then
+                local macroId = GetIdFromMacroCode(macroCode)
+    
+                if macroId then
+                    MacroIndexCache[macroId] = i
+                end
             end
         end
     end
@@ -125,13 +140,13 @@ local function SetupOrUpdateMacros()
     if not InCombatLockdown() then
         local globalCount, characterCount = GetNumMacros()
 
-        if globalCount < MacroLimits.MaxGlobalMacros then
+        if MegaMacroGlobalData.Activated and globalCount < MacroLimits.MaxGlobalMacros then
             for _=1, MacroLimits.MaxGlobalMacros - globalCount do
                 CreateMacro(" ", MegaMacroTexture, "", false)
             end
         end
 
-        if characterCount < MacroLimits.MaxCharacterMacros then
+        if MegaMacroCharacterData.Activated and characterCount < MacroLimits.MaxCharacterMacros then
             for _=1, MacroLimits.MaxCharacterMacros - characterCount do
                 CreateMacro(" ", MegaMacroTexture, "", true)
             end

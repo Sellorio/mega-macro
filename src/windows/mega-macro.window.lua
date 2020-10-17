@@ -254,7 +254,7 @@ local function SetMacroItems()
 	SelectMacro(MacroItems[1])
 end
 
-local function DeleteMacro()
+local function DeleteMegaMacro()
 	if SelectedMacro ~= nil then
 		MegaMacro.Delete(SelectedMacro)
 		SetMacroItems()
@@ -291,31 +291,71 @@ end
 
 local function HandleReceiveDrag(targetScope)
 	local type, macroIndex = GetCursorInfo()
-	local macroId = type == "macro" and MegaMacroEngine.GetMacroIdFromIndex(macroIndex)
 
-	if macroId then
-		local macro = MegaMacro.GetById(macroId)
-		ClearCursor()
+	if type == "macro" then
+		local macroId = MegaMacroEngine.GetMacroIdFromIndex(macroIndex)
 
-		if IsControlKeyDown() then
-			local newDisplayName = macro.Scope == targetScope and macro.DisplayName.." copy" or macro.DisplayName
-			local newMacro = MegaMacro.Create(newDisplayName, targetScope, macro.StaticTexture)
-			MegaMacro.UpdateCode(newMacro, macro.Code)
+		if macroId then
+			print("Importing via drag: macro id = "..tostring(macroId))
+			local macro = MegaMacro.GetById(macroId)
+			ClearCursor()
 
-			if targetScope == SelectedScope then
-				SetMacroItems()
-				SelectMacro(newMacro)
+			if IsControlKeyDown() then
+				local newDisplayName = macro.Scope == targetScope and macro.DisplayName.." copy" or macro.DisplayName
+				local newMacro = MegaMacro.Create(newDisplayName, targetScope, macro.StaticTexture)
+				MegaMacro.UpdateCode(newMacro, macro.Code)
+
+				if targetScope == SelectedScope then
+					SetMacroItems()
+					SelectMacro(newMacro)
+				end
+			elseif targetScope == macro.Scope then
+				-- do nothing
+			else
+				local newMacro = MegaMacro.Move(macro, targetScope)
+
+				if targetScope == SelectedScope then
+					SetMacroItems()
+					SelectMacro(newMacro)
+				elseif macro.Scope == SelectedScope then
+					SetMacroItems()
+				end
 			end
-		elseif targetScope == macro.Scope then
-			-- do nothing
 		else
-			local newMacro = MegaMacro.Move(macro, targetScope)
+			ClearCursor()
+			local name, _, body = GetMacroInfo(macroIndex)
+			local newMacro = MegaMacro.Create(name, targetScope, MegaMacroTexture)
 
-			if targetScope == SelectedScope then
-				SetMacroItems()
-				SelectMacro(newMacro)
-			elseif macro.Scope == SelectedScope then
-				SetMacroItems()
+			if newMacro then
+				MegaMacro.UpdateCode(newMacro, body)
+			end
+
+			SetMacroItems()
+			SelectMacro(newMacro)
+
+			if not InCombatLockdown() then
+				local newMacroIndex = MegaMacroEngine.GetMacroIndexFromId(newMacro.Id)
+				if newMacroIndex then
+					for i=1, 120 do
+						local actionButtonType, actionButtonArg = GetActionInfo(i)
+						if actionButtonType == "macro" and actionButtonArg == macroIndex then
+							PickupMacro(newMacroIndex)
+							PlaceAction(i)
+							ClearCursor()
+						end
+					end
+				end
+
+				DeleteMacro(macroIndex)
+
+				if MacroFrame:IsVisible() then
+					MacroFrame_Update()
+					if MacroFrame.selectedTab == 1 then
+						MacroFrame_SetAccountMacros()
+					else
+						MacroFrame_SetCharacterMacros()
+					end
+				end
 			end
 		end
 	end
@@ -327,7 +367,7 @@ StaticPopupDialogs["CONFIRM_DELETE_SELECTED_MEGA_MACRO"] = {
 	text = CONFIRM_DELETE_MACRO,
 	button1 = OKAY,
 	button2 = CANCEL,
-	OnAccept = DeleteMacro,
+	OnAccept = DeleteMegaMacro,
 	timeout = 0,
 	whileDead = 1,
 	showAlert = 1
