@@ -110,10 +110,6 @@ local function SetupGlobalMacros()
     for i=1, globalCount do
         EditMacro(i, nil, nil, GenerateIdPrefix(i).."\n", true, false)
     end
-
-    for i=1 + globalCount, MacroLimits.MaxGlobalMacros do
-        CreateMacro(" ", MegaMacroTexture, GenerateIdPrefix(i).."\n", false)
-    end
 end
 
 local function SetupCharacterMacros()
@@ -123,20 +119,51 @@ local function SetupCharacterMacros()
         local id = MacroLimits.MaxGlobalMacros + i
         EditMacro(id, nil, nil, GenerateIdPrefix(id).."\n", true, true)
     end
-
-    for i=1 + characterCount, MacroLimits.MaxCharacterMacros do
-        local id = MacroLimits.MaxGlobalMacros + i
-        CreateMacro(" ", MegaMacroTexture, GenerateIdPrefix(id).."\n", true)
-    end
 end
 
-local function SetupOrUpdateMacroCode()
+local function SetupOrUpdateMacros()
     if not InCombatLockdown() then
+        local globalCount, characterCount = GetNumMacros()
+
+        if globalCount < MacroLimits.MaxGlobalMacros then
+            for _=1, MacroLimits.MaxGlobalMacros - globalCount do
+                CreateMacro(" ", MegaMacroTexture, "", false)
+            end
+        end
+
+        if characterCount < MacroLimits.MaxCharacterMacros then
+            for _=1, MacroLimits.MaxCharacterMacros - characterCount do
+                CreateMacro(" ", MegaMacroTexture, "", true)
+            end
+        end
+
+        local assignedMacroIds = {}
+        local unassignedMacros = {}
+
         for i=1, MacroLimits.MaxGlobalMacros + MacroLimits.MaxCharacterMacros do
             local code = GetMacroBody(i)
             local macroId = GetIdFromMacroCode(code)
+
             if macroId then
-                EditMacro(i, nil, nil, GetMacroStubCode(macroId), true, i > MacroLimits.MaxGlobalMacros)
+                if assignedMacroIds[macroId] then
+                    table.insert(unassignedMacros, i)
+                else
+                    assignedMacroIds[macroId] = i
+                    EditMacro(i, nil, MegaMacroTexture, GetMacroStubCode(macroId), true, i > MacroLimits.MaxGlobalMacros)
+                end
+            else
+                table.insert(unassignedMacros, i)
+            end
+        end
+
+        local lastCheckedMacroId = 0
+        for _, macroIndex in ipairs(unassignedMacros) do
+            while lastCheckedMacroId < MacroLimits.MaxGlobalMacros + MacroLimits.MaxCharacterMacros do
+                lastCheckedMacroId = lastCheckedMacroId + 1
+                if not assignedMacroIds[lastCheckedMacroId] then
+                    EditMacro(macroIndex, nil, nil, GetMacroStubCode(lastCheckedMacroId), true, macroIndex > MacroLimits.MaxGlobalMacros)
+                    break
+                end
             end
         end
     end
@@ -263,7 +290,7 @@ function MegaMacroEngine.SafeInitialize()
     end
 
     -- Ensures the macro code is the latest version. it was required to change macro stub code in 1.2. this will also allow for future changes.
-    SetupOrUpdateMacroCode()
+    SetupOrUpdateMacros()
     InitializeMacroIndexCache()
     Initialized = true
 
@@ -273,6 +300,10 @@ function MegaMacroEngine.SafeInitialize()
     PickupMacro = function(macroIndex) PickupMacroWrapper(originalPickupMacro, macroIndex) end
 
     return true
+end
+
+function MegaMacroEngine.Reinitialize()
+
 end
 
 function MegaMacroEngine.GetMacroIdFromIndex(macroIndex)
