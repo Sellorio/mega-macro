@@ -136,6 +136,16 @@ local function ParsePetCommand(parsingContext, command)
         })
 end
 
+local function ParseEquipSetCommand(parsingContext)
+    local equipCode = trim(GrabRemainingLineCode(parsingContext))
+    table.insert(
+        CodeInfoCache[parsingContext.MacroId],
+        {
+            Type = "equipset",
+            Body = equipCode
+        })
+end
+
 local function ParseCommand(parsingContext)
     local result = false
 
@@ -170,6 +180,8 @@ local function ParseCommand(parsingContext)
                 ParsePetCommand(parsingContext, "stay")
             elseif word == "petdismiss" then
                 ParsePetCommand(parsingContext, "dismiss")
+            elseif word == "equipset" then
+                ParseEquipSetCommand(parsingContext)
             end
         end
     end
@@ -207,9 +219,11 @@ local function AddFallbackAbility(macroId)
     local codeInfoLength = #codeInfo
 
     for i=1, codeInfoLength do
-        if codeInfo[i].Type == "showtooltip" then
+        local type = codeInfo[i].Type
+
+        if type == "showtooltip" then
             break
-        elseif codeInfo[i].Type == "cast" or codeInfo[i].Type == "use" then
+        elseif type == "cast" or type == "use" then
             local endOfAbility = string.find(codeInfo[i].Body, ";")
             endOfAbility = endOfAbility and (endOfAbility - 1)
             local endOfConditions = (lastIndexOf(codeInfo[i].Body, "%]", endOfAbility) or 0) + 1
@@ -223,7 +237,7 @@ local function AddFallbackAbility(macroId)
                     Body = abilityName
                 })
             break
-        elseif codeInfo[i].Type == "castsequence" then
+        elseif type == "castsequence" then
             local endOfSequence = string.find(codeInfo[i].Body, ";")
             endOfSequence = endOfSequence and (endOfSequence - 1)
             local endOfConditions = (lastIndexOf(codeInfo[i].Body, "%]", endOfSequence) or 0) + 1
@@ -237,7 +251,7 @@ local function AddFallbackAbility(macroId)
                     Body = sequence
                 })
             break
-        elseif codeInfo[i].Type == "petcommand" then
+        elseif type == "petcommand" then
             table.insert(
                 codeInfo,
                 {
@@ -245,7 +259,20 @@ local function AddFallbackAbility(macroId)
                     Body = codeInfo[i].Command
                 })
             break
-        elseif codeInfo[i].Type == "stopmacro" then
+        elseif type == "equipset" then
+            local endOfAbility = string.find(codeInfo[i].Body, ";")
+            endOfAbility = endOfAbility and (endOfAbility - 1)
+            local endOfConditions = (lastIndexOf(codeInfo[i].Body, "%]", endOfAbility) or 0) + 1
+
+            local firstSetMentioned = trim(string.sub(codeInfo[i].Body, endOfConditions, endOfAbility))
+
+            table.insert(
+                codeInfo,
+                {
+                    Type = "fallbackEquipSet",
+                    Body = firstSetMentioned
+                })
+        elseif type == "stopmacro" then
             -- ignore
         end
     end

@@ -164,7 +164,8 @@ local function RefreshSelectedMacroIcon()
 
 	if SelectedMacro then
 		if SelectedIcon == MegaMacroTexture then
-			displayedTexture = MegaMacroIconEvaluator.GetTextureFromCache(SelectedMacro.Id) or MegaMacroTexture
+			local data = MegaMacroIconEvaluator.GetCachedData(SelectedMacro.Id)
+			displayedTexture = data and data.Icon or MegaMacroTexture
 		else
 			displayedTexture = SelectedIcon
 		end
@@ -247,7 +248,8 @@ local function SetMacroItems()
 		else
 			buttonFrame.Macro = macro
 			buttonName:SetText(macro.DisplayName)
-			buttonIcon:SetTexture(MegaMacroIconEvaluator.GetTextureFromCache(macro.Id))
+			local data = MegaMacroIconEvaluator.GetCachedData(macro.Id)
+			buttonIcon:SetTexture(data and data.Icon)
 		end
 	end
 

@@ -258,7 +258,8 @@ local function PickupMacroWrapper(original, macroIndex)
     local macroId = not inCombat and macroIndex and MegaMacroEngine.GetMacroIdFromIndex(macroIndex)
 
     if macroId then
-        EditMacro(macroIndex, nil, MegaMacroIconEvaluator.GetTextureFromCache(macroId), nil, true, macroIndex > MacroLimits.MaxGlobalMacros)
+        local data = MegaMacroIconEvaluator.GetCachedData(macroId)
+        EditMacro(macroIndex, nil, data and data.Icon, nil, true, macroIndex > MacroLimits.MaxGlobalMacros)
     end
 
     original(macroIndex)

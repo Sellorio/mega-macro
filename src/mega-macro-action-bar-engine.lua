@@ -26,31 +26,6 @@ local updateRange = false
 
 local ActionsBoundToMegaMacros = {}
 
-local function GetMacroAbilityInfo(macroId)
-    local abilityName = MegaMacroIconEvaluator.GetSpellFromCache(macroId)
-
-    if abilityName then
-        local spellId = select(7, MM.GetSpellInfo(abilityName))
-        if spellId then
-            return "spell", spellId
-        end
-
-        local itemId = MM.GetItemInfoInstant(abilityName)
-        if itemId and MM.GetToyInfo(itemId) then
-            _, spellId = MM.GetItemSpell(itemId)
-            if spellId then
-                return "spell", spellId
-            end
-        end
-
-        if itemId then
-            return "item", itemId
-        end
-    end
-
-    return "unknown", nil
-end
-
 local function UpdateCurrentActionState(button, functions, abilityId)
     local isChecked = functions.IsCurrent(abilityId) or functions.IsAutoRepeat(abilityId)
 
@@ -283,37 +258,34 @@ local function UpdateRange(button, functions, abilityId, target)
 	end
 end
 
-local function UpdateTexture(button, macroId)
-    button.icon:SetTexture(MegaMacroIconEvaluator.GetTextureFromCache(macroId))
-end
-
 local function UpdateActionBar(button, macroId)
-    local abilityType, abilityId = GetMacroAbilityInfo(macroId)
+    local data = MegaMacroIconEvaluator.GetCachedData(macroId)
     local functions = MegaMacroInfoFunctions.Unknown
 
-    if abilityType == "spell" then
-        functions = MegaMacroInfoFunctions.Spell
-    elseif abilityType == "item" then
-        functions = MegaMacroInfoFunctions.Item
-    end
+	if data then
+		if data.Type == "spell" then
+			functions = MegaMacroInfoFunctions.Spell
+		elseif data.Type == "item" then
+			functions = MegaMacroInfoFunctions.Item
+		end
 
-    UpdateCurrentActionState(button, functions, abilityId)
-    UpdateUsable(button, functions, abilityId)
-    UpdateCount(button, functions, abilityId)
-    UpdateEquipped(button, functions, abilityId)
-    UpdateOverlayGlow(button, functions, abilityId)
-    UpdateTexture(button, macroId)
+		UpdateCurrentActionState(button, functions, data.Id)
+		UpdateUsable(button, functions, data.Id)
+		UpdateCount(button, functions, data.Id)
+		UpdateEquipped(button, functions, data.Id)
+		UpdateOverlayGlow(button, functions, data.Id)
+		button.icon:SetTexture(data.Icon or MegaMacroTexture)
 
-    if LibActionButton then
-        UpdateCooldownLibActionButton(button, functions, abilityId)
-    else
-        UpdateCooldownBlizzard(button, functions, abilityId)
-    end
+		if LibActionButton then
+			UpdateCooldownLibActionButton(button, functions, data.Id)
+		else
+			UpdateCooldownBlizzard(button, functions, data.Id)
+		end
 
-    if updateRange then
-        local target = MegaMacroIconEvaluator.GetTargetFromCache(macroId)
-        UpdateRange(button, functions, abilityId, target)
-    end
+		if updateRange then
+			UpdateRange(button, functions, data.Id, data.Target)
+		end
+	end
 end
 
 local function ResetActionBar(button)
