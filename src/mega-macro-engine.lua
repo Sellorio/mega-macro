@@ -29,12 +29,12 @@ local function InitializeMacroIndexCache()
     end
 
     if MegaMacroCharacterData.Activated then
-        for i=1 + MacroLimits.MaxGlobalMacros, MacroLimits.MaxCharacterMacros do
+        for i=1 + MacroLimits.MaxGlobalMacros, MacroLimits.MaxGlobalMacros + MacroLimits.MaxCharacterMacros do
             local macroCode = GetMacroBody(i)
-    
+
             if macroCode then
                 local macroId = GetIdFromMacroCode(macroCode)
-    
+
                 if macroId then
                     MacroIndexCache[macroId] = i
                 end
@@ -160,11 +160,14 @@ local function SetupOrUpdateMacros()
             local macroId = GetIdFromMacroCode(code)
 
             if macroId then
-                if assignedMacroIds[macroId] then
+                local isCharacterSpecificMacroId = macroId > MacroLimits.MaxGlobalMacros
+                local isCharacterSpecificMacroIndex = i > MacroLimits.MaxGlobalMacros
+
+                if assignedMacroIds[macroId] or isCharacterSpecificMacroId ~= isCharacterSpecificMacroIndex then
                     table.insert(unassignedMacros, i)
                 else
                     assignedMacroIds[macroId] = i
-                    EditMacro(i, nil, MegaMacroTexture, GetMacroStubCode(macroId), true, i > MacroLimits.MaxGlobalMacros)
+                    EditMacro(i, nil, MegaMacroTexture, GetMacroStubCode(macroId), true, isCharacterSpecificMacroIndex)
                 end
             else
                 table.insert(unassignedMacros, i)
