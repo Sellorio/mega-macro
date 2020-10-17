@@ -21,8 +21,7 @@ NUM_ICONS_PER_ROW = 10
 NUM_ICON_ROWS = 9
 NUM_MACRO_ICONS_SHOWN = NUM_ICONS_PER_ROW * NUM_ICON_ROWS
 MACRO_ICON_ROW_HEIGHT = 36
-
-UIPanelWindows["MegaMacro_Frame"] = { area = "left", pushable = 1, whileDead = 1, width = PANEL_DEFAULT_WIDTH + 302 }
+MegaMacroWindowTogglingMode = false
 
 local function GetScopeFromTabIndex(tabIndex)
 	if tabIndex == 1 then
@@ -335,8 +334,20 @@ StaticPopupDialogs["CONFIRM_DELETE_SELECTED_MEGA_MACRO"] = {
 }
 
 MegaMacroWindow = {
-    Show = function()
-        ShowUIPanel(MegaMacro_Frame);
+	Show = function()
+		if MegaMacroConfig_IsWindowDialog() then
+			MegaMacro_Frame:SetMovable(false)
+			MegaMacro_ToggleWindowModeButton:SetText("Unlock")
+			ShowUIPanel(MegaMacro_Frame);
+		else
+			local relativePoint, x, y = MegaMacroConfig_GetWindowPosition()
+			MegaMacro_Frame:SetMovable(true)
+			MegaMacro_Frame:SetSize(640, 524)
+			MegaMacro_Frame:ClearAllPoints()
+			MegaMacro_Frame:SetPoint(relativePoint, x, y)
+			MegaMacro_ToggleWindowModeButton:SetText("Lock")
+			MegaMacro_Frame:Show()
+		end
 	end,
 	IsOpen = function()
 		return IsOpen
@@ -388,6 +399,13 @@ function MegaMacro_Window_OnHide()
 	SaveMacro()
 	IsOpen = false
     MegaMacro_PopupFrame:Hide()
+end
+
+function MegaMacro_Window_OnDragStop()
+	local _, _, relativePoint, xOfs, yOfs = MegaMacro_Frame:GetPoint()
+	MegaMacroGlobalData.WindowInfo.RelativePoint = relativePoint
+	MegaMacroGlobalData.WindowInfo.X = xOfs
+	MegaMacroGlobalData.WindowInfo.Y = yOfs
 end
 
 function MegaMacro_FrameTab_OnClick(self)
@@ -594,4 +612,23 @@ end
 function MegaMacro_PopupButton_OnClick(self)
 	local buttonIcon = _G[self:GetName().."Icon"]
 	SelectIcon(buttonIcon:GetTexture())
+end
+
+function MegaMacro_ToggleWindowModeButton_OnClick()
+	if MegaMacroConfig_IsWindowDialog() then
+		local _, _, relativePoint, xOfs, yOfs = MegaMacro_Frame:GetPoint()
+		MegaMacroGlobalData.WindowInfo = {
+			IsDialog = false,
+			RelativePoint = relativePoint,
+			X = xOfs,
+			Y = yOfs
+		}
+	else
+		MegaMacroGlobalData.WindowInfo = nil
+	end
+
+	MegaMacroWindowTogglingMode = true
+	HideUIPanel(MegaMacro_Frame)
+	MegaMacroWindow.Show()
+	MegaMacroWindowTogglingMode = false
 end

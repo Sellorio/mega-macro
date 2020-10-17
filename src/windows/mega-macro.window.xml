@@ -25,6 +25,45 @@
 	</CheckButton>
 	<Frame name="MegaMacro_Frame" toplevel="true" movable="true" parent="UIParent" enableMouse="true" hidden="true" inherits="ButtonFrameTemplate">
 		<Size x="640" y="524"/>
+		<Attributes>
+			<Attribute name="UIPanelLayout-defined" type="boolean" value="true"/>
+			<Attribute name="UIPanelLayout-enabled" type="boolean" value="true"/>
+			<Attribute name="UIPanelLayout-area" type="string" value="left"/>
+			<Attribute name="UIPanelLayout-width" type="number" value="641"/>
+			<Attribute name="UIPanelLayout-pushable" type="number" value="1"/>
+			<Attribute name="UIPanelLayout-whileDead" type="boolean" value="true"/>
+		</Attributes>
+		<Scripts>
+			<OnLoad>
+				self:RegisterForDrag("LeftButton");
+				MegaMacro_Window_OnLoad();
+			</OnLoad>
+			<OnDragStart>
+				if not MegaMacroConfig_IsWindowDialog() then
+					self:StartMoving()
+				end
+			</OnDragStart>
+			<OnDragStop>
+				if not MegaMacroConfig_IsWindowDialog() then
+					self:StopMovingOrSizing();
+					MegaMacro_Window_OnDragStop();
+				end
+			</OnDragStop>
+			<OnShow>
+				if not MegaMacroWindowTogglingMode then
+                	PlaySound(SOUNDKIT.IG_CHARACTER_INFO_OPEN);
+                	MegaMacro_Window_OnShow();
+				end
+            </OnShow>
+			<OnHide>
+				if not MegaMacroWindowTogglingMode then
+	            	PlaySound(SOUNDKIT.IG_CHARACTER_INFO_CLOSE);
+                	MegaMacro_Window_OnHide();
+				end
+            </OnHide>
+		</Scripts>
+		<Scripts>
+		</Scripts>
 		<Layers>
 			<Layer level="OVERLAY" textureSubLevel="-1">
 				<Texture name="MegaMacro_FramePortrait" file="Interface\MacroFrame\MacroFrame-Icon">
@@ -82,6 +121,15 @@
 			</Layer>
 		</Layers>
 		<Frames>
+				<Button name="MegaMacro_ToggleWindowModeButton" frameStrata="HIGH" inherits="UIPanelButtonTemplate" text="{lock/unlock}">
+					<Size x="80" y="22"/>
+					<Anchors>
+						<Anchor point="TOPRIGHT" relativeTo="MegaMacro_Frame" relativePoint="TOPRIGHT" x="-21" y="1"/>
+					</Anchors>
+					<Scripts>
+						<OnClick>MegaMacro_ToggleWindowModeButton_OnClick();</OnClick>
+					</Scripts>
+				</Button>
 			<CheckButton name="MegaMacro_FrameSelectedMacroButton" frameStrata="HIGH" inherits="MegaMacro_ButtonTemplate" id="0">
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeTo="MegaMacro_FrameSelectedMacroBackground" x="14" y="-14"/>
@@ -317,17 +365,6 @@
 				</Scripts>
 			</Button>
 		</Frames>
-		<Scripts>
-			<OnLoad>MegaMacro_Window_OnLoad();</OnLoad>
-			<OnShow>
-                PlaySound(SOUNDKIT.IG_CHARACTER_INFO_OPEN);
-                MegaMacro_Window_OnShow();
-            </OnShow>
-			<OnHide>
-	            PlaySound(SOUNDKIT.IG_CHARACTER_INFO_CLOSE);
-                MegaMacro_Window_OnHide();
-            </OnHide>
-		</Scripts>
 	</Frame>
 	<Frame name="MegaMacro_PopupFrame" toplevel="true" frameStrata="HIGH" parent="UIParent" movable="true" enableMouse="true" hidden="true">
 		<Scripts>

@@ -72,3 +72,13 @@ MegaMacroCharacterData = {
     }
 }
 ]]
+
+function MegaMacroConfig_IsWindowDialog()
+    return not MegaMacroGlobalData.WindowInfo and true or MegaMacroGlobalData.WindowInfo.IsDialog
+end
+
+function MegaMacroConfig_GetWindowPosition()
+    if MegaMacroGlobalData.WindowInfo then
+        return MegaMacroGlobalData.WindowInfo.RelativePoint, MegaMacroGlobalData.WindowInfo.X, MegaMacroGlobalData.WindowInfo.Y
+    end
+end
