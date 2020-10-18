@@ -67,7 +67,7 @@ local function LoadIcons()
 		local tabEnd = offset + numSpells;
 		for j = offset, tabEnd - 1 do
 			--to get spell info by slot, you have to pass in a pet argument
-			local spellType, ID = GetSpellBookItemInfo(j, "player"); 
+			local spellType, ID = GetSpellBookItemInfo(j, "player");
 			if (spellType ~= "FUTURESPELL") then
 				local fileID = GetSpellBookItemTexture(j, "player");
 				if (fileID) then
@@ -77,7 +77,7 @@ local function LoadIcons()
 			if (spellType == "FLYOUT") then
 				local _, _, numSlots, isKnown = GetFlyoutInfo(ID);
 				if (isKnown and numSlots > 0) then
-					for k = 1, numSlots do 
+					for k = 1, numSlots do
 						local spellID, overrideSpellID, isKnown = GetFlyoutSlotInfo(ID, k)
 						if (isKnown) then
 							local fileID = GetSpellTexture(spellID);
@@ -674,3 +674,30 @@ function MegaMacro_ToggleWindowModeButton_OnClick()
 	MegaMacroWindow.Show()
 	MegaMacroWindowTogglingMode = false
 end
+
+MegaMacroLastShiftClickInsertAt = nil
+hooksecurefunc("SpellButton_OnModifiedClick", function(self)
+	-- for some reason this callback is triggered twice, this will prevent that
+	if MegaMacroSystemTime == MegaMacroLastShiftClickInsertAt then
+		return
+	end
+
+	MegaMacroLastShiftClickInsertAt = MegaMacroSystemTime
+
+	local slot = SpellBook_GetSpellBookSlot(self);
+	if ( slot > MAX_SPELLS ) then
+		return
+	end
+
+	if IsModifiedClick("CHATLINK") and MegaMacro_FrameText:HasFocus() then
+		local spellName, subSpellName = GetSpellBookItemName(slot, SpellBookFrame.bookType)
+
+		if spellName and not IsPassiveSpell(slot, SpellBookFrame.bookType) then
+			if subSpellName and string.len(subSpellName) > 0 then
+				MegaMacro_FrameText:Insert(spellName.."("..subSpellName..")")
+			else
+				MegaMacro_FrameText:Insert(spellName)
+			end
+		end
+	end
+end)
