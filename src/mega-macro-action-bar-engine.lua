@@ -191,7 +191,7 @@ local function UpdateCount(button, functions, abilityId)
     local count = functions.GetCount(abilityId)
 
     local isNonEquippableItem = functions == MegaMacroInfoFunctions.Item and not MM.IsEquippableItem(abilityId)
-    local isNonItemWithCount = functions ~= MegaMacroInfoFunctions.Item and count > 0
+    local isNonItemWithCount = functions ~= MegaMacroInfoFunctions.Item and count and count > 0
 
     if isNonEquippableItem or isNonItemWithCount then
         countLabel:SetText(count > (button.maxDisplayCount or 9999) and "*" or count)
