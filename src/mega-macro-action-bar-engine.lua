@@ -19,6 +19,7 @@ For developer refererence, these are the features of an action bar button:
 
 
 local LibActionButton = nil
+local ActionBarSystem = nil -- Blizzard or LAB or Dominos
 local BlizzardActionBars = { "Action", "MultiBarBottomLeft", "MultiBarBottomRight", "MultiBarRight", "MultiBarLeft" }
 
 local rangeTimer = 5
@@ -309,6 +310,30 @@ local function ForEachLibActionButton(func)
     end
 end
 
+local function ForEachDominosButton(func)
+	for i=1, 120 do
+		local button = nil
+		if i <= 12 then
+			button = _G[('ActionButton%d'):format(i)]
+		elseif i <= 24 then
+			button = _G["DominosActionButton"..(i - 12)]
+		elseif i <= 36 then
+			button = _G[('MultiBarRightButton%d'):format(i - 24)]
+		elseif i <= 48 then
+			button = _G[('MultiBarLeftButton%d'):format(i - 36)]
+		elseif i <= 60 then
+			button = _G[('MultiBarBottomRightButton%d'):format(i - 48)]
+		elseif i <= 72 then
+			button = _G[('MultiBarBottomLeftButton%d'):format(i - 60)]
+		else
+			button = _G["DominosActionButton"..(i - 60)]
+		end
+		if button then
+			func(button)
+		end
+	end
+end
+
 local function ForEachBlizzardActionButton(func)
     for actionBarIndex=1, #BlizzardActionBars do
         for i=1, 12 do
@@ -325,8 +350,14 @@ MegaMacroActionBarEngine = {}
 function MegaMacroActionBarEngine.Initialize()
     if _G["BT4Button1"] then
         LibActionButton = LibStub("LibActionButton-1.0")
+		ActionBarSystem = "LAB"
     elseif _G["ElvUI_Bar1Button1"] then
-        LibActionButton = LibStub("LibActionButton-1.0-ElvUI")
+		LibActionButton = LibStub("LibActionButton-1.0-ElvUI")
+		ActionBarSystem = "LAB"
+	elseif Dominos then
+		ActionBarSystem = "Dominos"
+	else
+		ActionBarSystem = "Blizzard"
     end
 
     MegaMacroIconEvaluator.OnIconUpdated(function()
@@ -338,7 +369,13 @@ function MegaMacroActionBarEngine.OnUpdate(elapsed)
     UpdateRangeTimer(elapsed)
 
     local focus = GetMouseFocus()
-    local iterator = LibActionButton and ForEachLibActionButton or ForEachBlizzardActionButton
+	local iterator = ForEachBlizzardActionButton
+	
+	if ActionBarSystem == "LAB" then
+		iterator = ForEachLibActionButton
+	elseif ActionBarSystem == "Dominos" then
+		iterator = ForEachDominosButton
+	end
 
 	iterator(function(button)
 		local action = button:GetAttribute("action") or button.action
