@@ -8,6 +8,8 @@ local PopupModes = {
 	Edit = 1
 }
 
+local PlusTexture = 3192688--135769
+
 local IsOpen = false
 local SelectedScope = MegaMacroScopes.Global
 local MacroItems = {}
@@ -78,7 +80,8 @@ local function LoadIcons()
 				local _, _, numSlots, isKnown = GetFlyoutInfo(ID);
 				if (isKnown and numSlots > 0) then
 					for k = 1, numSlots do
-						local spellID, overrideSpellID, isKnown = GetFlyoutSlotInfo(ID, k)
+						local spellID
+						spellID, _, isKnown = GetFlyoutSlotInfo(ID, k)
 						if (isKnown) then
 							local fileID = GetSpellTexture(spellID);
 							if (fileID) then
@@ -245,25 +248,60 @@ local function SetMacroItems()
 			return left.DisplayName < right.DisplayName
 		end)
 
+	local newMacroButtonCreated = false
+
 	for i=1, HighestMaxMacroCount do
 		local buttonFrame, buttonName, buttonIcon = GetMacroButtonUI(i)
 
 		local macro = MacroItems[i]
 
-		if macro == nil then
-			buttonFrame.Macro = nil
-			buttonFrame:SetChecked(false)
-			buttonName:SetText("")
-			buttonIcon:SetTexture("")
-		else
+		if macro then
 			buttonFrame.Macro = macro
+			buttonFrame.IsNewButton = false
+			buttonFrame:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
 			buttonName:SetText(macro.DisplayName)
 			local data = MegaMacroIconEvaluator.GetCachedData(macro.Id)
 			buttonIcon:SetTexture(data and data.Icon)
+			buttonIcon:SetDesaturated(false)
+			buttonIcon:SetTexCoord(0, 1, 0, 1)
+			buttonIcon:SetAlpha(1)
+		elseif not newMacroButtonCreated then
+			buttonFrame.Macro = nil
+			buttonFrame.IsNewButton = true
+			buttonFrame:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
+			buttonName:SetText("")
+			buttonIcon:SetTexture(PlusTexture)
+			buttonIcon:SetDesaturated(true)
+			buttonIcon:SetTexCoord(.08, .92, .08, .92)
+			buttonIcon:SetAlpha(0.5)
+			newMacroButtonCreated = true
+		else
+			buttonFrame.Macro = nil
+			buttonFrame.IsNewButton = false
+			buttonFrame:SetHighlightTexture(nil)
+			buttonName:SetText("")
+			buttonIcon:SetTexture("")
+			buttonIcon:SetDesaturated(false)
+			buttonIcon:SetTexCoord(0, 1, 0, 1)
+			buttonIcon:SetAlpha(1)
 		end
 	end
 
 	SelectMacro(MacroItems[1])
+end
+
+local function NewMacro()
+	SelectMacro(nil)
+
+	local button = _G["MegaMacro_MacroButton"..(#MacroItems + 1)]
+
+	if button then
+		button:SetChecked(true)
+	end
+
+	PopupMode = PopupModes.New
+	MegaMacro_PopupFrame:Show()
+	MegaMacro_PopupEditBox:SetText("")
 end
 
 local function DeleteMegaMacro()
@@ -495,12 +533,14 @@ function MegaMacro_ButtonContainer_OnReceiveDrag()
 end
 
 function MegaMacro_MacroButton_OnClick(self)
-	if not self.Macro then
-		self:SetChecked(false)
-	end
-
-	if not HandleReceiveDrag(SelectedScope) and self.Macro then
-		SelectMacro(self.Macro)
+	if not HandleReceiveDrag(SelectedScope) then
+		if self.Macro then
+			SelectMacro(self.Macro)
+		elseif self.IsNewButton then
+			NewMacro()
+		else
+			self:SetChecked(false)
+		end
 	end
 end
 
@@ -588,13 +628,6 @@ function MegaMacro_EditButton_OnClick()
 		MegaMacro_PopupFrame:Show()
 		PopupMode = PopupModes.Edit
 	end
-end
-
-function MegaMacro_NewButton_OnClick()
-	SelectMacro(nil)
-	PopupMode = PopupModes.New
-	MegaMacro_PopupFrame:Show()
-	MegaMacro_PopupEditBox:SetText("")
 end
 
 function MegaMacro_EditOkButton_OnClick()

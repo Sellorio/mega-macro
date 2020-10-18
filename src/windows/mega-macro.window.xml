@@ -346,15 +346,6 @@
 					</OnClick>
 				</Scripts>
 			</Button>
-			<Button name="MegaMacro_NewButton" inherits="UIPanelButtonTemplate" text="NEW">
-				<Size x="80" y="22"/>
-				<Anchors>
-					<Anchor point="BOTTOMRIGHT" x="-82" y="4"/>
-				</Anchors>
-				<Scripts>
-					<OnClick>MegaMacro_NewButton_OnClick();</OnClick>
-				</Scripts>
-			</Button>
 			<Button name="MegaMacro_ExitButton" inherits="UIPanelButtonTemplate" text="EXIT">
 				<Size x="80" y="22"/>
 				<Anchors>
