@@ -308,7 +308,6 @@ local function HandleReceiveDrag(targetScope)
 		local macroId = MegaMacroEngine.GetMacroIdFromIndex(macroIndex)
 
 		if macroId then
-			print("Importing via drag: macro id = "..tostring(macroId))
 			local macro = MegaMacro.GetById(macroId)
 			ClearCursor()
 

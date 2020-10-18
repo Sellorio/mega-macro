@@ -126,7 +126,6 @@ end
 
 local function ParsePetCommand(parsingContext, command)
     local condition = trim(GrabRemainingLineCode(parsingContext))
-    print("Adding pet command code info item for '"..command.."' with conditions: "..condition.."TRUE")
     table.insert(
         CodeInfoCache[parsingContext.MacroId],
         {
