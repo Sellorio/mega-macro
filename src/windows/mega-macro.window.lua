@@ -117,12 +117,22 @@ local function InitializeIconListPanel()
 	end
 end
 
-local function InitializeTabTitles()
+local function InitializeTabs()
 	local playerName = UnitName("player")
-	MegaMacro_FrameTab2:SetText(MegaMacroCachedClass);
-	MegaMacro_FrameTab3:SetText(MegaMacroCachedSpecialization);
-	MegaMacro_FrameTab4:SetText(playerName);
-	MegaMacro_FrameTab5:SetText(playerName.." "..MegaMacroCachedSpecialization);
+	MegaMacro_FrameTab2:SetText(MegaMacroCachedClass)
+	MegaMacro_FrameTab4:SetText(playerName)
+
+	if MegaMacroCachedSpecialization == '' then
+		MegaMacro_FrameTab3:SetText("Locked")
+		MegaMacro_FrameTab5:SetText("Locked")
+		MegaMacro_FrameTab3:Disable()
+		MegaMacro_FrameTab5:Disable()
+	else
+		MegaMacro_FrameTab3:SetText(MegaMacroCachedSpecialization)
+		MegaMacro_FrameTab5:SetText(playerName.." "..MegaMacroCachedSpecialization)
+		MegaMacro_FrameTab3:Enable()
+		MegaMacro_FrameTab5:Enable()
+	end
 end
 
 -- Shows and hides macro slot buttons based on the number of slots available in the scope
@@ -398,7 +408,7 @@ MegaMacroWindow = {
 		SaveMacro()
 	end,
 	OnSpecializationChanged = function(oldValue, newValue)
-		InitializeTabTitles()
+		InitializeTabs()
 		SetMacroItems()
 	end
 }
@@ -433,7 +443,7 @@ end
 
 function MegaMacro_Window_OnShow()
 	IsOpen = true
-	InitializeTabTitles()
+	InitializeTabs()
 	InitializeIconListPanel()
 end
 
@@ -462,6 +472,7 @@ function MegaMacro_FrameTab_OnClick(self)
 
 		InitializeMacroSlots()
 		SetMacroItems()
+		InitializeTabs()
 	end
 end
 
