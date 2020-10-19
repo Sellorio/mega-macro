@@ -11,11 +11,14 @@ src/constants.lua
 src/config.lua
 src/cached-data-functions.lua
 src/tooltip-functions.lua
-src/mega-macro-action-bar-engine.lua
 src/mega-macro.lua
-src/mega-macro-code-info.lua
-src/mega-macro-icon-evaluator.lua
-src/mega-macro-engine.lua
+
+src/engine/mega-macro-action-bar-engine.lua
+src/engine/mega-macro-code-info.lua
+src/engine/mega-macro-icon-evaluator.lua
+src/engine/mega-macro-engine.lua
+src/engine/mega-macro-parsing.lua
+
 src/windows/mega-macro.window.xml
 src/windows/mega-macro.window.lua
 
