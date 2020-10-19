@@ -1,16 +1,15 @@
 function GetMegaMacroParsingColourData()
     return  {
-        String = "ffffffff",
-        Number = "ffffffff",
+        String = "ffff9900",
+        Number = "ffff9900",
         Emote = "ffeedd82",
-        Script = "ff696969",
-        Command = "ff00bfff",
-        Spell = "ff9932cc",
+        Command = "ff33ddff",
         Target = "ffffd700",
-        Condition = "ff8b5a2b",
+        Condition = "ffff9900",
         Default = "ffffffff",
-        Error = "ffff0000",
-        Item = "fff08080",
-        Syntax = "ffffffff"
+        Error = "ffff4444",
+        CommandContent = "ffeeeeee",
+        Syntax = "ff33ddff",
+        Comment = "ff44ff44"
     }
 end

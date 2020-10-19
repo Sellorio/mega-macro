@@ -17,7 +17,11 @@ src/engine/mega-macro-action-bar-engine.lua
 src/engine/mega-macro-code-info.lua
 src/engine/mega-macro-icon-evaluator.lua
 src/engine/mega-macro-engine.lua
-src/engine/mega-macro-parsing.lua
+
+src/engine/parsing/parsing-functions.lua
+src/engine/parsing/colours.lua
+src/engine/parsing/conditions.lua
+src/engine/mega-macro-parser.lua
 
 src/windows/mega-macro.window.xml
 src/windows/mega-macro.window.lua

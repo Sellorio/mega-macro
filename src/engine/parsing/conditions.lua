@@ -152,9 +152,11 @@ local function KeyModifier(parsingContext)
                     true
             end
         end
-    end
 
-    return "", false
+        return "", false
+    else
+        return "", true
+    end
 end
 
 local function MouseButtonModifier(parsingContext)
