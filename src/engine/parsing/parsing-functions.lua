@@ -1,39 +1,3 @@
-local function HandleFormattingAndLinks(text, defaultColour)
-    local openCode = defaultColour and "|c"..defaultColour or ""
-    local closeCode = defaultColour and "|r" or ""
-    local result = openCode
-    local isInLink = false
-
-    local i = 1
-    while i <= #text do
-        -- local tag = string.sub(text, i, i + 2)
-        -- if tag == '|rc' then
-        --     print("In colour")
-        --     result = result..closeCode..tag
-        --     i = i + 2
-        -- elseif tag == "|rH" then
-        --     print("In link")
-        --     result = result..tag
-        --     isInLink = true
-        --     i = i + 2
-        -- elseif tag == "|rr" and isInLink then
-        --     print("Out link")
-        --     result = result..tag..openCode
-        --     isInLink = false
-        --     i = i + 2
-        -- elseif string.sub(tag, 1, 2) == "|r" and not isInLink then
-        --     print("Out colour")
-        --     result = result.."|r"..openCode
-        -- else
-            result = result..string.sub(text, i, i)
-        -- end
-
-        i = i + 1
-    end
-
-    return closeCode..result
-end
-
 local function GetCharacter(parsingContext, offset)
     local index = parsingContext.Index + (offset or 0)
     local result = string.sub(parsingContext.Code, index, index)
@@ -56,9 +20,9 @@ local function ParseResult(parsingContext, length, colour)
     if length == 0 then
         return ""
     end
-    local text = HandleFormattingAndLinks(string.sub(parsingContext.Code, parsingContext.Index, parsingContext.Index + length - 1), colour)
+    local text = string.sub(parsingContext.Code, parsingContext.Index, parsingContext.Index + length - 1)
     parsingContext.Index = parsingContext.Index + length
-    return text
+    return colour and "|c"..colour..text.."|r" or text
 end
 
 function GetMegaMacroParsingFunctions()

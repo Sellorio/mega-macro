@@ -155,7 +155,12 @@ local function SetupOrUpdateMacros()
         local assignedMacroIds = {}
         local unassignedMacros = {}
 
-        for i=1, MacroLimits.MaxGlobalMacros + MacroLimits.MaxCharacterMacros do
+        -- skip global macros if they are not activated
+        local startIndex = MegaMacroGlobalData.Activated and 1 or MacroLimits.MaxGlobalMacros + 1
+        -- stop before character macros if they are not activated
+        local endIndex = MegaMacroCharacterData.Activated and MacroLimits.MaxGlobalMacros + MacroLimits.MaxCharacterMacros or MacroLimits.MaxGlobalMacros
+
+        for i=startIndex, endIndex do
             local code = GetMacroBody(i)
             local macroId = GetIdFromMacroCode(code)
 
@@ -174,9 +179,9 @@ local function SetupOrUpdateMacros()
             end
         end
 
-        local lastCheckedMacroId = 0
+        local lastCheckedMacroId = startIndex - 1
         for _, macroIndex in ipairs(unassignedMacros) do
-            while lastCheckedMacroId < MacroLimits.MaxGlobalMacros + MacroLimits.MaxCharacterMacros do
+            while lastCheckedMacroId < endIndex do
                 lastCheckedMacroId = lastCheckedMacroId + 1
                 if not assignedMacroIds[lastCheckedMacroId] then
                     EditMacro(macroIndex, nil, nil, GetMacroStubCode(lastCheckedMacroId), true, macroIndex > MacroLimits.MaxGlobalMacros)

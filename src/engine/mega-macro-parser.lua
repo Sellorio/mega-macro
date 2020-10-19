@@ -109,7 +109,6 @@ local function ParseTarget(parsingContext)
     local indexBeforeTarget = parsingContext.Index
 
     if character == '@' then
-        print("Found @ for target parsing...")
         result = ParseResult(parsingContext, 1, Colours.Target)
     elseif GetWord(parsingContext) == "target" then
         result = ParseResult(parsingContext, 6, Colours.Target)
@@ -130,7 +129,6 @@ local function ParseTarget(parsingContext)
 
     local target = GetWord(parsingContext)
 
-    print("Checking if "..target.." is a valid unit...")
     if IsValidUnitId(target) then
         return
             result..ParseResult(parsingContext, #target, Colours.Target),
