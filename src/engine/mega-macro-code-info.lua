@@ -145,6 +145,17 @@ local function ParseEquipSetCommand(parsingContext)
         })
 end
 
+local function ParseClickCommand(parsingContext)
+    local clickCode = trim(GrabRemainingLineCode(parsingContext))
+
+    table.insert(
+        CodeInfoCache[parsingContext.MacroId],
+        {
+            Type = "click",
+            Body = clickCode
+        })
+end
+
 local function ParseCommand(parsingContext)
     local result = false
 
@@ -181,6 +192,8 @@ local function ParseCommand(parsingContext)
                 ParsePetCommand(parsingContext, "dismiss")
             elseif word == "equipset" then
                 ParseEquipSetCommand(parsingContext)
+            elseif word == "click" then
+                ParseClickCommand(parsingContext)
             end
         end
     end
@@ -271,6 +284,16 @@ local function AddFallbackAbility(macroId)
                     Type = "fallbackEquipSet",
                     Body = firstSetMentioned
                 })
+            elseif type == "click" then
+                local endOfConditions = (lastIndexOf(codeInfo[i].Body, "%]") or 0) + 1
+                local buttonName = trim(string.sub(codeInfo[i].Body, endOfConditions))
+    
+                table.insert(
+                    codeInfo,
+                    {
+                        Type = "fallbackClick",
+                        Body = buttonName
+                    })
         elseif type == "stopmacro" then
             -- ignore
         end

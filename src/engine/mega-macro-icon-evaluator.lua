@@ -94,6 +94,18 @@ local function GetAbilityData(ability)
     end
 end
 
+local function GetIconForButton(buttonName)
+    local icon = nil
+    local button = _G[buttonName]
+    if button then
+        local iconFrame = button.icon or _G[buttonName.."Icon"]
+        if iconFrame and iconFrame.GetTexture then
+            icon = iconFrame:GetTexture()
+        end
+    end
+    return icon
+end
+
 local function UpdateMacro(macro)
     local icon = macro.StaticTexture or MegaMacroTexture
     local effectType = nil
@@ -156,6 +168,13 @@ local function UpdateMacro(macro)
                         _, icon = C_EquipmentSet.GetEquipmentSetInfo(setId)
                     end
                 end
+            elseif command.Type == "click" then
+                local buttonName = SecureCmdOptionParse(command.Body)
+                if buttonName then
+                    effectType = "other"
+                    effectName = buttonName
+                    icon = GetIconForButton(buttonName)
+                end
             end
         end
 
@@ -172,6 +191,10 @@ local function UpdateMacro(macro)
                 effectType = "equipment set"
                 effectName = codeInfo[codeInfoLength].Body
                 icon = GetEquipmentSetInfoByName(effectName)
+            elseif codeInfo[codeInfoLength].Type == "fallbackClick" then
+                effectType = "other"
+                effectName = codeInfo[codeInfoLength].Body
+                icon = GetIconForButton(effectName)
             end
         end
     end

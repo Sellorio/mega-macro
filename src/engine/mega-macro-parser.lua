@@ -28,7 +28,7 @@ local function IsEndOfLine(parsingContext, offset)
     return not character or character == '\n'
 end
 
-function ParseWhiteSpace(parsingContext)
+local function ParseWhiteSpace(parsingContext)
     local result = ""
     local character = GetCharacter(parsingContext)
 
