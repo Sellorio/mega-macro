@@ -121,15 +121,15 @@
 			</Layer>
 		</Layers>
 		<Frames>
-				<Button name="MegaMacro_ToggleWindowModeButton" frameStrata="HIGH" inherits="UIPanelButtonTemplate" text="{lock/unlock}">
-					<Size x="80" y="22"/>
-					<Anchors>
-						<Anchor point="TOPRIGHT" relativeTo="MegaMacro_Frame" relativePoint="TOPRIGHT" x="-21" y="1"/>
-					</Anchors>
-					<Scripts>
-						<OnClick>MegaMacro_ToggleWindowModeButton_OnClick();</OnClick>
-					</Scripts>
-				</Button>
+			<Button name="MegaMacro_ToggleWindowModeButton" frameStrata="HIGH" inherits="UIPanelButtonTemplate" text="{lock/unlock}">
+				<Size x="80" y="22"/>
+				<Anchors>
+					<Anchor point="TOPRIGHT" relativeTo="MegaMacro_Frame" relativePoint="TOPRIGHT" x="-21" y="1"/>
+				</Anchors>
+				<Scripts>
+					<OnClick>MegaMacro_ToggleWindowModeButton_OnClick();</OnClick>
+				</Scripts>
+			</Button>
 			<CheckButton name="MegaMacro_FrameSelectedMacroButton" frameStrata="HIGH" inherits="MegaMacro_ButtonTemplate" id="0">
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeTo="MegaMacro_FrameSelectedMacroBackground" x="14" y="-14"/>
@@ -204,6 +204,34 @@
 			</Button>
 			<ScrollFrame name="MegaMacro_FrameScrollFrame" inherits="UIPanelScrollFrameTemplate">
 				<Size x="591" y="185"/>
+				<Scripts>
+					<OnMouseWheel>
+						ScrollFrameTemplate_OnMouseWheel(self, delta);
+						ScrollFrameTemplate_OnMouseWheel(MegaMacro_FormattedFrameScrollFrame, delta);
+					</OnMouseWheel>
+					<OnVerticalScroll>
+						local scrollbar1 = MegaMacro_FrameScrollFrameScrollBar;
+						local scrollbar2 = MegaMacro_FormattedFrameScrollFrameScrollBar;
+						scrollbar1:SetValue(offset);
+						scrollbar2:SetValue(offset);
+						local mini1, maxi1 = scrollbar1:GetMinMaxValues();
+						local mini2, maxi2 = scrollbar2:GetMinMaxValues();
+						if delta == 0 then
+							MegaMacro_FrameScrollFrameScrollBarScrollUpButton:Disable();
+							MegaMacro_FormattedFrameScrollFrameScrollBarScrollUpButton:Disable();
+						else
+							MegaMacro_FrameScrollFrameScrollBarScrollUpButton:Enable();
+							MegaMacro_FormattedFrameScrollFrameScrollBarScrollUpButton:Enable();
+						end
+						if scrollbar1:GetValue() - maxi1 == 0 then
+							MegaMacro_FrameScrollFrameScrollBarScrollDownButton:Disable();
+							MegaMacro_FormattedFrameScrollFrameScrollBarScrollDownButton:Disable();
+						else
+							MegaMacro_FrameScrollFrameScrollBarScrollDownButton:Enable();
+							MegaMacro_FormattedFrameScrollFrameScrollBarScrollDownButton:Enable();
+						end
+					</OnVerticalScroll>
+				</Scripts>
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeTo="MegaMacro_FrameSelectedMacroBackground" relativePoint="BOTTOMLEFT" x="11" y="-13"/>
 				</Anchors>
@@ -211,11 +239,34 @@
 					<EditBox name="MegaMacro_FrameText" multiLine="true" letters="1023" autoFocus="false" countInvisibleLetters="true">
 						<Size x="589" y="185"/>
 						<Scripts>
-							<OnLoad>ScrollingEdit_OnCursorChanged(self, 0, 0, 0, 0);</OnLoad>
+							<OnLoad>
+								ScrollingEdit_OnCursorChanged(self, 0, 0, 0, 0);
+								self:GetRegions():SetAlpha(0.2);
+							</OnLoad>
 							<OnTextChanged>MegaMacro_TextBox_TextChanged(self);</OnTextChanged>
 							<OnCursorChanged function="ScrollingEdit_OnCursorChanged"/>
 							<OnUpdate>ScrollingEdit_OnUpdate(self, elapsed, self:GetParent());</OnUpdate>
 							<OnEscapePressed function="EditBox_ClearFocus"/>
+						</Scripts>
+						<FontString inherits="GameFontHighlightSmall"/>
+					</EditBox>
+				</ScrollChild>
+			</ScrollFrame>
+			<ScrollFrame name="MegaMacro_FormattedFrameScrollFrame" inherits="UIPanelScrollFrameTemplate">
+				<Size x="591" y="185"/>
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="MegaMacro_FrameSelectedMacroBackground" relativePoint="BOTTOMLEFT" x="11" y="-13"/>
+				</Anchors>
+				<ScrollChild>
+					<EditBox name="MegaMacro_FormattedFrameText" multiLine="true" letters="9999" autoFocus="false" countInvisibleLetters="true">
+						<Size x="589" y="185"/>
+						<Scripts>
+							<OnLoad>
+								ScrollingEdit_OnCursorChanged(self, 0, 0, 0, 0);
+								MegaMacro_FrameText:SetFrameLevel(self:GetFrameLevel() + 1)
+							</OnLoad>
+							<OnCursorChanged function="ScrollingEdit_OnCursorChanged"/>
+							<OnUpdate>ScrollingEdit_OnUpdate(self, elapsed, self:GetParent());</OnUpdate>
 						</Scripts>
 						<FontString inherits="GameFontHighlightSmall"/>
 					</EditBox>

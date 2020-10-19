@@ -587,7 +587,8 @@ function MegaMacro_FrameTextButton_OnClick()
 end
 
 function MegaMacro_TextBox_TextChanged(self)
-	if SelectedMacro ~= nil and SelectedMacro.Code ~= MegaMacro_FrameText:GetText() then
+	local text = MegaMacro_FrameText:GetText()
+	if SelectedMacro ~= nil and SelectedMacro.Code ~= text then
 		MegaMacro_SaveButton:Enable()
 		MegaMacro_CancelButton:Enable()
 	else
@@ -600,7 +601,9 @@ function MegaMacro_TextBox_TextChanged(self)
 		MegaMacro_FrameText:GetNumLetters(),
 		MegaMacroCodeMaxLength)
 
-    ScrollingEdit_OnTextChanged(self, self:GetParent())
+	ScrollingEdit_OnTextChanged(self, self:GetParent())
+	ScrollingEdit_OnTextChanged(MegaMacro_FormattedFrameText, MegaMacro_FormattedFrameText:GetParent())
+	MegaMacro_FormattedFrameText:SetText(MegaMacroParser.Parse(text))
 end
 
 function MegaMacro_CancelButton_OnClick()
