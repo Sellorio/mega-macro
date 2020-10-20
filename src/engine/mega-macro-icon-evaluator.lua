@@ -84,10 +84,11 @@ local function GetAbilityData(ability)
         if texture then
             if MM.GetToyInfo(itemId) then
                 spellName, spellId = MM.GetItemSpell(itemId)
-                return "spell", spellId, spellName, texture
-            else
-                return "item", itemId, ability, texture
+                if spellId then
+                    return "spell", spellId, spellName, texture
+                end
             end
+            return "item", itemId, ability, texture
         end
 
         return "unknown", nil, ability, MegaMacroTexture
