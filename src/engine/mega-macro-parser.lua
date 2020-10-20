@@ -275,14 +275,13 @@ local function ParseCommand(parsingContext)
             character = GetCharacter(parsingContext)
         end
 
-        if character == ";" then
-            parsingContext.Index = parsingContext.Index + 1
-            bodyPartLength = bodyPartLength + 1
-        end
-
         if bodyPartLength > 0 then
             parsingContext.Index = parsingContext.Index - bodyPartLength
             result = result..ParseResult(parsingContext, bodyPartLength, Colours.CommandContent)..ParseWhiteSpace(parsingContext)
+        end
+
+        if character == ";" then
+            result = result..ParseResult(parsingContext, 1, Colours.Syntax)
         end
     end
 
