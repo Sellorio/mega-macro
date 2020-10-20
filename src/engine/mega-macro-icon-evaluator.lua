@@ -72,7 +72,7 @@ local function GetAbilityData(ability)
             return "unknown", nil, nil, MegaMacroTexture
         end
     else
-        local spellName, _, texture, _, _, _, spellId = MM.GetSpellInfo(ability)
+        local spellName, _, texture, _, _, _, spellId = GetSpellInfo(ability)
         if spellId then
             local shapeshiftFormIndex = GetShapeshiftForm()
             local isActiveStance = shapeshiftFormIndex and shapeshiftFormIndex > 0 and spellId == select(4, GetShapeshiftFormInfo(shapeshiftFormIndex))
@@ -80,10 +80,10 @@ local function GetAbilityData(ability)
         end
 
         local itemId
-        itemId, _, _, _, texture = MM.GetItemInfoInstant(ability)
+        itemId, _, _, _, texture = GetItemInfoInstant(ability)
         if texture then
-            if MM.GetToyInfo(itemId) then
-                spellName, spellId = MM.GetItemSpell(itemId)
+            if C_ToyBox.GetToyInfo(itemId) then
+                spellName, spellId = GetItemSpell(itemId)
                 if spellId then
                     return "spell", spellId, spellName, texture
                 end

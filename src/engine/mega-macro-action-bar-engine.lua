@@ -190,7 +190,7 @@ local function UpdateCount(button, functions, abilityId)
     local countLabel = button.Count
     local count = functions.GetCount(abilityId)
 
-    local isNonEquippableItem = functions == MegaMacroInfoFunctions.Item and not MM.IsEquippableItem(abilityId)
+    local isNonEquippableItem = functions == MegaMacroInfoFunctions.Item and not IsEquippableItem(abilityId)
     local isNonItemWithCount = functions ~= MegaMacroInfoFunctions.Item and count and count > 0
 
     if isNonEquippableItem or isNonItemWithCount then
