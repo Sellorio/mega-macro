@@ -43,8 +43,9 @@ This is the other big feature added by this AddOn. By default the Blizzard UI pi
 does the following:
 
 1. `#showtooltip` as source for icon and tooltip always when present
-2. the spell/item/toy that will be cast will have its icon _and tooltip_ used
-3. if no spell/item/toy will be used, picks the first spell/item/toy in the macro and shows that
+2. The spell/item/toy that will be cast will have its icon _and tooltip_ used
+3. You can make the icon setting be the fallback icon to display
+4. If no spell/item/toy/icon will be used, picks the first spell/item/toy in the macro and shows that
 
 Number 3 is the kicker here. This means if you are a healer and have heal-safe macros like this one:
 
@@ -76,6 +77,7 @@ characters and specializations.
 The Mega Macro UI replicates the native macro UI down to every last detail **except for the following**
 **improvements**:
 
+* Searchable icon list
 * Wider, making better use of screen space
 * Higher, expanding the macro text box so you'll rarely have to scroll to view your code
 * Buttons are contextually disabled
