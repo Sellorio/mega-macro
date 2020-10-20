@@ -135,6 +135,7 @@ local function SaveMacro()
 	end
 
 	MegaMacro_SaveButton:Disable()
+	MegaMacro_CancelButton:Disable()
 end
 
 local function RefreshSelectedMacroIcon()
@@ -561,6 +562,15 @@ end
 function MegaMacro_FrameTextButton_OnClick()
 	if SelectedMacro then
 		MegaMacro_FrameText:SetFocus();
+	end
+end
+
+function MegaMacro_TextBox_OnKeyDown(_, key)
+	if SelectedMacro then
+		if key == "S" and IsControlKeyDown() then
+			MegaMacro_SaveButton_OnClick()
+			MegaMacro_FrameText:SetFocus()
+		end
 	end
 end
 

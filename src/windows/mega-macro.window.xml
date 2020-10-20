@@ -243,6 +243,7 @@
 								ScrollingEdit_OnCursorChanged(self, 0, 0, 0, 0);
 								self:GetRegions():SetAlpha(0.2);
 							</OnLoad>
+							<OnKeyDown>MegaMacro_TextBox_OnKeyDown(self, key);</OnKeyDown>
 							<OnTextChanged>MegaMacro_TextBox_TextChanged(self);</OnTextChanged>
 							<OnCursorChanged function="ScrollingEdit_OnCursorChanged"/>
 							<OnUpdate>ScrollingEdit_OnUpdate(self, elapsed, self:GetParent());</OnUpdate>
@@ -454,7 +455,7 @@
 								<Anchor point="BOTTOMRIGHT" relativeTo="MegaMacro_PopupFrame" x="-30" y="475"/>
 							</Anchors>
 						</FontString>
-						<FontString name="MegaMacro_IconSearchPlaceholder" inherits="ChatFontNormal" text="search coming soon...">
+						<FontString name="MegaMacro_IconSearchPlaceholder" inherits="ChatFontNormal" text="search">
 							<Anchors>
 								<Anchor point="BOTTOMLEFT" relativeTo="MegaMacro_PopupFrame" x="31" y="448"/>
 							</Anchors>
