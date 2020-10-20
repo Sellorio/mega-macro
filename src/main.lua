@@ -15,10 +15,12 @@ local function OnUpdate(_, elapsed)
     local elapsedMs = elapsed * 1000
     MegaMacroIconEvaluator.Update(elapsedMs)
     MegaMacroActionBarEngine.OnUpdate(elapsed)
+    MegaMacroIconNavigator.OnUpdate()
 end
 
 local function Initialize()
     MegaMacro_InitialiseConfig()
+    MegaMacroIconNavigator.BeginLoadingIcons()
 
     SLASH_Mega1 = "/m"
     SLASH_Mega2 = "/macro"

@@ -38,7 +38,20 @@ end
 
 function MM.GetSpellInfo(spellNameOrId)
     return GetOrLoadValue(Cache.SpellInfo, spellNameOrId, function(key)
-        return { GetSpellInfo(key) }
+        local name, rank, icon, castTime, minRange, maxRange, spellId = GetSpellInfo(key)
+        local result = { name, rank, icon, castTime, minRange, maxRange, spellId }
+        if name then
+            if tonumber(spellNameOrId) then
+                GetOrLoadValue(Cache.SpellInfo, name, function(_)
+                    return result
+                end)
+            else
+                GetOrLoadValue(Cache.SpellInfo, spellId, function(_)
+                    return result
+                end)
+            end
+        end
+        return result
     end)
 end
 

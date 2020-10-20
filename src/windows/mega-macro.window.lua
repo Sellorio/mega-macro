@@ -65,56 +65,15 @@ local function FixIconPanelPosition()
 	button:SetPoint(point, relativeTo:GetName(), relativePoint, x, y - 40)
 end
 
-local function LoadIcons()
-	-- We need to avoid adding duplicate spellIDs from the spellbook tabs for your other specs.
-	local activeIcons = {};
+local function UpdateIconList()
+	local searchText = MegaMacro_IconSearchBox:GetText()
+	local items = MegaMacroIconNavigator.Search(searchText)
+	local itemCount = #items
 
-	for i = 1, GetNumSpellTabs() do
-		local tab, tabTex, offset, numSpells, _ = GetSpellTabInfo(i);
-		offset = offset + 1;
-		local tabEnd = offset + numSpells;
-		for j = offset, tabEnd - 1 do
-			--to get spell info by slot, you have to pass in a pet argument
-			local spellType, ID = GetSpellBookItemInfo(j, "player");
-			if (spellType ~= "FUTURESPELL") then
-				local fileID = GetSpellBookItemTexture(j, "player");
-				if (fileID) then
-					activeIcons[fileID] = true;
-				end
-			end
-			if (spellType == "FLYOUT") then
-				local _, _, numSlots, isKnown = GetFlyoutInfo(ID);
-				if (isKnown and numSlots > 0) then
-					for k = 1, numSlots do
-						local spellID
-						spellID, _, isKnown = GetFlyoutSlotInfo(ID, k)
-						if (isKnown) then
-							local fileID = GetSpellTexture(spellID);
-							if (fileID) then
-								activeIcons[fileID] = true;
-							end
-						end
-					end
-				end
-			end
-		end
-	end
+	IconList = { MegaMacroTexture }
 
-	IconList = { MegaMacroTexture };
-	for fileDataID in pairs(activeIcons) do
-		IconList[#IconList + 1] = fileDataID;
-	end
-
-	GetLooseMacroIcons(IconList);
-	GetLooseMacroItemIcons(IconList);
-	GetMacroIcons(IconList);
-	GetMacroItemIcons(IconList);
-
-	local iconListLength = #IconList
-	for i=1, iconListLength do
-		if type(IconList[i]) ~= "number" then
-			IconList[i] = "INTERFACE\\ICONS\\"..IconList[i]
-		end
+	for i=1, itemCount do
+		IconList[i + 1] = items[i]
 	end
 end
 
@@ -122,7 +81,6 @@ local function InitializeIconListPanel()
 	if not IconListInitialized then
 		BuildIconArray(MegaMacro_PopupFrame, "MegaMacro_PopupButton", "MegaMacro_PopupButtonTemplate", NUM_ICONS_PER_ROW, NUM_ICON_ROWS)
 		FixIconPanelPosition()
-		LoadIcons()
 		IconListInitialized = true
 	end
 end
@@ -308,9 +266,10 @@ local function NewMacro()
 	end
 
 	PopupMode = PopupModes.New
-	MegaMacro_PopupFrame:Show()
 	MegaMacro_PopupEditBox:SetText("")
 	MegaMacro_FallbackTextureCheckBox:SetChecked(true)
+	MegaMacro_IconSearchBox:SetText("")
+	MegaMacro_PopupFrame:Show()
 end
 
 local function DeleteMegaMacro()
@@ -648,6 +607,7 @@ function MegaMacro_EditButton_OnClick()
 	if SelectedMacro ~= nil then
 		MegaMacro_PopupEditBox:SetText(SelectedMacro.DisplayName)
 		MegaMacro_FallbackTextureCheckBox:SetChecked(SelectedMacro.IsStaticTextureFallback)
+		MegaMacro_IconSearchBox:SetText("")
 		MegaMacro_PopupFrame:Show()
 		PopupMode = PopupModes.Edit
 	end
@@ -748,6 +708,7 @@ end
 
 function MegaMacro_IconSearchBox_TextChanged()
 	UpdateSearchPlaceholder()
+	UpdateIconList()
 end
 
 MegaMacroLastShiftClickInsertAt = nil

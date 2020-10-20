@@ -543,6 +543,7 @@
 					</Layer>
 				</Layers>
 				<Scripts>
+					<OnEscapePressed function="EditBox_ClearFocus"/>
 					<OnTextChanged>MegaMacro_IconSearchBox_TextChanged();</OnTextChanged>
 				</Scripts>
 				<FontString inherits="ChatFontNormal"/>
