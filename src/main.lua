@@ -60,9 +60,10 @@ f:SetScript("OnEvent", function(self, event)
         MegaMacroIconEvaluator.ResetCache()
         MegaMacroEngine.OnSpecializationChanged(oldValue, MegaMacroCachedSpecialization)
         MegaMacroWindow.OnSpecializationChanged(oldValue, MegaMacroCachedSpecialization)
-    elseif "PLAYER_TARGET_CHANGED" then
+    elseif event == "PLAYER_TARGET_CHANGED" then
         MegaMacroActionBarEngine.OnTargetChanged()
-    elseif "PLAYER_TALENT_UPDATE" then
+    elseif event == "PLAYER_TALENT_UPDATE" then
+        print("Resetting spell caches...")
         MM.ResetCacheForSpells()
     end
 end)
