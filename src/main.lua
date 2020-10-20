@@ -63,7 +63,6 @@ f:SetScript("OnEvent", function(self, event)
     elseif event == "PLAYER_TARGET_CHANGED" then
         MegaMacroActionBarEngine.OnTargetChanged()
     elseif event == "PLAYER_TALENT_UPDATE" then
-        print("Resetting spell caches...")
         MM.ResetCacheForSpells()
     end
 end)
