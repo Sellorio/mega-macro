@@ -32,7 +32,7 @@ end
 
 MegaMacro = {}
 
-function MegaMacro.Create(displayName, scope, staticTexture)
+function MegaMacro.Create(displayName, scope, staticTexture, isStaticTextureFallback)
     local result = {}
 
     local id
@@ -118,6 +118,7 @@ function MegaMacro.Create(displayName, scope, staticTexture)
     result.DisplayName = displayName
     result.Code = ""
     result.StaticTexture = staticTexture
+    result.IsStaticTextureFallback = isStaticTextureFallback
 
     MegaMacroEngine.OnMacroCreated(result)
 
@@ -169,9 +170,10 @@ function MegaMacro.GetById(macroId)
     return nil
 end
 
-function MegaMacro.UpdateDetails(self, displayName, staticTexture)
+function MegaMacro.UpdateDetails(self, displayName, staticTexture, isStaticTextureFallback)
     self.DisplayName = displayName
     self.StaticTexture = staticTexture
+    self.IsStaticTextureFallback = isStaticTextureFallback
     MegaMacroEngine.OnMacroRenamed(self)
     MegaMacroIconEvaluator.UpdateMacro(self)
 end

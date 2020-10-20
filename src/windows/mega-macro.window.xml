@@ -412,9 +412,9 @@
 		<Scripts>
 			<OnUpdate>MegaMacro_PopupFrame_OnUpdate();</OnUpdate>
 		</Scripts>
-		<Size x="525" y="495"/>
+		<Size x="525" y="564"/>
 		<Anchors>
-			<Anchor point="TOPLEFT" relativeTo="MegaMacro_Frame" relativePoint="TOPRIGHT" x="0" y="0"/>
+			<Anchor point="TOPLEFT" relativeTo="MegaMacro_Frame" relativePoint="TOPRIGHT" x="0" y="20"/>
 		</Anchors>
 		<Layers>
 			<Layer level="BACKGROUND">
@@ -439,18 +439,33 @@
 				</Anchors>
 				<Layers>
 					<Layer level="BORDER">
-						<FontString inherits="GameFontHighlightSmall" text="MACRO_POPUP_CHOOSE_ICON">
+						<FontString name="MegaMacro_DisplayNameLabel" inherits="GameFontHighlight" text="Display Name">
 							<Anchors>
-								<Anchor point="TOPLEFT" x="24" y="-69"/>
+								<Anchor point="TOPLEFT" relativeTo="MegaMacro_PopupFrame" x="30" y="-29"/>
+							</Anchors>
+						</FontString>
+						<FontString name="MegaMacro_FallbackTextureLabel" inherits="GameFontHighlight" text="Is Fallback?">
+							<Anchors>
+								<Anchor point="BOTTOMLEFT" relativeTo="MegaMacro_PopupFrame" x="30" y="474"/>
+							</Anchors>
+						</FontString>
+						<FontString name="MegaMacro_FallbackTextureDescription" inherits="GameFontHighlightSmall" text="when no spell/item is shown, the icon below will be used.">
+							<Anchors>
+								<Anchor point="BOTTOMRIGHT" relativeTo="MegaMacro_PopupFrame" x="-30" y="475"/>
+							</Anchors>
+						</FontString>
+						<FontString name="MegaMacro_IconSearchPlaceholder" inherits="ChatFontNormal" text="search coming soon...">
+							<Anchors>
+								<Anchor point="BOTTOMLEFT" relativeTo="MegaMacro_PopupFrame" x="31" y="448"/>
 							</Anchors>
 						</FontString>
 					</Layer>
 				</Layers>
 				<Frames>
 					<EditBox name="MegaMacro_PopupEditBox" letters="100" historyLines="0">
-						<Size x="182" y="20"/>
+						<Size x="313" y="22"/>
 						<Anchors>
-							<Anchor point="TOPLEFT" x="29" y="-35"/>
+							<Anchor point="TOPLEFT" x="161" y="-22"/>
 						</Anchors>
 						<Layers>
 							<Layer level="BACKGROUND">
@@ -462,7 +477,7 @@
 									<TexCoords left="0" right="0.09375" top="0" bottom="1.0"/>
 								</Texture>
 								<Texture name="MegaMacro_PopupNameMiddle" file="Interface\ClassTrainerFrame\UI-ClassTrainer-FilterBorder">
-									<Size x="175" y="29"/>
+									<Size x="306" y="29"/>
 									<Anchors>
 										<Anchor point="LEFT" relativeTo="MegaMacro_PopupNameLeft" relativePoint="RIGHT"/>
 									</Anchors>
@@ -489,10 +504,53 @@
 					</EditBox>
 				</Frames>
 			</Frame>
+			<CheckButton name="MegaMacro_FallbackTextureCheckBox" inherits="ChatConfigCheckButtonTemplate">
+				<Anchors>
+					<Anchor point="BOTTOMLEFT" relativeTo="MegaMacro_PopupFrame" x="150" y="468"/>
+				</Anchors>
+				<Scripts>
+					<OnClick>MegaMacro_FallbackTextureCheckBox_OnClick();</OnClick>
+				</Scripts>
+			</CheckButton>
+			<EditBox name="MegaMacro_IconSearchBox" letters="100" historyLines="0">
+				<Size x="182" y="22"/>
+				<Anchors>
+					<Anchor point="BOTTOMLEFT" relativeTo="MegaMacro_PopupFrame" x="31" y="444" />
+				</Anchors>
+				<Layers>
+					<Layer level="BACKGROUND">
+						<Texture name="MegaMacro_IconSearchLeft" file="Interface\ClassTrainerFrame\UI-ClassTrainer-FilterBorder">
+							<Size x="12" y="29"/>
+							<Anchors>
+								<Anchor point="TOPLEFT" x="-11" y="0"/>
+							</Anchors>
+							<TexCoords left="0" right="0.09375" top="0" bottom="1.0"/>
+						</Texture>
+						<Texture name="MegaMacro_IconSearchMiddle" file="Interface\ClassTrainerFrame\UI-ClassTrainer-FilterBorder">
+							<Size x="175" y="29"/>
+							<Anchors>
+								<Anchor point="LEFT" relativeTo="MegaMacro_IconSearchLeft" relativePoint="RIGHT"/>
+							</Anchors>
+							<TexCoords left="0.09375" right="0.90625" top="0" bottom="1.0"/>
+						</Texture>
+						<Texture name="MegaMacro_IconSearchRight" file="Interface\ClassTrainerFrame\UI-ClassTrainer-FilterBorder">
+							<Size x="12" y="29"/>
+							<Anchors>
+								<Anchor point="LEFT" relativeTo="MegaMacro_IconSearchMiddle" relativePoint="RIGHT"/>
+							</Anchors>
+							<TexCoords left="0.90625" right="1.0" top="0" bottom="1.0"/>
+						</Texture>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnTextChanged>MegaMacro_IconSearchBox_TextChanged();</OnTextChanged>
+				</Scripts>
+				<FontString inherits="ChatFontNormal"/>
+			</EditBox>
 			<ScrollFrame name="MegaMacro_PopupScrollFrame" inherits="ListScrollFrameTemplate">
 				<Size x="485" y="389"/>
 				<Anchors>
-					<Anchor point="TOPRIGHT" relativeTo="MegaMacro_PopupFrame" relativePoint="TOPRIGHT" x="-36" y="-70"/>
+					<Anchor point="BOTTOMRIGHT" relativeTo="MegaMacro_PopupFrame" x="-36" y="48"/>
 				</Anchors>
 				<Scripts>
 					<OnVerticalScroll>FauxScrollFrame_OnVerticalScroll(self, offset, MACRO_ICON_ROW_HEIGHT, MacroPopupFrame_Update);</OnVerticalScroll>

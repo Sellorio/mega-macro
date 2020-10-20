@@ -59,6 +59,12 @@ local function CreateMacroSlotFrames()
 	end
 end
 
+local function FixIconPanelPosition()
+	local button = MegaMacro_PopupButton1
+	local point, relativeTo, relativePoint, x, y = button:GetPoint()
+	button:SetPoint(point, relativeTo:GetName(), relativePoint, x, y - 40)
+end
+
 local function LoadIcons()
 	-- We need to avoid adding duplicate spellIDs from the spellbook tabs for your other specs.
 	local activeIcons = {};
@@ -115,6 +121,7 @@ end
 local function InitializeIconListPanel()
 	if not IconListInitialized then
 		BuildIconArray(MegaMacro_PopupFrame, "MegaMacro_PopupButton", "MegaMacro_PopupButtonTemplate", NUM_ICONS_PER_ROW, NUM_ICON_ROWS)
+		FixIconPanelPosition()
 		LoadIcons()
 		IconListInitialized = true
 	end
@@ -180,7 +187,8 @@ local function RefreshSelectedMacroIcon()
 			local data = MegaMacroIconEvaluator.GetCachedData(SelectedMacro.Id)
 			displayedTexture = data and data.Icon or MegaMacroTexture
 		else
-			displayedTexture = SelectedIcon
+			local isStaticTextureFallback = MegaMacro_FallbackTextureCheckBox:GetChecked()
+			displayedTexture = select(4, MegaMacroIconEvaluator.ComputeMacroIcon(SelectedMacro, SelectedIcon, isStaticTextureFallback))
 		end
 	end
 
@@ -302,6 +310,7 @@ local function NewMacro()
 	PopupMode = PopupModes.New
 	MegaMacro_PopupFrame:Show()
 	MegaMacro_PopupEditBox:SetText("")
+	MegaMacro_FallbackTextureCheckBox:SetChecked(true)
 end
 
 local function DeleteMegaMacro()
@@ -412,6 +421,14 @@ local function HandleReceiveDrag(targetScope)
 	return type ~= nil
 end
 
+local function UpdateSearchPlaceholder()
+	if MegaMacro_IconSearchBox:GetText() == "" then
+		MegaMacro_IconSearchPlaceholder:SetAlpha(0.4)
+	else
+		MegaMacro_IconSearchPlaceholder:SetAlpha(0.0)
+	end
+end
+
 StaticPopupDialogs["CONFIRM_DELETE_SELECTED_MEGA_MACRO"] = {
 	text = CONFIRM_DELETE_MACRO,
 	button1 = OKAY,
@@ -482,6 +499,8 @@ function MegaMacro_Window_OnShow()
 	IsOpen = true
 	InitializeTabs()
 	InitializeIconListPanel()
+	UpdateSearchPlaceholder()
+	MegaMacro_FallbackTextureDescription:SetAlpha(0.6)
 end
 
 function MegaMacro_Window_OnHide()
@@ -628,6 +647,7 @@ end
 function MegaMacro_EditButton_OnClick()
 	if SelectedMacro ~= nil then
 		MegaMacro_PopupEditBox:SetText(SelectedMacro.DisplayName)
+		MegaMacro_FallbackTextureCheckBox:SetChecked(SelectedMacro.IsStaticTextureFallback)
 		MegaMacro_PopupFrame:Show()
 		PopupMode = PopupModes.Edit
 	end
@@ -635,14 +655,15 @@ end
 
 function MegaMacro_EditOkButton_OnClick()
 	local enteredText = MegaMacro_PopupEditBox:GetText()
+	local isStaticTextureFallback = MegaMacro_FallbackTextureCheckBox:GetChecked()
 
 	if PopupMode == PopupModes.Edit and SelectedMacro ~= nil then
 		local selectedMacro = SelectedMacro
-		MegaMacro.UpdateDetails(SelectedMacro, enteredText, SelectedIcon)
+		MegaMacro.UpdateDetails(SelectedMacro, enteredText, SelectedIcon, isStaticTextureFallback)
 		SetMacroItems()
 		SelectMacro(selectedMacro)
 	elseif PopupMode == PopupModes.New then
-		local createdMacro = MegaMacro.Create(enteredText, SelectedScope, SelectedIcon)
+		local createdMacro = MegaMacro.Create(enteredText, SelectedScope, SelectedIcon, isStaticTextureFallback)
 		SetMacroItems()
 		SelectMacro(createdMacro)
 		MegaMacro_FrameText:SetFocus()
@@ -719,6 +740,14 @@ function MegaMacro_ToggleWindowModeButton_OnClick()
 	HideUIPanel(MegaMacro_Frame)
 	MegaMacroWindow.Show()
 	MegaMacroWindowTogglingMode = false
+end
+
+function MegaMacro_FallbackTextureCheckBox_OnClick()
+	RefreshSelectedMacroIcon()
+end
+
+function MegaMacro_IconSearchBox_TextChanged()
+	UpdateSearchPlaceholder()
 end
 
 MegaMacroLastShiftClickInsertAt = nil

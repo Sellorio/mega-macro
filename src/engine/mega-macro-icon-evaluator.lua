@@ -106,8 +106,8 @@ local function GetIconForButton(buttonName)
     return icon
 end
 
-local function UpdateMacro(macro)
-    local icon = macro.StaticTexture or MegaMacroTexture
+local function ComputeMacroIcon(macro, staticTexture, isStaticTextureFallback)
+    local icon = not isStaticTextureFallback and staticTexture or MegaMacroTexture
     local effectType = nil
     local effectId = nil
     local effectName = nil
@@ -178,7 +178,10 @@ local function UpdateMacro(macro)
             end
         end
 
-        if effectType == nil and codeInfoLength > 0 then
+        if (icon == nil or icon == MegaMacroTexture) and isStaticTextureFallback then
+            effectType = "other"
+            icon = staticTexture
+        elseif effectType == nil and codeInfoLength > 0 then
             if codeInfo[codeInfoLength].Type == "fallbackAbility" then
                 local ability = codeInfo[codeInfoLength].Body
                 effectType, effectId, effectName, icon = GetAbilityData(ability)
@@ -199,6 +202,11 @@ local function UpdateMacro(macro)
         end
     end
 
+    return effectType, effectId, effectName, icon, target
+end
+
+local function UpdateMacro(macro)
+    local effectType, effectId, effectName, icon, target = ComputeMacroIcon(macro, macro.StaticTexture, macro.IsStaticTextureFallback)
     local currentData = MacroEffectData[macro.Id]
 
     if not currentData then
@@ -211,7 +219,7 @@ local function UpdateMacro(macro)
         or currentData.Name ~= effectName
         or currentData.Icon ~= icon
         or currentData.Target ~= target then
-        
+
         currentData.Type = effectType
         currentData.Id = effectId
         currentData.Name = effectName
@@ -280,6 +288,7 @@ local function UpdateAllMacros()
 end
 
 MegaMacroIconEvaluator = {}
+MegaMacroIconEvaluator.ComputeMacroIcon = ComputeMacroIcon
 
 function MegaMacroIconEvaluator.Initialize()
     UpdateAllMacros()

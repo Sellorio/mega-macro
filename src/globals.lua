@@ -119,6 +119,7 @@ MegaMacro_FrameCharLimitText = {}
 MegaMacro_PopupEditBox = {}
 MegaMacro_EditButton = {}
 MegaMacro_DeleteButton = {}
+MegaMacro_FallbackTextureCheckBox = {}
 
 C_ToyBox = {
     GetNumToys = function() end,
