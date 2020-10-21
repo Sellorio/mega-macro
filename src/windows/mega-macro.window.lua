@@ -70,7 +70,7 @@ local function UpdateIconList()
 	local items = MegaMacroIconNavigator.Search(searchText)
 	local itemCount = #items
 
-	IconList = { MegaMacroTexture }
+	IconList = { { Name = "No Icon", Icon = MegaMacroTexture } }
 
 	for i=1, itemCount do
 		IconList[i + 1] = items[i]
@@ -671,17 +671,19 @@ function MegaMacro_PopupFrame_OnUpdate()
 		macroPopupButton = _G["MegaMacro_PopupButton"..i];
 		macroPopupIcon = _G["MegaMacro_PopupButton"..i.."Icon"];
 		index = (macroPopupOffset * NUM_ICONS_PER_ROW) + i;
-		local texture = IconList[index]
+		local iconListData = IconList[index]
 
-		if index <= numMacroIcons and texture then
-			macroPopupIcon:SetTexture(texture);
+		if index <= numMacroIcons and iconListData then
+			macroPopupIcon:SetTexture(iconListData.Icon);
+			macroPopupButton.SpellId = iconListData.SpellId
 			macroPopupButton:Show();
 		else
 			macroPopupIcon:SetTexture("");
+			macroPopupButton.SpellId = nil
 			macroPopupButton:Hide();
 		end
 
-		macroPopupButton:SetChecked(SelectedIcon == texture)
+		macroPopupButton:SetChecked(SelectedIcon == iconListData)
 	end
 
 	-- Scrollbar stuff
@@ -691,6 +693,19 @@ end
 function MegaMacro_PopupButton_OnClick(self)
 	local buttonIcon = _G[self:GetName().."Icon"]
 	SelectIcon(buttonIcon:GetTexture())
+end
+
+function MegaMacro_PopupButton_OnEnter(self)
+	if self.SpellId then
+		GameTooltip:Hide()
+		GameTooltip_SetDefaultAnchor(GameTooltip, UIParent)
+		GameTooltip:SetSpellByID(self.SpellId)
+		GameTooltip:Show()
+	end
+end
+
+function MegaMacro_PopupButton_OnLeave(self)
+	GameTooltip:Hide()
 end
 
 function MegaMacro_ToggleWindowModeButton_OnClick()

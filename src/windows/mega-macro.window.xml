@@ -13,6 +13,8 @@
 	<CheckButton name="MegaMacro_PopupButtonTemplate" inherits="SimplePopupButtonTemplate" virtual="true">
 		<Scripts>
 			<OnClick>MegaMacro_PopupButton_OnClick(self);</OnClick>
+			<OnEnter>MegaMacro_PopupButton_OnEnter(self);</OnEnter>
+			<OnLeave>MegaMacro_PopupButton_OnLeave(self);</OnLeave>
 		</Scripts>
 		<NormalTexture name="$parentIcon" nonBlocking="true">
 			<Size x="36" y="36"/>

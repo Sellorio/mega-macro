@@ -9,13 +9,11 @@ local CleanupPhase = false
 local IconCache = {}
 IconCacheKeys = {}
 
-local function TableConcat(self, otherTable)
+local function AddRange(self, otherTable)
     local selfLength = #self
     for i=1, #otherTable do
         self[selfLength + i] = otherTable[i]
     end
-
-    return self
 end
 
 MegaMacroIconNavigator = {}
@@ -28,7 +26,7 @@ function MegaMacroIconNavigator.OnUpdate()
     if IconLoadingStarted and not IconLoadingFinished then
         for _=1, FetchesPerFrame do
             CurrentSpellId = CurrentSpellId + 1
-            local name, _, icon = GetSpellInfo(CurrentSpellId)
+            local name, _, icon, _, _, _, spellId = GetSpellInfo(CurrentSpellId)
 
             if icon == 136243 then
                 -- 136243 is the a gear icon, we can ignore those spells (courtesy of WeakAuras)
@@ -37,10 +35,22 @@ function MegaMacroIconNavigator.OnUpdate()
                 if #name > 0 and icon then
                     name = string.lower(name)
                     MissCount = 0
-                    if not IconCache[name] then
+                    local cachedIconList = IconCache[name]
+                    if not cachedIconList then
                         table.insert(IconCacheKeys, name)
+                        cachedIconList = {}
+                        IconCache[name] = cachedIconList
                     end
-                    IconCache[name] = icon
+                    local hasIcon = false
+                    for i=1, #cachedIconList do
+                        if cachedIconList[i] == icon then
+                            hasIcon = true
+                            break
+                        end
+                    end
+                    if not hasIcon then
+                        table.insert(cachedIconList, { SpellId = spellId, Icon = icon })
+                    end
                 end
             else
                 MissCount = MissCount + 1
@@ -72,14 +82,32 @@ function MegaMacroIconNavigator.Search(searchText)
             local index = string.find(key, escapedSearch)
 
             if index then
-                local icon = IconCache[key]
-                if not presentIcons[icon] then
-                    presentIcons[icon] = true
-                    if index == 1 then
-                        table.insert(priorityResults, IconCache[key])
-                    else
-                        table.insert(otherResults, IconCache[key])
+                local itemList = IconCache[key]
+                for _, item in ipairs(itemList) do
+                    if not presentIcons[item.Icon] then
+                        presentIcons[item.Icon] = true
+                        if index == 1 then
+                            table.insert(priorityResults, item)
+                        else
+                            table.insert(otherResults, item)
+                        end
+
+                        resultCount = resultCount + 1
+
+                        if resultCount > 300 then
+                            break
+                        end
                     end
+                end
+            end
+        end
+    else
+        for _, key in ipairs(IconCacheKeys) do
+            local itemList = IconCache[key]
+            for _, item in ipairs(itemList) do
+                if not presentIcons[item.Icon] then
+                    presentIcons[item.Icon] = true
+                    table.insert(otherResults, item)
 
                     resultCount = resultCount + 1
 
@@ -89,21 +117,8 @@ function MegaMacroIconNavigator.Search(searchText)
                 end
             end
         end
-    else
-        for _, key in ipairs(IconCacheKeys) do
-            local icon = IconCache[key]
-            if not presentIcons[icon] then
-                presentIcons[icon] = true
-                table.insert(otherResults, IconCache[key])
-
-                resultCount = resultCount + 1
-
-                if resultCount > 300 then
-                    break
-                end
-            end
-        end
     end
 
-    return TableConcat(priorityResults, otherResults)
+    AddRange(priorityResults, otherResults)
+    return priorityResults
 end

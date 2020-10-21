@@ -9,7 +9,6 @@
 
 src/constants.lua
 src/config.lua
-src/cached-data-functions.lua
 src/tooltip-functions.lua
 src/mega-macro.lua
 src/mega-macro-icon-navigator.lua
