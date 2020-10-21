@@ -16,6 +16,66 @@ local function AddRange(self, otherTable)
     end
 end
 
+local function GetDefaultIconList()
+    local icons = {}
+
+	-- We need to avoid adding duplicate spellIDs from the spellbook tabs for your other specs.
+	local activeIcons = {};
+
+	for i = 1, GetNumSpellTabs() do
+		local tab, tabTex, offset, numSpells, _ = GetSpellTabInfo(i);
+		offset = offset + 1;
+		local tabEnd = offset + numSpells;
+		for j = offset, tabEnd - 1 do
+			--to get spell info by slot, you have to pass in a pet argument
+			local spellType, ID = GetSpellBookItemInfo(j, "player");
+			if (spellType ~= "FUTURESPELL") then
+				local fileID = GetSpellBookItemTexture(j, "player");
+				if (fileID) then
+					activeIcons[fileID] = true;
+				end
+			end
+			if (spellType == "FLYOUT") then
+				local _, _, numSlots, isKnown = GetFlyoutInfo(ID);
+				if (isKnown and numSlots > 0) then
+					for k = 1, numSlots do
+						local spellID
+						spellID, _, isKnown = GetFlyoutSlotInfo(ID, k)
+						if (isKnown) then
+							local fileID = GetSpellTexture(spellID);
+							if (fileID) then
+								activeIcons[fileID] = true;
+							end
+						end
+					end
+				end
+			end
+		end
+	end
+
+	for fileDataID in pairs(activeIcons) do
+		icons[#icons + 1] = fileDataID;
+	end
+
+	GetLooseMacroIcons(icons);
+	GetLooseMacroItemIcons(icons);
+	GetMacroIcons(icons);
+	GetMacroItemIcons(icons);
+
+	local iconListLength = #icons
+	for i=1, iconListLength do
+		if type(icons[i]) ~= "number" then
+			icons[i] = "INTERFACE\\ICONS\\"..icons[i]
+		end
+    end
+
+    for i=1, #icons do
+        icons[i] = { Icon = icons[i], SpellId = nil }
+    end
+
+    return icons
+end
+
 MegaMacroIconNavigator = {}
 
 function MegaMacroIconNavigator.BeginLoadingIcons()
@@ -101,24 +161,11 @@ function MegaMacroIconNavigator.Search(searchText)
                 end
             end
         end
+
+        AddRange(priorityResults, otherResults)
+        return priorityResults
     else
-        for _, key in ipairs(IconCacheKeys) do
-            local itemList = IconCache[key]
-            for _, item in ipairs(itemList) do
-                if not presentIcons[item.Icon] then
-                    presentIcons[item.Icon] = true
-                    table.insert(otherResults, item)
-
-                    resultCount = resultCount + 1
-
-                    if resultCount > 300 then
-                        break
-                    end
-                end
-            end
-        end
+        return GetDefaultIconList()
     end
 
-    AddRange(priorityResults, otherResults)
-    return priorityResults
 end
