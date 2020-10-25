@@ -57,8 +57,11 @@ f:SetScript("OnEvent", function(self, event)
 
         MegaMacroCodeInfo.ClearAll()
         MegaMacroIconEvaluator.ResetCache()
-        MegaMacroEngine.OnSpecializationChanged(oldValue, MegaMacroCachedSpecialization)
-        MegaMacroWindow.OnSpecializationChanged(oldValue, MegaMacroCachedSpecialization)
+
+        if not InCombatLockdown() then -- this event triggers when levelling up too - in combat we don't want it to cause errors
+            MegaMacroEngine.OnSpecializationChanged(oldValue, MegaMacroCachedSpecialization)
+            MegaMacroWindow.OnSpecializationChanged(oldValue, MegaMacroCachedSpecialization)
+        end
     elseif event == "PLAYER_TARGET_CHANGED" then
         MegaMacroActionBarEngine.OnTargetChanged()
     end

@@ -683,7 +683,7 @@ function MegaMacro_PopupFrame_OnUpdate()
 			macroPopupButton:Hide();
 		end
 
-		macroPopupButton:SetChecked(SelectedIcon == iconListData)
+		macroPopupButton:SetChecked(SelectedIcon == iconListData.Icon)
 	end
 
 	-- Scrollbar stuff
