@@ -92,6 +92,7 @@ local function IsValidUnitId(unitId)
         IsIndexedUnitId(unitId, "boss", 4) or
         unitId == "focus" or
         unitId == "mouseover" or
+        unitId == "cursor" or
         unitId == "none" or
         IsIndexedUnitId(unitId, "party", 4) or
         IsIndexedUnitId(unitId, "partypet", 4) or
@@ -247,14 +248,14 @@ local function ParseCommand(parsingContext)
     end
 
     result = result..ParseResult(parsingContext, #commandName, Colours.Command)
-    result = result..ParseWhiteSpace(parsingContext)
 
     if IsEndOfLine(parsingContext) then
         return result, true
     end
 
-    character = GetCharacter(parsingContext)
     while not IsEndOfLine(parsingContext) do
+        result = result..ParseWhiteSpace(parsingContext)
+
         local newResult, success = ParseConditional(parsingContext)
         while success do
             result = result..newResult..ParseWhiteSpace(parsingContext)
