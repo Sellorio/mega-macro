@@ -179,7 +179,7 @@ local function ComputeMacroIcon(macro, staticTexture, isStaticTextureFallback)
             end
         end
 
-        if (icon == nil or icon == MegaMacroTexture) and isStaticTextureFallback then
+        if (icon == nil or icon == MegaMacroTexture) and isStaticTextureFallback and staticTexture ~= MegaMacroTexture then
             effectType = "other"
             icon = staticTexture
         elseif effectType == nil and codeInfoLength > 0 then
