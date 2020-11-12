@@ -328,7 +328,6 @@ function MegaMacroCodeInfo.Get(macro)
 end
 
 function MegaMacroCodeInfo.Clear(macroId)
-    
     CodeInfoCache[macroId] = nil
 end
 

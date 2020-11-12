@@ -227,20 +227,25 @@ local function UpdateMacro(macro)
         currentData.Icon = icon
         currentData.Target = target
 
-        local macroIndex = MegaMacroEngine.GetMacroIndexFromId(macro.Id)
-        if macroIndex then
-            if effectType == "spell" then
-                SetMacroSpell(macroIndex, effectName, target)
-            elseif effectType == "item" then
-                SetMacroItem(macroIndex, effectName, target)
-            else
-                -- clear
-                SetMacroSpell(macroIndex, "", nil)
-            end
-        end
-
         for i=1, #IconUpdatedCallbacks do
             IconUpdatedCallbacks[i](macro.Id, icon)
+        end
+    end
+
+    local macroIndex = MegaMacroEngine.GetMacroIndexFromId(macro.Id)
+    if macroIndex and not InCombatLockdown() then
+        if effectType == "spell" then
+            if GetMacroSpell(macroIndex) ~= effectId then
+                SetMacroSpell(macroIndex, effectName, target)
+            end
+        elseif effectType == "item" then
+            if GetMacroItem(macroIndex) ~= effectId then
+                SetMacroItem(macroIndex, effectName, target)
+            end
+        else
+            if GetMacroSpell(macroIndex) or GetMacroItem(macroIndex) then
+                SetMacroSpell(macroIndex, "", nil)
+            end
         end
     end
 end
