@@ -36,6 +36,7 @@ local function Initialize()
         MegaMacroCachedClass = UnitClass("player")
         MegaMacroCachedSpecialization = select(2, GetSpecializationInfo(specIndex))
 
+        MegaMacroCodeInfo.ClearAll()
         MegaMacroIconEvaluator.Initialize()
         MegaMacroActionBarEngine.Initialize()
         MegaMacroEngine.SafeInitialize()

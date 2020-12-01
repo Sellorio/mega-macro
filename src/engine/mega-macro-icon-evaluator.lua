@@ -236,11 +236,15 @@ local function UpdateMacro(macro)
     if macroIndex and not InCombatLockdown() then
         if effectType == "spell" then
             if GetMacroSpell(macroIndex) ~= effectId then
-                SetMacroSpell(macroIndex, effectName, target)
+                if effectName then
+                    SetMacroSpell(macroIndex, effectName, target)
+                end
             end
         elseif effectType == "item" then
             if GetMacroItem(macroIndex) ~= effectId then
-                SetMacroItem(macroIndex, effectName, target)
+                if effectName then
+                    SetMacroItem(macroIndex, effectName, target)
+                end
             end
         else
             if GetMacroSpell(macroIndex) or GetMacroItem(macroIndex) then

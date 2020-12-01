@@ -262,8 +262,11 @@ local function BindMacros()
 end
 
 local function PickupMacroWrapper(original, macroIndex)
-    local inCombat = InCombatLockdown()
-    local macroId = not inCombat and macroIndex and MegaMacroEngine.GetMacroIdFromIndex(macroIndex)
+    if InCombatLockdown() then
+        return
+    end
+
+    local macroId = macroIndex and MegaMacroEngine.GetMacroIdFromIndex(macroIndex)
 
     if macroId then
         local data = MegaMacroIconEvaluator.GetCachedData(macroId)
