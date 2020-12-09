@@ -7,6 +7,14 @@ local function GenerateIdPrefix(id)
     return "#"..string.sub(result, -3)
 end
 
+local function FormatMacroDisplayName(megaMacroDisplayName)
+    if not megaMacroDisplayName or #megaMacroDisplayName == 0 then
+        return " "
+    else
+        return string.sub(megaMacroDisplayName, 1, 18)
+    end
+end
+
 local function GetIdFromMacroCode(macroCode)
     return macroCode and tonumber(string.sub(macroCode, 2, 4))
 end
@@ -211,7 +219,7 @@ local function BindMacro(macro)
 
         if macroIndex then
             GetOrCreateClicky(macro.Id):SetAttribute("macrotext", macro.Code)
-            EditMacro(macroIndex, string.sub(macro.DisplayName, 1, 18), nil, nil, true, macroIndex > MacroLimits.MaxGlobalMacros)
+            EditMacro(macroIndex, FormatMacroDisplayName(macro.DisplayName), nil, nil, true, macroIndex > MacroLimits.MaxGlobalMacros)
             InitializeMacroIndexCache()
         end
     end
