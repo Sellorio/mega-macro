@@ -81,6 +81,19 @@ MegaMacroInfoFunctions = {
 		GetLossOfControlCooldown = function(_) return -1, 0 end,
 		IsOverlayed = function(_) return false end
 	},
+	Fallback = {
+		GetCooldown = function(_) return -1, 0, true end,
+		GetCount = function(_) return 0 end,
+		GetCharges = function(_) return 0, 0, -1, 0, 1 end, -- charges, maxCharges, chargeStart, chargeDuration, chargeModRate
+		IsUsable = function(_) return false, false end,
+		IsInRange = function(_, _) return nil end,
+		IsCurrent = function(_) return false end,
+		IsEquipped = function(_) return false end,
+		IsAutoRepeat = function(_) return false end,
+		IsLocked = function(_) return false end,
+		GetLossOfControlCooldown = function(_) return -1, 0 end,
+		IsOverlayed = function(_) return false end
+   },
 	Unknown = {
 		GetCooldown = function(_) return -1, 0, true end,
 		GetCount = function(_) return 0 end,

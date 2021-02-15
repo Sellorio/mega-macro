@@ -237,7 +237,22 @@ local function UpdateRange(button, functions, abilityId, target)
     local valid = functions.IsInRange(abilityId, target)
     local checksRange = (valid ~= nil);
     local inRange = checksRange and valid;
-    rangeTimer = 1;
+	rangeTimer = 1;
+
+	if Bartender4 then
+		if Bartender4.db.profile.outofrange == "button" then
+			if checksRange and not inRange then
+				button.icon:SetVertexColor(
+					Bartender4.db.profile.colors.range.r,
+					Bartender4.db.profile.colors.range.g,
+					Bartender4.db.profile.colors.range.b)
+			else
+				button.icon:SetVertexColor(1, 1, 1)
+			end
+		elseif Bartender4.db.profile.outofrange == "none" then
+			return
+		end
+	end
 
     if button.HotKey:GetText() == RANGE_INDICATOR then
 		if checksRange then
@@ -268,6 +283,8 @@ local function UpdateActionBar(button, macroId)
 			functions = MegaMacroInfoFunctions.Spell
 		elseif data.Type == "item" then
 			functions = MegaMacroInfoFunctions.Item
+		elseif data.Type == "fallback" then
+			functions = MegaMacroInfoFunctions.Fallback
 		end
 
 		UpdateCurrentActionState(button, functions, data.Id)
