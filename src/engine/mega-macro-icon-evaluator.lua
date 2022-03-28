@@ -126,8 +126,12 @@ local function ComputeMacroIcon(macro, staticTexture, isStaticTextureFallback)
 
                 if ability ~= nil then
                     effectType, effectId, effectName, icon = GetAbilityData(ability)
-                    target = tar
-                    break
+
+                    -- skip spells or items that do not exist
+                    if effectType ~= "unknown" then
+                        target = tar
+                        break
+                    end
                 end
             elseif command.Type == "castsequence" then
                 local sequenceCode, tar = SecureCmdOptionParse(command.Body)
