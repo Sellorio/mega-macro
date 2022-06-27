@@ -1,4 +1,5 @@
 MegaMacroCachedClass = nil
+MegaMacroCachedClassFull = nil
 MegaMacroCachedSpecialization = nil
 MegaMacroFullyActive = false
 MegaMacroSystemTime = GetTime()
@@ -33,7 +34,7 @@ local function Initialize()
 
     local specIndex = GetSpecialization()
     if specIndex then
-        MegaMacroCachedClass = UnitClass("player")
+        MegaMacroCachedClassFull, MegaMacroCachedClass = UnitClass("player")
         MegaMacroCachedSpecialization = select(2, GetSpecializationInfo(specIndex))
 
         MegaMacroCodeInfo.ClearAll()

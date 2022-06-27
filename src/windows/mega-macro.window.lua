@@ -87,7 +87,7 @@ end
 
 local function InitializeTabs()
 	local playerName = UnitName("player")
-	MegaMacro_FrameTab2:SetText(MegaMacroCachedClass)
+	MegaMacro_FrameTab2:SetText(MegaMacroCachedClassFull)
 	MegaMacro_FrameTab4:SetText(playerName)
 
 	if MegaMacroCachedSpecialization == '' then
