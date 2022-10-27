@@ -120,7 +120,7 @@ end
 local function GetMacroStubCode(macroId)
     return
         GenerateIdPrefix(macroId).."\n"..
-        "/click [btn:1] "..ClickyFrameName..macroId.."\n"..
+        "/click [btn:1] "..ClickyFrameName..macroId.." LeftButton\n"..
         "/click [btn:2] "..ClickyFrameName..macroId.." RightButton\n"..
         "/click [btn:3] "..ClickyFrameName..macroId.." MiddleButton\n"..
         "/click [btn:4] "..ClickyFrameName..macroId.." Button4\n"..
