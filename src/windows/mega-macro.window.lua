@@ -41,7 +41,7 @@ end
 
 local function GetMacroButtonUI(index)
 	local buttonName = "MegaMacro_MacroButton" .. index
-	return _G[buttonName], _G[buttonName .. "Name"], _G[buttonName .. "Icon"]
+	return _G[buttonName], _G[buttonName .. "Name"], _G[buttonName].Icon
 end
 
 -- Creates the button frames for the macro slots
@@ -87,7 +87,7 @@ end
 
 local function InitializeTabs()
 	local playerName = UnitName("player")
-	MegaMacro_FrameTab2:SetText(MegaMacroCachedClassFull)
+	MegaMacro_FrameTab2:SetText(MegaMacroCachedClass)
 	MegaMacro_FrameTab4:SetText(playerName)
 
 	if MegaMacroCachedSpecialization == '' then
@@ -225,7 +225,7 @@ local function SetMacroItems()
 		if macro then
 			buttonFrame.Macro = macro
 			buttonFrame.IsNewButton = false
-			buttonFrame:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
+			-- buttonFrame:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
 			buttonName:SetText(macro.DisplayName)
 			local data = MegaMacroIconEvaluator.GetCachedData(macro.Id)
 			buttonIcon:SetTexture(data and data.Icon)
@@ -235,7 +235,7 @@ local function SetMacroItems()
 		elseif not newMacroButtonCreated then
 			buttonFrame.Macro = nil
 			buttonFrame.IsNewButton = true
-			buttonFrame:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
+			-- buttonFrame:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
 			buttonName:SetText("")
 			buttonIcon:SetTexture(PlusTexture)
 			buttonIcon:SetDesaturated(true)
@@ -245,7 +245,7 @@ local function SetMacroItems()
 		else
 			buttonFrame.Macro = nil
 			buttonFrame.IsNewButton = false
-			buttonFrame:SetHighlightTexture(nil)
+			-- buttonFrame:SetHighlightTexture(nil)
 			buttonName:SetText("")
 			buttonIcon:SetTexture("")
 			buttonIcon:SetDesaturated(false)
@@ -736,29 +736,32 @@ function MegaMacro_IconSearchBox_TextChanged()
 	UpdateIconList()
 end
 
-MegaMacroLastShiftClickInsertAt = nil
-hooksecurefunc("SpellButton_OnModifiedClick", function(self)
-	-- for some reason this callback is triggered twice, this will prevent that
-	if MegaMacroSystemTime == MegaMacroLastShiftClickInsertAt then
-		return
-	end
-
-	MegaMacroLastShiftClickInsertAt = MegaMacroSystemTime
-
-	local slot = SpellBook_GetSpellBookSlot(self);
-	if ( slot > MAX_SPELLS ) then
-		return
-	end
-
-	if IsModifiedClick("CHATLINK") and MegaMacro_FrameText:HasFocus() then
-		local spellName, subSpellName = GetSpellBookItemName(slot, SpellBookFrame.bookType)
-
-		if spellName and not IsPassiveSpell(slot, SpellBookFrame.bookType) then
-			if subSpellName and string.len(subSpellName) > 0 then
-				MegaMacro_FrameText:Insert(spellName.."("..subSpellName..")")
-			else
-				MegaMacro_FrameText:Insert(spellName)
+function MegaMacro_RegisterShiftClicks()
+	function shiftClickHookFunction(self) 
+		local slot = SpellBook_GetSpellBookSlot(self);
+		if ( slot > MAX_SPELLS ) then
+			return
+		end
+	
+		if IsModifiedClick("CHATLINK") and MegaMacro_FrameText:HasFocus() then
+			local spellName, subSpellName = GetSpellBookItemName(slot, SpellBookFrame.bookType)
+	
+			if spellName and not IsPassiveSpell(slot, SpellBookFrame.bookType) then
+				if subSpellName and string.len(subSpellName) > 0 then
+					MegaMacro_FrameText:Insert(spellName.."("..subSpellName..")")
+				else
+					MegaMacro_FrameText:Insert(spellName)
+				end
 			end
 		end
 	end
-end)
+	
+	-- This is a kind of a hack, but it gets the shift click to work. We loop through all the spellbook buttons and hook their OnClick functions individually, since the generic SpellButton_OnModifiedClick was removed.
+	for i = 1, 120 do
+		local buttonName = "SpellButton" .. i
+		if _G[buttonName] ~= nil then
+			hooksecurefunc(_G[buttonName], "OnModifiedClick", shiftClickHookFunction)
+		end
+	end
+end
+

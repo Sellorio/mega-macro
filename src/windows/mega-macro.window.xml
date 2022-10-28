@@ -1,6 +1,6 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/..\..\FrameXML\UI.xsd">
 	<Script file="src/windows/mega-macro.window.lua"/>
-	<CheckButton name="MegaMacro_ButtonTemplate" inherits="PopupButtonTemplate" virtual="true">
+	<CheckButton name="MegaMacro_ButtonTemplate" inherits="SelectorButtonTemplate" virtual="true">
 		<Scripts>
 			<OnLoad>self:RegisterForDrag("LeftButton");</OnLoad>
 			<OnClick>MegaMacro_MacroButton_OnClick(self);</OnClick>
@@ -9,6 +9,15 @@
 			<OnDragStart>MegaMacro_MacroButton_OnDragStart(self);</OnDragStart>
 			<OnReceiveDrag>MegaMacro_MacroButton_OnReceiveDrag(self);</OnReceiveDrag>
 		</Scripts>
+		<Layers>
+			<Layer level="ARTWORK">
+				<FontString name="$parentName" inherits="GameFontHighlightSmall" text="">
+					<Anchors>
+						<Anchor point="CENTER" relativeTo="$parent" x="0" y="-10"/>
+					</Anchors>
+				</FontString>
+			</Layer>
+		</Layers>
 	</CheckButton>
 	<CheckButton name="MegaMacro_PopupButtonTemplate" inherits="SimplePopupButtonTemplate" virtual="true">
 		<Scripts>
@@ -146,6 +155,16 @@
 					<OnEnter>MegaMacro_FrameSelectedMacroButton_OnEnter();</OnEnter>
 					<OnLeave>MegaMacro_FrameSelectedMacroButton_OnLeave();</OnLeave>
 				</Scripts>
+				<Layers>
+					<Layer level="ARTWORK">
+						<Texture name="MegaMacro_FrameSelectedMacroButtonIcon" file="Interface\Buttons\UI-EmptySlot">
+							<Size x="44" y="44"/>
+							<Anchors>
+								<Anchor point="CENTER" relativeTo="$parent" x="0" y="0"/>
+							</Anchors>
+						</Texture>
+					</Layer>
+				</Layers>
 			</CheckButton>
 			<ScrollFrame name="MegaMacro_ButtonScrollFrame" inherits="UIPanelScrollFrameTemplate">
 				<Size x="593" y="146"/>
@@ -308,14 +327,14 @@
 					<Anchor point="TOPLEFT" relativeTo="MegaMacro_Frame" x="6" y="-289"/>
 				</Anchors>
 			</Frame>
-			<Button name="MegaMacro_FrameTab1" inherits="TabButtonTemplate" text="Global" id="1">
+			<Button name="MegaMacro_FrameTab1" inherits="PanelTabButtonTemplate" text="Global" id="1">
 				<Anchors>
 					<Anchor point="TOPLEFT" x="51" y="-28"/>
 				</Anchors>
 				<Scripts>
 					<OnLoad>
 						PanelTemplates_TabResize(self, -8);
-						_G[self:GetName().."HighlightTexture"]:SetWidth(55);
+<!--						_G[self:GetName().."HighlightTexture"]:SetWidth(55);-->
 					</OnLoad>
 					<OnClick>
 						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
@@ -324,14 +343,14 @@
 					<OnReceiveDrag>MegaMacro_FrameTab_OnReceiveDrag(self);</OnReceiveDrag>
 				</Scripts>
 			</Button>
-			<Button name="MegaMacro_FrameTab2" inherits="TabButtonTemplate" text="{Class}" id="2">
+			<Button name="MegaMacro_FrameTab2" inherits="PanelTabButtonTemplate" text="{Class}" id="2">
 				<Anchors>
 					<Anchor point="LEFT" relativeTo="MegaMacro_FrameTab1" relativePoint="RIGHT" x="0" y="0"/>
 				</Anchors>
 				<Scripts>
 					<OnLoad>
 						PanelTemplates_TabResize(self, 35);
-						_G[self:GetName().."HighlightTexture"]:SetWidth(103);
+<!--						_G[self:GetName().."HighlightTexture"]:SetWidth(103);-->
 					</OnLoad>
 					<OnClick>
 						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
@@ -340,14 +359,14 @@
 					<OnReceiveDrag>MegaMacro_FrameTab_OnReceiveDrag(self);</OnReceiveDrag>
 				</Scripts>
 			</Button>
-			<Button name="MegaMacro_FrameTab3" inherits="TabButtonTemplate" text="{Spec}" id="3">
+			<Button name="MegaMacro_FrameTab3" inherits="PanelTabButtonTemplate" text="{Spec}" id="3">
 				<Anchors>
 					<Anchor point="LEFT" relativeTo="MegaMacro_FrameTab2" relativePoint="RIGHT" x="0" y="0"/>
 				</Anchors>
 				<Scripts>
 					<OnLoad>
 						PanelTemplates_TabResize(self, 20);
-						_G[self:GetName().."HighlightTexture"]:SetWidth(82);
+<!--						_G[self:GetName().."HighlightTexture"]:SetWidth(82);-->
 					</OnLoad>
 					<OnClick>
 						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
@@ -356,14 +375,14 @@
 					<OnReceiveDrag>MegaMacro_FrameTab_OnReceiveDrag(self);</OnReceiveDrag>
 				</Scripts>
 			</Button>
-			<Button name="MegaMacro_FrameTab4" inherits="TabButtonTemplate" text="{Character}" id="4">
+			<Button name="MegaMacro_FrameTab4" inherits="PanelTabButtonTemplate" text="{Character}" id="4">
 				<Anchors>
 					<Anchor point="LEFT" relativeTo="MegaMacro_FrameTab3" relativePoint="RIGHT" x="0" y="0"/>
 				</Anchors>
 				<Scripts>
 					<OnLoad>
 						PanelTemplates_TabResize(self, 20);
-						_G[self:GetName().."HighlightTexture"]:SetWidth(112);
+<!--						_G[self:GetName().."HighlightTexture"]:SetWidth(112);-->
 					</OnLoad>
 					<OnClick>
 						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
@@ -372,14 +391,14 @@
 					<OnReceiveDrag>MegaMacro_FrameTab_OnReceiveDrag(self);</OnReceiveDrag>
 				</Scripts>
 			</Button>
-			<Button name="MegaMacro_FrameTab5" inherits="TabButtonTemplate" text="{Character Spec}" id="5">
+			<Button name="MegaMacro_FrameTab5" inherits="PanelTabButtonTemplate" text="{Character Spec}" id="5">
 				<Anchors>
 					<Anchor point="LEFT" relativeTo="MegaMacro_FrameTab4" relativePoint="RIGHT" x="0" y="0"/>
 				</Anchors>
 				<Scripts>
 					<OnLoad>
 						PanelTemplates_TabResize(self, 60);
-						_G[self:GetName().."HighlightTexture"]:SetWidth(190);
+<!--						_G[self:GetName().."HighlightTexture"]:SetWidth(190);-->
 					</OnLoad>
 					<OnClick>
 						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
@@ -551,7 +570,7 @@
 				</Scripts>
 				<FontString inherits="ChatFontNormal"/>
 			</EditBox>
-			<ScrollFrame name="MegaMacro_PopupScrollFrame" inherits="ListScrollFrameTemplate">
+			<ScrollFrame name="MegaMacro_PopupScrollFrame" inherits="UIPanelScrollFrameTemplate">
 				<Size x="485" y="389"/>
 				<Anchors>
 					<Anchor point="BOTTOMRIGHT" relativeTo="MegaMacro_PopupFrame" x="-36" y="48"/>
@@ -559,6 +578,11 @@
 				<Scripts>
 					<OnVerticalScroll>FauxScrollFrame_OnVerticalScroll(self, offset, MACRO_ICON_ROW_HEIGHT, MacroPopupFrame_Update);</OnVerticalScroll>
 				</Scripts>
+				<ScrollChild>
+					<Frame name="$parentScrollChildFrame">
+						<Size x="485" y="389"/>
+					</Frame>
+				</ScrollChild>
 			</ScrollFrame>
 		</Frames>
 	</Frame>

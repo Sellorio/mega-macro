@@ -1,5 +1,4 @@
 MegaMacroCachedClass = nil
-MegaMacroCachedClassFull = nil
 MegaMacroCachedSpecialization = nil
 MegaMacroFullyActive = false
 MegaMacroSystemTime = GetTime()
@@ -34,7 +33,7 @@ local function Initialize()
 
     local specIndex = GetSpecialization()
     if specIndex then
-        MegaMacroCachedClassFull, MegaMacroCachedClass = UnitClass("player")
+        MegaMacroCachedClass = UnitClass("player")
         MegaMacroCachedSpecialization = select(2, GetSpecializationInfo(specIndex))
 
         MegaMacroCodeInfo.ClearAll()
@@ -44,6 +43,8 @@ local function Initialize()
         MegaMacroFullyActive = MegaMacroGlobalData.Activated and MegaMacroCharacterData.Activated
         f:SetScript("OnUpdate", OnUpdate)
     end
+
+    MegaMacro_RegisterShiftClicks()
 end
 
 f:SetScript("OnEvent", function(self, event)

@@ -118,9 +118,11 @@ local function TryImportCharacterMacros()
 end
 
 local function GetMacroStubCode(macroId)
+    -- Fix a bug that causes click events not to register only when CVar ActionButtonUseKeyDown is set to 1. 
+    local primaryMacroButtonClickValue = GetCVar("ActionButtonUseKeyDown") == "1" and " LeftButton" or " " 
     return
         GenerateIdPrefix(macroId).."\n"..
-        "/click [btn:1] "..ClickyFrameName..macroId.."\n"..
+        "/click [btn:1] "..ClickyFrameName..macroId..primaryMacroButtonClickValue.."\n"..
         "/click [btn:2] "..ClickyFrameName..macroId.." RightButton\n"..
         "/click [btn:3] "..ClickyFrameName..macroId.." MiddleButton\n"..
         "/click [btn:4] "..ClickyFrameName..macroId.." Button4\n"..
