@@ -736,29 +736,32 @@ function MegaMacro_IconSearchBox_TextChanged()
 	UpdateIconList()
 end
 
-MegaMacroLastShiftClickInsertAt = nil
--- hooksecurefunc("SpellButton_OnModifiedClick", function(self)
--- 	-- for some reason this callback is triggered twice, this will prevent that
--- 	if MegaMacroSystemTime == MegaMacroLastShiftClickInsertAt then
--- 		return
--- 	end
+function MegaMacro_RegisterShiftClicks()
+	function shiftClickHookFunction(self) 
+		local slot = SpellBook_GetSpellBookSlot(self);
+		if ( slot > MAX_SPELLS ) then
+			return
+		end
+	
+		if IsModifiedClick("CHATLINK") and MegaMacro_FrameText:HasFocus() then
+			local spellName, subSpellName = GetSpellBookItemName(slot, SpellBookFrame.bookType)
+	
+			if spellName and not IsPassiveSpell(slot, SpellBookFrame.bookType) then
+				if subSpellName and string.len(subSpellName) > 0 then
+					MegaMacro_FrameText:Insert(spellName.."("..subSpellName..")")
+				else
+					MegaMacro_FrameText:Insert(spellName)
+				end
+			end
+		end
+	end
+	
+	-- This is a kind of a hack, but it gets the shift click to work. We loop through all the spellbook buttons and hook their OnClick functions individually, since the generic SpellButton_OnModifiedClick was removed.
+	for i = 1, 120 do
+		local buttonName = "SpellButton" .. i
+		if _G[buttonName] ~= nil then
+			hooksecurefunc(_G[buttonName], "OnModifiedClick", shiftClickHookFunction)
+		end
+	end
+end
 
--- 	MegaMacroLastShiftClickInsertAt = MegaMacroSystemTime
-
--- 	local slot = SpellBook_GetSpellBookSlot(self);
--- 	if ( slot > MAX_SPELLS ) then
--- 		return
--- 	end
-
--- 	if IsModifiedClick("CHATLINK") and MegaMacro_FrameText:HasFocus() then
--- 		local spellName, subSpellName = GetSpellBookItemName(slot, SpellBookFrame.bookType)
-
--- 		if spellName and not IsPassiveSpell(slot, SpellBookFrame.bookType) then
--- 			if subSpellName and string.len(subSpellName) > 0 then
--- 				MegaMacro_FrameText:Insert(spellName.."("..subSpellName..")")
--- 			else
--- 				MegaMacro_FrameText:Insert(spellName)
--- 			end
--- 		end
--- 	end
--- end)

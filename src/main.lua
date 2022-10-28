@@ -43,6 +43,8 @@ local function Initialize()
         MegaMacroFullyActive = MegaMacroGlobalData.Activated and MegaMacroCharacterData.Activated
         f:SetScript("OnUpdate", OnUpdate)
     end
+
+    MegaMacro_RegisterShiftClicks()
 end
 
 f:SetScript("OnEvent", function(self, event)
