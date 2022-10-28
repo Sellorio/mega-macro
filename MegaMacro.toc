@@ -1,4 +1,4 @@
-## Interface: 90200
+## Interface: 100000
 ## Title: Mega Macro
 ## Author: Sellorio
 ## Version: 1.0.0
