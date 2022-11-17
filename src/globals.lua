@@ -29,6 +29,7 @@ ANCHOR_CURSOR = nil
 ANCHOR_PRESERVE = nil
 ANCHOR_NONE = nil
 
+GetCVar = function(variable) end
 LibStub = function(major, minor) major._ = minor end
 ShowUIPanel = function(panel) panel._ = nil end
 CreateFrame = function(type, name, parent, template) type._ = name + parent + template; return nil end
