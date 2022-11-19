@@ -120,3 +120,7 @@ xcopy /e /i /y %USERPROFILE%\Games\wow-macro-backup "C:\Program Files (x86)\Worl
 ```
 
 3. click OK
+
+## Special Thanks
+
+Special thanks to `aurelion314` (`Cubelicious` in-game) and `Dannez83` for contributing many hours to update this addon for Dragonflight!
