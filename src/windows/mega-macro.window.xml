@@ -277,7 +277,6 @@
 				<Scripts>
 					<OnMouseWheel>
 						ScrollFrameTemplate_OnMouseWheel(self, delta);
-						ScrollFrameTemplate_OnMouseWheel(MegaMacro_FormattedFrameScrollFrame, delta);
 					</OnMouseWheel>
 					<OnVerticalScroll>
 						local scrollbar1 = MegaMacro_FrameScrollFrameScrollBar;
@@ -325,6 +324,11 @@
 			</ScrollFrame>
 			<ScrollFrame name="MegaMacro_FormattedFrameScrollFrame" inherits="UIPanelScrollFrameTemplate">
 				<Size x="591" y="185"/>
+				<Scripts>
+				<OnMouseWheel>
+					ScrollFrameTemplate_OnMouseWheel(self, delta);
+				</OnMouseWheel>
+				</Scripts>
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeTo="MegaMacro_FrameSelectedMacroBackground" relativePoint="BOTTOMLEFT" x="11" y="-13"/>
 				</Anchors>
