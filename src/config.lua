@@ -14,6 +14,16 @@ function MegaMacro_InitialiseConfig()
             Specializations = {}
         }
     end
+
+    if MegaMacroConfig == nil then
+        MegaMacroConfig = {
+            UseNativeMacros = false,
+            MaxMacroLength = MegaMacroCodeMaxLength,
+            UseNativeActionBarIcon = false,
+        }
+    end
+
+    MegaMacroConfig['MaxMacroLength'] = MegaMacroConfig['UseNativeMacros'] and 250 or MegaMacroCodeMaxLength
 end
 
 function MegaMacroConfig_IsWindowDialog()

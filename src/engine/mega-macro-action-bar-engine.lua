@@ -275,6 +275,10 @@ local function UpdateRange(button, functions, abilityId, target)
 end
 
 local function UpdateActionBar(button, macroId)
+	if MegaMacroConfig['UseNativeActionBarIcon'] then
+		return
+	end
+
     local data = MegaMacroIconEvaluator.GetCachedData(macroId)
     local functions = MegaMacroInfoFunctions.Unknown
 

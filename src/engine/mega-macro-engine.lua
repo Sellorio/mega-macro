@@ -182,7 +182,7 @@ local function SetupOrUpdateMacros()
                     table.insert(unassignedMacros, i)
                 else
                     assignedMacroIds[macroId] = i
-                    EditMacro(i, nil, MegaMacroTexture, GetMacroStubCode(macroId), true, isCharacterSpecificMacroIndex)
+                    -- EditMacro(i, nil, MegaMacroTexture, GetMacroStubCode(macroId), true, isCharacterSpecificMacroIndex)
                 end
             else
                 table.insert(unassignedMacros, i)
@@ -194,7 +194,8 @@ local function SetupOrUpdateMacros()
             while lastCheckedMacroId < endIndex do
                 lastCheckedMacroId = lastCheckedMacroId + 1
                 if not assignedMacroIds[lastCheckedMacroId] then
-                    EditMacro(macroIndex, nil, nil, GetMacroStubCode(lastCheckedMacroId), true, macroIndex > MacroLimits.MaxGlobalMacros)
+                    local code = GetMacroBody(macroIndex)
+                    EditMacro(macroIndex, nil, nil, GenerateIdPrefix(lastCheckedMacroId)..code, true, macroIndex > MacroLimits.MaxGlobalMacros)
                     break
                 end
             end
@@ -220,8 +221,12 @@ local function BindMacro(macro)
         local macroIndex = MacroIndexCache[macro.Id]
 
         if macroIndex then
-            GetOrCreateClicky(macro.Id):SetAttribute("macrotext", macro.Code)
-            EditMacro(macroIndex, FormatMacroDisplayName(macro.DisplayName), nil, nil, true, macroIndex > MacroLimits.MaxGlobalMacros)
+            if MegaMacroConfig['UseNativeMacros'] then
+                EditMacro(macroIndex, FormatMacroDisplayName(macro.DisplayName), nil, GenerateIdPrefix(macro.Id)..'\n'..macro.Code, true, macroIndex > MacroLimits.MaxGlobalMacros)
+            else
+                GetOrCreateClicky(macro.Id):SetAttribute("macrotext", macro.Code)
+                EditMacro(macroIndex, FormatMacroDisplayName(macro.DisplayName), nil, GetMacroStubCode(macro.Id), true, macroIndex > MacroLimits.MaxGlobalMacros)
+            end
             InitializeMacroIndexCache()
         end
     end

@@ -12,6 +12,7 @@
 		<Layers>
 			<Layer level="ARTWORK">
 				<FontString name="$parentName" inherits="GameFontHighlightSmall" text="">
+					<Size x="36" y="36"/>
 					<Anchors>
 						<Anchor point="CENTER" relativeTo="$parent" x="0" y="-10"/>
 					</Anchors>
@@ -211,6 +212,54 @@
 							<OnShow>MegaMacro_ButtonContainer_OnShow();</OnShow>
 							<OnReceiveDrag>MegaMacro_ButtonContainer_OnReceiveDrag();</OnReceiveDrag>
 						</Scripts>
+						<Frames>
+							<Frame name="MegaMacro_ConfigContainer" hidden="true">
+								<Size x="439" y="10"/>
+								<Anchors>
+									<Anchor point="TOPLEFT"/>
+								</Anchors>
+								<Frames>
+									<CheckButton name="MegaMacro_BlizMacroCheckbox" frameStrata="HIGH" inherits="UICheckButtonTemplate">
+										<Size x="20" y="20"/>
+										<Anchors>
+											<Anchor point="TOPLEFT" relativeTo="MegaMacro_ConfigContainer" x="0" y="0"/>
+										</Anchors>
+										<Scripts>
+											<OnClick>MegaMacro_BlizMacroCheckbox_OnClick();</OnClick>
+										</Scripts>
+										<Layers>
+										<Layer level="ARTWORK">
+											<FontString name="$parentText" inherits="GameFontNormalSmall" text="Blizzard Style Macros - (Disables some MegaMacro features)">
+												<Anchors>
+													<Anchor point="LEFT" relativeTo="$parent" relativePoint="RIGHT" x="2" y="0"/>
+												</Anchors>
+
+											</FontString>
+										</Layer>
+										</Layers>
+									</CheckButton>
+									<CheckButton name="MegaMacro_BlizActionIconCheckbox" frameStrata="HIGH" inherits="UICheckButtonTemplate">
+										<Size x="20" y="20"/>
+										<Anchors>
+											<Anchor point="TOPLEFT" relativeTo="MegaMacro_ConfigContainer" x="0" y="-24"/>
+										</Anchors>
+										<Scripts>
+											<OnClick>MegaMacro_BlizActionIconCheckbox_OnClick();</OnClick>
+										</Scripts>
+										<Layers>
+										<Layer level="ARTWORK">
+											<FontString name="$parentText" inherits="GameFontNormalSmall" text="Blizzard Action Bar Icons - (Only use with Blizzard Style Macros)">
+												<Anchors>
+													<Anchor point="LEFT" relativeTo="$parent" relativePoint="RIGHT" x="2" y="0"/>
+												</Anchors>
+
+											</FontString>
+										</Layer>
+										</Layers>
+									</CheckButton>
+								</Frames>
+							</Frame>
+						</Frames>
 					</Frame>
 				</ScrollChild>
 			</ScrollFrame>
@@ -405,6 +454,20 @@
 						MegaMacro_FrameTab_OnClick(self);
 					</OnClick>
 					<OnReceiveDrag>MegaMacro_FrameTab_OnReceiveDrag(self);</OnReceiveDrag>
+				</Scripts>
+			</Button>
+			<Button name="MegaMacro_FrameTab6" inherits="PanelTabButtonTemplate" text="Config" id="6">
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="MegaMacro_FrameTab5" relativePoint="RIGHT" x="0" y="0"/>
+				</Anchors>
+				<Scripts>
+					<OnLoad>
+						PanelTemplates_TabResize(self, 60);
+					</OnLoad>
+					<OnClick>
+						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
+						MegaMacro_FrameTab_OnClick(self);
+					</OnClick>
 				</Scripts>
 			</Button>
 			<Button name="MegaMacro_DeleteButton" inherits="UIPanelButtonTemplate" text="DELETE">

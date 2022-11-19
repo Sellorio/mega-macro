@@ -448,7 +448,7 @@ end
 
 function MegaMacro_Window_OnLoad()
     -- Global, Class, ClassSpec, Character, CharacterSpec
-	PanelTemplates_SetNumTabs(MegaMacro_Frame, 5)
+	PanelTemplates_SetNumTabs(MegaMacro_Frame, 6)
 	PanelTemplates_SetTab(MegaMacro_Frame, 1)
 	MegaMacroIconEvaluator.OnIconUpdated(function(macroId, texture)
 		MegaMacro_OnIconUpdated(macroId, texture)
@@ -483,13 +483,35 @@ function MegaMacro_FrameTab_OnClick(self)
 	if not HandleReceiveDrag(scope) then
 		PanelTemplates_SetTab(MegaMacro_Frame, tabIndex);
 		MegaMacro_ButtonScrollFrame:SetVerticalScroll(0)
-
+		
+		if tabIndex == 6 then
+			SelectedScope = 'config'
+			MegaMacro_FrameTab_ShowConfig()
+			return
+		else
+			MegaMacro_ConfigContainer:Hide()
+		end
+		
 		SelectedScope = scope
 
 		InitializeMacroSlots()
 		SetMacroItems()
 		InitializeTabs()
+
 	end
+end
+
+function MegaMacro_FrameTab_ShowConfig()
+	--Clear macro area
+	InitializeMacroSlots()
+	SelectMacro(nil)
+
+	--Set config values
+	MegaMacro_BlizMacroCheckbox:SetChecked(MegaMacroConfig["UseNativeMacros"])
+	MegaMacro_BlizActionIconCheckbox:SetChecked(MegaMacroConfig["UseNativeActionBarIcon"])
+
+	MegaMacro_ConfigContainer:Show()
+	MegaMacro_ButtonContainer:Show()
 end
 
 function MegaMacro_FrameTab_OnReceiveDrag(self)
@@ -587,7 +609,7 @@ function MegaMacro_TextBox_TextChanged(self)
     MegaMacro_FrameCharLimitText:SetFormattedText(
 		rendering.CharLimitMessageFormat,
 		MegaMacro_FrameText:GetNumLetters(),
-		MegaMacroCodeMaxLength)
+		MegaMacroConfig['MaxMacroLength'])
 
 	ScrollingEdit_OnTextChanged(self, self:GetParent())
 	ScrollingEdit_OnTextChanged(MegaMacro_FormattedFrameText, MegaMacro_FormattedFrameText:GetParent())
@@ -618,10 +640,32 @@ function MegaMacro_EditButton_OnClick()
 		MegaMacro_PopupEditBox:SetText(SelectedMacro.DisplayName)
 		MegaMacro_FallbackTextureCheckBox:SetChecked(SelectedMacro.IsStaticTextureFallback)
 		MegaMacro_IconSearchBox:SetText("")
+		MegaMacro_DisplayNameLabel:SetText("(#"..SelectedMacro.Id .. ") Display Name")
 		MegaMacro_PopupFrame:Show()
 		PopupMode = PopupModes.Edit
 	end
 end
+
+function MegaMacro_BlizActionIconCheckbox_OnClick()
+	-- Toggle setting and checkbox
+	MegaMacroConfig["UseNativeActionBarIcon"] = not MegaMacroConfig["UseNativeActionBarIcon"]
+	MegaMacro_BlizActionIconCheckbox:SetChecked(MegaMacroConfig["UseNativeActionBarIcon"])
+end
+
+function MegaMacro_BlizMacroCheckbox_OnClick()
+	-- Toggle setting and checkbox
+	MegaMacroConfig["UseNativeMacros"] = not MegaMacroConfig["UseNativeMacros"]
+	MegaMacro_BlizMacroCheckbox:SetChecked(MegaMacroConfig["UseNativeMacros"])
+	-- initialize macros
+	MegaMacroEngine.SafeInitialize()
+	MegaMacro_InitialiseConfig()
+	MegaMacro_FrameCharLimitText:SetFormattedText(
+		rendering.CharLimitMessageFormat,
+		MegaMacro_FrameText:GetNumLetters(),
+		MegaMacroConfig['MaxMacroLength'])
+end
+
+
 
 function MegaMacro_EditOkButton_OnClick()
 	local enteredText = MegaMacro_PopupEditBox:GetText()
