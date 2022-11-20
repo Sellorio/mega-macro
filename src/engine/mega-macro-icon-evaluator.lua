@@ -236,7 +236,7 @@ local function UpdateMacro(macro)
         end
     end
 
-    if MegaMacroConfig['UseNativeActionBar'] or true then
+    if MegaMacroConfig['UseNativeActionBar'] then
 		return
 	end
 

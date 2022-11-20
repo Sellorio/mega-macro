@@ -19,7 +19,7 @@ function MegaMacro_InitialiseConfig()
         MegaMacroConfig = {
             UseNativeMacros = false,
             MaxMacroLength = MegaMacroCodeMaxLength,
-            UseNativeActionBarIcon = false,
+            UseNativeActionBar = false,
         }
     end
 
@@ -44,8 +44,8 @@ function MecaMacro_GenerateConfig()
         MegaMacro_BlizMacro_Toggle()
     end)
     -- Blizzard Action Bar Icons
-    MecaMacroConfig_GenerateCheckbox('UseBlizzardActionIcons', 'Blizzard Action Bar Icons', 'Disable Mega Macro Action Bar Engine. \nOnly Use with Blizzard Style Macros', 0, -25, MegaMacroConfig.UseNativeActionBarIcon, function(value) 
-        MegaMacroConfig.UseNativeActionBarIcon = value
+    MecaMacroConfig_GenerateCheckbox('UseBlizzardActionIcons', 'Blizzard Action Bar Icons', 'Disable Mega Macro Action Bar Engine. \nOnly Use with Blizzard Style Macros', 0, -25, MegaMacroConfig.UseNativeActionBar, function(value) 
+        MegaMacroConfig.UseNativeActionBar = value
     end)
 end
 

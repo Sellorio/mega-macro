@@ -275,7 +275,7 @@ local function UpdateRange(button, functions, abilityId, target)
 end
 
 local function UpdateActionBar(button, macroId)
-	if MegaMacroConfig['UseNativeActionBarIcon'] then
+	if MegaMacroConfig['UseNativeActionBar'] then
 		return
 	end
 
