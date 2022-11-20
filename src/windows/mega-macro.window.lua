@@ -502,16 +502,17 @@ function MegaMacro_FrameTab_OnClick(self)
 end
 
 function MegaMacro_FrameTab_ShowConfig()
+	-- Initialize Config Options
+	if not MegaMacro_ConfigContainer.initialized then
+		MecaMacro_GenerateConfig()
+		MegaMacro_ConfigContainer.initialized = true
+	end
+
 	--Clear macro area
 	InitializeMacroSlots()
 	SelectMacro(nil)
 
-	--Set config values
-	MegaMacro_BlizMacroCheckbox:SetChecked(MegaMacroConfig["UseNativeMacros"])
-	MegaMacro_BlizActionIconCheckbox:SetChecked(MegaMacroConfig["UseNativeActionBarIcon"])
-
 	MegaMacro_ConfigContainer:Show()
-	MegaMacro_ButtonContainer:Show()
 end
 
 function MegaMacro_FrameTab_OnReceiveDrag(self)
@@ -646,18 +647,10 @@ function MegaMacro_EditButton_OnClick()
 	end
 end
 
-function MegaMacro_BlizActionIconCheckbox_OnClick()
-	-- Toggle setting and checkbox
-	MegaMacroConfig["UseNativeActionBarIcon"] = not MegaMacroConfig["UseNativeActionBarIcon"]
-	MegaMacro_BlizActionIconCheckbox:SetChecked(MegaMacroConfig["UseNativeActionBarIcon"])
-end
-
-function MegaMacro_BlizMacroCheckbox_OnClick()
-	-- Toggle setting and checkbox
-	MegaMacroConfig["UseNativeMacros"] = not MegaMacroConfig["UseNativeMacros"]
-	MegaMacro_BlizMacroCheckbox:SetChecked(MegaMacroConfig["UseNativeMacros"])
-	-- initialize macros
+function MegaMacro_BlizMacro_Toggle()
+	-- re-initialize macros
 	MegaMacroEngine.SafeInitialize()
+	-- update macro char length limit
 	MegaMacro_InitialiseConfig()
 	MegaMacro_FrameCharLimitText:SetFormattedText(
 		rendering.CharLimitMessageFormat,

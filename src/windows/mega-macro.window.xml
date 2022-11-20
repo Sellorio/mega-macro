@@ -218,46 +218,6 @@
 								<Anchors>
 									<Anchor point="TOPLEFT"/>
 								</Anchors>
-								<Frames>
-									<CheckButton name="MegaMacro_BlizMacroCheckbox" frameStrata="HIGH" inherits="UICheckButtonTemplate">
-										<Size x="20" y="20"/>
-										<Anchors>
-											<Anchor point="TOPLEFT" relativeTo="MegaMacro_ConfigContainer" x="0" y="0"/>
-										</Anchors>
-										<Scripts>
-											<OnClick>MegaMacro_BlizMacroCheckbox_OnClick();</OnClick>
-										</Scripts>
-										<Layers>
-										<Layer level="ARTWORK">
-											<FontString name="$parentText" inherits="GameFontNormalSmall" text="Blizzard Style Macros - (Disables some MegaMacro features)">
-												<Anchors>
-													<Anchor point="LEFT" relativeTo="$parent" relativePoint="RIGHT" x="2" y="0"/>
-												</Anchors>
-
-											</FontString>
-										</Layer>
-										</Layers>
-									</CheckButton>
-									<CheckButton name="MegaMacro_BlizActionIconCheckbox" frameStrata="HIGH" inherits="UICheckButtonTemplate">
-										<Size x="20" y="20"/>
-										<Anchors>
-											<Anchor point="TOPLEFT" relativeTo="MegaMacro_ConfigContainer" x="0" y="-24"/>
-										</Anchors>
-										<Scripts>
-											<OnClick>MegaMacro_BlizActionIconCheckbox_OnClick();</OnClick>
-										</Scripts>
-										<Layers>
-										<Layer level="ARTWORK">
-											<FontString name="$parentText" inherits="GameFontNormalSmall" text="Blizzard Action Bar Icons - (Only use with Blizzard Style Macros)">
-												<Anchors>
-													<Anchor point="LEFT" relativeTo="$parent" relativePoint="RIGHT" x="2" y="0"/>
-												</Anchors>
-
-											</FontString>
-										</Layer>
-										</Layers>
-									</CheckButton>
-								</Frames>
 							</Frame>
 						</Frames>
 					</Frame>
