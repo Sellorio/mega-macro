@@ -12,9 +12,12 @@ f:RegisterEvent("PLAYER_TARGET_CHANGED")
 local function OnUpdate(_, elapsed)
     MegaMacroSystemTime = GetTime()
     local elapsedMs = elapsed * 1000
+    MegaMacroIconNavigator.OnUpdate()
+    if MegaMacroConfig['UseNativeActionBar'] then
+		return
+	end
     MegaMacroIconEvaluator.Update(elapsedMs)
     MegaMacroActionBarEngine.OnUpdate(elapsed)
-    MegaMacroIconNavigator.OnUpdate()
 end
 
 local function Initialize()
