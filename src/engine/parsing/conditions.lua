@@ -216,12 +216,16 @@ local function KnownModifier(parsingContext)
             local separator = GetCharacter(parsingContext, 1 + #spell)
             if separator ~= " " then
                 continue = false
+                -- if the character after a word is empty or nil, the user is still typing or deleting text
+                if not separator or separator == "" then
+                    break
+                end
             end
             if separator ~= "]" then
                 spell = spell .. separator
             end
         end
-        
+
         -- spells can be spellIDs or spell names
         if IsNumber(spell) then
             return
@@ -234,7 +238,8 @@ local function KnownModifier(parsingContext)
             ParseResult(parsingContext, #spell, Colours.String),
             true
         end
-        
+    else
+        return "", false
     end
 end
 
