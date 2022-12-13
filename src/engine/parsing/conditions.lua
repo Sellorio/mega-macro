@@ -204,6 +204,40 @@ local function TalentModifier(parsingContext)
     end
 end
 
+local function KnownModifier(parsingContext)
+    local hasModifier = IsModifierSeparator(parsingContext)
+    if hasModifier then
+        local spell = ""
+        local continue = true
+        -- loop to concat words for multipart spell names i.e. "Whirling Dragon Punch" or "Rain of Fire"
+        -- intentionally not counting commas since the actual blizzard macro code can't deal with commas anyway
+        while continue do
+            spell = spell .. GetWord(parsingContext, 1 + #spell)
+            local separator = GetCharacter(parsingContext, 1 + #spell)
+            if separator ~= " " then
+                continue = false
+            end
+            if separator ~= "]" then
+                spell = spell .. separator
+            end
+        end
+        
+        -- spells can be spellIDs or spell names
+        if IsNumber(spell) then
+            return
+            ParseResult(parsingContext, 1, Colours.Syntax)..
+            ParseResult(parsingContext, #spell, Colours.Number),
+            true
+        else
+            return
+            ParseResult(parsingContext, 1, Colours.Syntax)..
+            ParseResult(parsingContext, #spell, Colours.String),
+            true
+        end
+        
+    end
+end
+
 local Conditionals = {
 	actionbar = NoModifier,
 	bar = NumberModifier,
@@ -246,6 +280,8 @@ local Conditionals = {
 	unithasvehicleui = NoModifier,
 	vehicleui = NoModifier,
 	worn = RequiredWordModifier,
+    known = KnownModifier,
+    noknown = KnownModifier
 }
 
 function GetMegaMacroParsingConditionsData()
