@@ -13,7 +13,7 @@ local function OnUpdate(_, elapsed)
     MegaMacroSystemTime = GetTime()
     local elapsedMs = elapsed * 1000
     MegaMacroIconNavigator.OnUpdate()
-    if MegaMacroConfig['UseNativeActionBar'] then
+    if MegaMacroConfig['UseNativeActionBar'] and not MegaMacro_Frame:IsVisible() then
 		return
 	end
     MegaMacroIconEvaluator.Update(elapsedMs)
