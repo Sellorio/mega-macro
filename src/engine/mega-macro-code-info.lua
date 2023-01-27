@@ -7,7 +7,7 @@ local CodeInfoCache = {}
             body: "[mod:alt] X; Y"
         },
         ...
-    }
+    } 
 }
 --]]
 
@@ -63,13 +63,16 @@ local function ParseWord(parsingContext)
     local word = ""
 
     local character = Char(parsingContext.Code, parsingContext.Index)
-    while character and (string.match(character, "[a-z]") or string.match(character, "[A-Z]") or string.match(character, "[0-9]") or character == "_") do
+    while character and
+        (
+        string.match(character, "[a-z]") or string.match(character, "[A-Z]") or string.match(character, "[0-9]") or
+            character == "_") do
         word = word .. character
         result = true
         parsingContext.Index = parsingContext.Index + 1
         character = Char(parsingContext.Code, parsingContext.Index)
     end
-    
+
     return result, word
 end
 
@@ -120,7 +123,7 @@ local function ParseStopmacroCommand(parsingContext)
         CodeInfoCache[parsingContext.MacroId],
         {
             Type = "stopmacro",
-            Body = condition.."TRUE"
+            Body = condition .. "TRUE"
         })
 end
 
@@ -130,7 +133,7 @@ local function ParsePetCommand(parsingContext, command)
         CodeInfoCache[parsingContext.MacroId],
         {
             Type = "petcommand",
-            Body = condition.."TRUE",
+            Body = condition .. "TRUE",
             Command = command
         })
 end
@@ -197,7 +200,7 @@ local function ParseCommand(parsingContext)
             end
         end
     end
-        
+
     GrabRemainingLineCode(parsingContext)
     ParseEndOfLine(parsingContext)
 
@@ -230,7 +233,7 @@ local function AddFallbackAbility(macroId)
     local codeInfo = CodeInfoCache[macroId]
     local codeInfoLength = #codeInfo
 
-    for i=1, codeInfoLength do
+    for i = 1, codeInfoLength do
         local type = codeInfo[i].Type
 
         if type == "showtooltip" then
@@ -284,16 +287,16 @@ local function AddFallbackAbility(macroId)
                     Type = "fallbackEquipSet",
                     Body = firstSetMentioned
                 })
-            elseif type == "click" then
-                local endOfConditions = (lastIndexOf(codeInfo[i].Body, "%]") or 0) + 1
-                local buttonName = trim(string.sub(codeInfo[i].Body, endOfConditions))
-    
-                table.insert(
-                    codeInfo,
-                    {
-                        Type = "fallbackClick",
-                        Body = buttonName
-                    })
+        elseif type == "click" then
+            local endOfConditions = (lastIndexOf(codeInfo[i].Body, "%]") or 0) + 1
+            local buttonName = trim(string.sub(codeInfo[i].Body, endOfConditions))
+
+            table.insert(
+                codeInfo,
+                {
+                    Type = "fallbackClick",
+                    Body = buttonName
+                })
         elseif type == "stopmacro" then
             -- ignore
         end

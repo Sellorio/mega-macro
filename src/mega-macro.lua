@@ -3,7 +3,7 @@ local MacroIdDisplayNamePartLength = 8
 local function RemoveItemFromArray(t, item)
     local length = #t
 
-    for i=0, length do
+    for i = 0, length do
         if t[i] == item then
             table.remove(t, i)
             break
@@ -12,7 +12,7 @@ local function RemoveItemFromArray(t, item)
 end
 
 local function GetNextAvailableMacroId(startOffset, count, existingMacros)
-    for i=1 + startOffset, startOffset + count do
+    for i = 1 + startOffset, startOffset + count do
         local isMatched = false
 
         for _, existingMacro in ipairs(existingMacros) do
@@ -99,7 +99,8 @@ function MegaMacro.Create(displayName, scope, staticTexture, isStaticTextureFall
             return nil
         end
 
-        id = GetNextAvailableMacroId(MacroIndexOffsets.PerCharacterSpecialization, MacroLimits.PerCharacterSpecializationCount, macroList)
+        id = GetNextAvailableMacroId(MacroIndexOffsets.PerCharacterSpecialization,
+            MacroLimits.PerCharacterSpecializationCount, macroList)
         result.Class = MegaMacroCachedClass
         result.Specialization = MegaMacroCachedSpecialization
     else
@@ -161,7 +162,7 @@ function MegaMacro.GetById(macroId)
     local macros = MegaMacro.GetMacrosInScope(scope)
     local macroCount = #macros
 
-    for i=1, macroCount do
+    for i = 1, macroCount do
         if macros[i].Id == macroId then
             return macros[i]
         end
@@ -213,12 +214,12 @@ end
 
 function MegaMacro.GetMacrosInScope(scope)
     if scope == MegaMacroScopes.Global then
-		return MegaMacroGlobalData.Macros
-	elseif scope == MegaMacroScopes.Class then
+        return MegaMacroGlobalData.Macros
+    elseif scope == MegaMacroScopes.Class then
         if MegaMacroGlobalData.Classes[MegaMacroCachedClass] == nil then
             MegaMacroGlobalData.Classes[MegaMacroCachedClass] = { Macros = {}, Specializations = {} }
         end
-		return MegaMacroGlobalData.Classes[MegaMacroCachedClass].Macros
+        return MegaMacroGlobalData.Classes[MegaMacroCachedClass].Macros
     elseif scope == MegaMacroScopes.Specialization then
         if MegaMacroCachedSpecialization == nil then
             return {}
@@ -229,16 +230,16 @@ function MegaMacro.GetMacrosInScope(scope)
         if MegaMacroGlobalData.Classes[MegaMacroCachedClass].Specializations[MegaMacroCachedSpecialization] == nil then
             MegaMacroGlobalData.Classes[MegaMacroCachedClass].Specializations[MegaMacroCachedSpecialization] = { Macros = {} }
         end
-		return MegaMacroGlobalData.Classes[MegaMacroCachedClass].Specializations[MegaMacroCachedSpecialization].Macros
-	elseif scope == MegaMacroScopes.Character then
-		return MegaMacroCharacterData.Macros
-	elseif scope == MegaMacroScopes.CharacterSpecialization then
+        return MegaMacroGlobalData.Classes[MegaMacroCachedClass].Specializations[MegaMacroCachedSpecialization].Macros
+    elseif scope == MegaMacroScopes.Character then
+        return MegaMacroCharacterData.Macros
+    elseif scope == MegaMacroScopes.CharacterSpecialization then
         if MegaMacroCachedSpecialization == nil then
             return {}
         end
         if MegaMacroCharacterData.Specializations[MegaMacroCachedSpecialization] == nil then
             MegaMacroCharacterData.Specializations[MegaMacroCachedSpecialization] = { Macros = {} }
         end
-		return MegaMacroCharacterData.Specializations[MegaMacroCachedSpecialization].Macros
+        return MegaMacroCharacterData.Specializations[MegaMacroCachedSpecialization].Macros
     end
 end

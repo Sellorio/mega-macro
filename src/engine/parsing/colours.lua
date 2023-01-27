@@ -1,5 +1,5 @@
 function GetMegaMacroParsingColourData()
-    return  {
+    return {
         String = "ffff9900",
         Number = "ffff9900",
         Emote = "ffeedd82",

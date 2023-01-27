@@ -11,7 +11,7 @@ IconCacheKeys = {}
 
 local function AddRange(self, otherTable)
     local selfLength = #self
-    for i=1, #otherTable do
+    for i = 1, #otherTable do
         self[selfLength + i] = otherTable[i]
     end
 end
@@ -19,57 +19,57 @@ end
 local function GetDefaultIconList()
     local icons = {}
 
-	-- We need to avoid adding duplicate spellIDs from the spellbook tabs for your other specs.
-	local activeIcons = {};
+    -- We need to avoid adding duplicate spellIDs from the spellbook tabs for your other specs.
+    local activeIcons = {};
 
-	for i = 1, GetNumSpellTabs() do
-		local tab, tabTex, offset, numSpells, _ = GetSpellTabInfo(i);
-		offset = offset + 1;
-		local tabEnd = offset + numSpells;
-		for j = offset, tabEnd - 1 do
-			--to get spell info by slot, you have to pass in a pet argument
-			local spellType, ID = GetSpellBookItemInfo(j, "player");
-			if (spellType ~= "FUTURESPELL") then
-				local fileID = GetSpellBookItemTexture(j, "player");
-				if (fileID) then
-					activeIcons[fileID] = true;
-				end
-			end
-			if (spellType == "FLYOUT") then
-				local _, _, numSlots, isKnown = GetFlyoutInfo(ID);
-				if (isKnown and numSlots > 0) then
-					for k = 1, numSlots do
-						local spellID
-						spellID, _, isKnown = GetFlyoutSlotInfo(ID, k)
-						if (isKnown) then
-							local fileID = GetSpellTexture(spellID);
-							if (fileID) then
-								activeIcons[fileID] = true;
-							end
-						end
-					end
-				end
-			end
-		end
-	end
-
-	for fileDataID in pairs(activeIcons) do
-		icons[#icons + 1] = fileDataID;
-	end
-
-	GetLooseMacroIcons(icons);
-	GetLooseMacroItemIcons(icons);
-	GetMacroIcons(icons);
-	GetMacroItemIcons(icons);
-
-	local iconListLength = #icons
-	for i=1, iconListLength do
-		if type(icons[i]) ~= "number" then
-			icons[i] = "INTERFACE\\ICONS\\"..icons[i]
-		end
+    for i = 1, GetNumSpellTabs() do
+        local tab, tabTex, offset, numSpells, _ = GetSpellTabInfo(i);
+        offset = offset + 1;
+        local tabEnd = offset + numSpells;
+        for j = offset, tabEnd - 1 do
+            --to get spell info by slot, you have to pass in a pet argument
+            local spellType, ID = GetSpellBookItemInfo(j, "player");
+            if (spellType ~= "FUTURESPELL") then
+                local fileID = GetSpellBookItemTexture(j, "player");
+                if (fileID) then
+                    activeIcons[fileID] = true;
+                end
+            end
+            if (spellType == "FLYOUT") then
+                local _, _, numSlots, isKnown = GetFlyoutInfo(ID);
+                if (isKnown and numSlots > 0) then
+                    for k = 1, numSlots do
+                        local spellID
+                        spellID, _, isKnown = GetFlyoutSlotInfo(ID, k)
+                        if (isKnown) then
+                            local fileID = GetSpellTexture(spellID);
+                            if (fileID) then
+                                activeIcons[fileID] = true;
+                            end
+                        end
+                    end
+                end
+            end
+        end
     end
 
-    for i=1, #icons do
+    for fileDataID in pairs(activeIcons) do
+        icons[#icons + 1] = fileDataID;
+    end
+
+    GetLooseMacroIcons(icons);
+    GetLooseMacroItemIcons(icons);
+    GetMacroIcons(icons);
+    GetMacroItemIcons(icons);
+
+    local iconListLength = #icons
+    for i = 1, iconListLength do
+        if type(icons[i]) ~= "number" then
+            icons[i] = "INTERFACE\\ICONS\\" .. icons[i]
+        end
+    end
+
+    for i = 1, #icons do
         icons[i] = { Icon = icons[i], SpellId = nil }
     end
 
@@ -84,7 +84,7 @@ end
 
 function MegaMacroIconNavigator.OnUpdate()
     if IconLoadingStarted and not IconLoadingFinished then
-        for _=1, FetchesPerFrame do
+        for _ = 1, FetchesPerFrame do
             CurrentSpellId = CurrentSpellId + 1
             local name, _, icon, _, _, _, spellId = GetSpellInfo(CurrentSpellId)
 
@@ -102,7 +102,7 @@ function MegaMacroIconNavigator.OnUpdate()
                         IconCache[name] = cachedIconList
                     end
                     local hasIcon = false
-                    for i=1, #cachedIconList do
+                    for i = 1, #cachedIconList do
                         if cachedIconList[i] == icon then
                             hasIcon = true
                             break
@@ -167,5 +167,4 @@ function MegaMacroIconNavigator.Search(searchText)
     else
         return GetDefaultIconList()
     end
-
 end

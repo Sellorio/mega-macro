@@ -50,7 +50,7 @@ local function IsNumber(word)
     if wordLength == 0 then
         return false
     end
-    for i=1, wordLength do
+    for i = 1, wordLength do
         if not string.match(string.sub(word, i, i), "[0-9]") then
             return false
         end
@@ -82,7 +82,8 @@ local function NumberModifier(parsingContext)
         if not IsNumber(word) then
             return "", false
         end
-        local result = ParseResult(parsingContext, 1, Colours.Syntax)..ParseResult(parsingContext, wordLength, Colours.Number)
+        local result = ParseResult(parsingContext, 1, Colours.Syntax) ..
+            ParseResult(parsingContext, wordLength, Colours.Number)
         return result, true
     end
 
@@ -98,7 +99,8 @@ local function OptionalWordModifier(parsingContext)
         if wordLength == 0 then
             return "", false
         end
-        return ParseResult(parsingContext, 1, Colours.Syntax)..ParseResult(parsingContext, wordLength, Colours.String), true
+        return ParseResult(parsingContext, 1, Colours.Syntax) .. ParseResult(parsingContext, wordLength, Colours.String)
+            , true
     else
         return "", true
     end
@@ -113,8 +115,7 @@ local function RequiredWordModifier(parsingContext)
         if wordLength == 0 then
             return "", false
         end
-        return
-            ParseResult(parsingContext, 1, Colours.Syntax)..
+        return ParseResult(parsingContext, 1, Colours.Syntax) ..
             ParseResult(parsingContext, wordLength, Colours.String),
             true
     else
@@ -130,8 +131,7 @@ local function GroupModifier(parsingContext)
         if word ~= "party" and word ~= "raid" then
             return "", false
         end
-        return
-            ParseResult(parsingContext, 1, Colours.Syntax)..
+        return ParseResult(parsingContext, 1, Colours.Syntax) ..
             ParseResult(parsingContext, #word, Colours.String),
             true
     else
@@ -144,10 +144,9 @@ local function KeyModifier(parsingContext)
 
     if hasModifier then
         local word = GetWord(parsingContext, 1)
-        for i=1, #ModifierKeyNames do
+        for i = 1, #ModifierKeyNames do
             if word == ModifierKeyNames[i] then
-                return
-                    ParseResult(parsingContext, 1, Colours.Syntax)..
+                return ParseResult(parsingContext, 1, Colours.Syntax) ..
                     ParseResult(parsingContext, #word, Colours.String),
                     true
             end
@@ -164,10 +163,9 @@ local function MouseButtonModifier(parsingContext)
 
     if hasModifier then
         local word = GetWord(parsingContext, 1)
-        for i=1, #MouseButtonNames do
+        for i = 1, #MouseButtonNames do
             if word == MouseButtonNames[i] then
-                return
-                    ParseResult(parsingContext, 1, Colours.Syntax)..
+                return ParseResult(parsingContext, 1, Colours.Syntax) ..
                     ParseResult(parsingContext, #word, Colours.String),
                     true
             end
@@ -193,10 +191,9 @@ local function TalentModifier(parsingContext)
         if not IsNumber(row) then
             return "", false
         end
-        return
-            ParseResult(parsingContext, 1, Colours.Syntax)..
-            ParseResult(parsingContext, #row, Colours.Number)..
-            ParseResult(parsingContext, 1, Colours.Number)..
+        return ParseResult(parsingContext, 1, Colours.Syntax) ..
+            ParseResult(parsingContext, #row, Colours.Number) ..
+            ParseResult(parsingContext, 1, Colours.Number) ..
             ParseResult(parsingContext, #col, Colours.Number),
             true
     else
@@ -205,47 +202,47 @@ local function TalentModifier(parsingContext)
 end
 
 local Conditionals = {
-	actionbar = NoModifier,
-	bar = NumberModifier,
-	bonusbar = NumberModifier,
-	btn = MouseButtonModifier,
-	button = MouseButtonModifier,
-	canexitvehicle = NoModifier,
-	channeling = NoModifier,
-	channelling = NoModifier,
-	combat = NoModifier,
-	cursor = OptionalWordModifier,
-	dead = NoModifier,
-	equipped = RequiredWordModifier,
-	exists = NoModifier,
-	extrabar = NumberModifier,
-	flyable = NoModifier,
-	flying = NoModifier,
-	form = NumberModifier,
-	group = GroupModifier,
-	harm = NoModifier,
-	help = NoModifier,
-	indoors = NoModifier,
-	mod = KeyModifier,
-	modifier = KeyModifier,
-	mounted = NoModifier,
-	none = NoModifier,
-	outdoors = NoModifier,
-	overridebar = NumberModifier,
-	party = NoModifier,
-	pet = RequiredWordModifier,
-	petbattle = NoModifier,
-	possessbar = NumberModifier,
-	pvptalent = TalentModifier,
-	raid = NoModifier,
-	spec = NumberModifier,
-	stance = NumberModifier,
-	stealth = NoModifier,
-	swimming = NoModifier,
-	talent = TalentModifier,
-	unithasvehicleui = NoModifier,
-	vehicleui = NoModifier,
-	worn = RequiredWordModifier,
+    actionbar = NoModifier,
+    bar = NumberModifier,
+    bonusbar = NumberModifier,
+    btn = MouseButtonModifier,
+    button = MouseButtonModifier,
+    canexitvehicle = NoModifier,
+    channeling = NoModifier,
+    channelling = NoModifier,
+    combat = NoModifier,
+    cursor = OptionalWordModifier,
+    dead = NoModifier,
+    equipped = RequiredWordModifier,
+    exists = NoModifier,
+    extrabar = NumberModifier,
+    flyable = NoModifier,
+    flying = NoModifier,
+    form = NumberModifier,
+    group = GroupModifier,
+    harm = NoModifier,
+    help = NoModifier,
+    indoors = NoModifier,
+    mod = KeyModifier,
+    modifier = KeyModifier,
+    mounted = NoModifier,
+    none = NoModifier,
+    outdoors = NoModifier,
+    overridebar = NumberModifier,
+    party = NoModifier,
+    pet = RequiredWordModifier,
+    petbattle = NoModifier,
+    possessbar = NumberModifier,
+    pvptalent = TalentModifier,
+    raid = NoModifier,
+    spec = NumberModifier,
+    stance = NumberModifier,
+    stealth = NoModifier,
+    swimming = NoModifier,
+    talent = TalentModifier,
+    unithasvehicleui = NoModifier,
+    vehicleui = NoModifier,
+    worn = RequiredWordModifier,
 }
 
 function GetMegaMacroParsingConditionsData()
