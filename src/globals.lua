@@ -2,6 +2,8 @@
 
 -- This file is here to define WoW and UI globals that are not declared in code
 -- so that syntax analysers can react favourably to it.
+-- For vscode users the WoW API Extension (https://marketplace.visualstudio.com/items?itemName=ketho.wow-api)
+-- is recommended to support a wider range of WoW API functions.
 
 -- the `<value> and <variable>` syntax is used to allow the syntax analyser to
 -- determine the data-type of the variable

@@ -15,8 +15,7 @@ MacroIndexOffsets = {
     PerClass = MacroLimits.GlobalCount,
     PerSpecialization = MacroLimits.GlobalCount + MacroLimits.PerClassCount,
     PerCharacter = MacroLimits.GlobalCount + MacroLimits.PerClassCount + MacroLimits.PerSpecializationCount,
-    PerCharacterSpecialization = MacroLimits.GlobalCount + MacroLimits.PerClassCount + MacroLimits.PerSpecializationCount
-        + MacroLimits.PerCharacterCount,
+    PerCharacterSpecialization = MacroLimits.GlobalCount + MacroLimits.PerClassCount + MacroLimits.PerSpecializationCount + MacroLimits.PerCharacterCount,
     NativeCharacterMacros = 120
 }
 
@@ -42,8 +41,7 @@ PetActionTextures = {
 MegaMacroTexture = 134400
 MegaMacroActiveStanceTexture = 136116
 MegaMacroCodeMaxLength = 1023
-HighestMaxMacroCount = math.max(MacroLimits.GlobalCount, MacroLimits.PerClassCount, MacroLimits.PerSpecializationCount,
-    MacroLimits.PerCharacterCount, MacroLimits.PerCharacterSpecializationCount)
+HighestMaxMacroCount = math.max(MacroLimits.GlobalCount, MacroLimits.PerClassCount, MacroLimits.PerSpecializationCount, MacroLimits.PerCharacterCount, MacroLimits.PerCharacterSpecializationCount)
 
 MegaMacroInfoFunctions = {
     Spell = {

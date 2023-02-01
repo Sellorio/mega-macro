@@ -99,8 +99,7 @@ function MegaMacro.Create(displayName, scope, staticTexture, isStaticTextureFall
             return nil
         end
 
-        id = GetNextAvailableMacroId(MacroIndexOffsets.PerCharacterSpecialization,
-            MacroLimits.PerCharacterSpecializationCount, macroList)
+        id = GetNextAvailableMacroId(MacroIndexOffsets.PerCharacterSpecialization, MacroLimits.PerCharacterSpecializationCount, macroList)
         result.Class = MegaMacroCachedClass
         result.Specialization = MegaMacroCachedSpecialization
     else

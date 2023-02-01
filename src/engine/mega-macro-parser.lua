@@ -276,8 +276,7 @@ local function ParseCommand(parsingContext)
 
         if bodyPartLength > 0 then
             parsingContext.Index = parsingContext.Index - bodyPartLength
-            result = result ..
-                ParseResult(parsingContext, bodyPartLength, Colours.CommandContent) .. ParseWhiteSpace(parsingContext)
+            result = result .. ParseResult(parsingContext, bodyPartLength, Colours.CommandContent) .. ParseWhiteSpace(parsingContext)
         end
 
         if character == ";" then

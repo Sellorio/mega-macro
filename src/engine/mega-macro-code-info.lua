@@ -1,4 +1,5 @@
 local CodeInfoCache = {}
+
 --[[
 {
     "macroid": {
@@ -7,7 +8,7 @@ local CodeInfoCache = {}
             body: "[mod:alt] X; Y"
         },
         ...
-    } 
+    }
 }
 --]]
 
@@ -63,10 +64,7 @@ local function ParseWord(parsingContext)
     local word = ""
 
     local character = Char(parsingContext.Code, parsingContext.Index)
-    while character and
-        (
-        string.match(character, "[a-z]") or string.match(character, "[A-Z]") or string.match(character, "[0-9]") or
-            character == "_") do
+    while character and (string.match(character, "[a-z]") or string.match(character, "[A-Z]") or string.match(character, "[0-9]") or character == "_") do
         word = word .. character
         result = true
         parsingContext.Index = parsingContext.Index + 1

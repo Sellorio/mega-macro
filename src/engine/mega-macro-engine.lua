@@ -58,8 +58,7 @@ local function TryImportGlobalMacros()
     if numberOfGlobalMacros + #globalMegaMacros > MacroLimits.GlobalCount then
         return false,
             "Mega Macro: There isn't enough space to import your existing global macros. The limit " ..
-            "for global macros when using Mega Macro is " ..
-            MacroLimits.GlobalCount .. " to make room for per-class and per-spec macro slots. " ..
+            "for global macros when using Mega Macro is " .. MacroLimits.GlobalCount .. " to make room for per-class and per-spec macro slots. " ..
             "Please use /reload once you have manually copied over/sorted the macros."
     end
 
@@ -73,8 +72,7 @@ local function TryImportGlobalMacros()
 
         if macro == nil then
             return false,
-                "Mega Macro: Failed to import all global macros. This is likely due to not having enough macro slots available. "
-                ..
+                "Mega Macro: Failed to import all global macros. This is likely due to not having enough macro slots available. " ..
                 "Please use /reload once you have manually copied over/sorted the macros."
         end
 
@@ -91,8 +89,7 @@ local function TryImportCharacterMacros()
     if numberOfCharacterMacros + #characterMegaMacros > MacroLimits.PerCharacterCount then
         return false,
             "Mega Macro: There isn't enough space to import your existing character-specific macros. The limit " ..
-            "for character macros when using Mega Macro is " ..
-            MacroLimits.PerCharacterCount .. " to make room for per-character per-spec macro slots. " ..
+            "for character macros when using Mega Macro is " .. MacroLimits.PerCharacterCount .. " to make room for per-character per-spec macro slots. " ..
             "Please use /reload once you have manually copied over/sorted the macros."
     end
 
@@ -106,8 +103,7 @@ local function TryImportCharacterMacros()
 
         if macro == nil then
             return false,
-                "Mega Macro: Failed to import all character macros. This is likely due to not having enough macro slots available. "
-                ..
+                "Mega Macro: Failed to import all character macros. This is likely due to not having enough macro slots available. " ..
                 "Please use /reload once you have manually copied over/sorted the macros."
         end
 
@@ -168,8 +164,7 @@ local function SetupOrUpdateMacros()
         -- skip global macros if they are not activated
         local startIndex = MegaMacroGlobalData.Activated and 1 or MacroLimits.MaxGlobalMacros + 1
         -- stop before character macros if they are not activated
-        local endIndex = MegaMacroCharacterData.Activated and
-            MacroLimits.MaxGlobalMacros + MacroLimits.MaxCharacterMacros or MacroLimits.MaxGlobalMacros
+        local endIndex = MegaMacroCharacterData.Activated and MacroLimits.MaxGlobalMacros + MacroLimits.MaxCharacterMacros or MacroLimits.MaxGlobalMacros
 
         for i = startIndex, endIndex do
             local code = GetMacroBody(i)
@@ -196,8 +191,7 @@ local function SetupOrUpdateMacros()
                 lastCheckedMacroId = lastCheckedMacroId + 1
                 if not assignedMacroIds[lastCheckedMacroId] then
                     local code = GetMacroBody(macroIndex)
-                    EditMacro(macroIndex, nil, nil, GenerateIdPrefix(lastCheckedMacroId) .. code, true,
-                        macroIndex > MacroLimits.MaxGlobalMacros)
+                    EditMacro(macroIndex, nil, nil, GenerateIdPrefix(lastCheckedMacroId) .. code, true, macroIndex > MacroLimits.MaxGlobalMacros)
                     break
                 end
             end
@@ -224,12 +218,10 @@ local function BindMacro(macro)
 
         if macroIndex then
             if MegaMacroConfig['UseNativeMacros'] then
-                EditMacro(macroIndex, FormatMacroDisplayName(macro.DisplayName), nil,
-                    GenerateIdPrefix(macro.Id) .. '\n' .. macro.Code, true, macroIndex > MacroLimits.MaxGlobalMacros)
+                EditMacro(macroIndex, FormatMacroDisplayName(macro.DisplayName), nil, GenerateIdPrefix(macro.Id) .. '\n' .. macro.Code, true, macroIndex > MacroLimits.MaxGlobalMacros)
             else
                 GetOrCreateClicky(macro.Id):SetAttribute("macrotext", macro.Code)
-                EditMacro(macroIndex, FormatMacroDisplayName(macro.DisplayName), nil, GetMacroStubCode(macro.Id), true,
-                    macroIndex > MacroLimits.MaxGlobalMacros)
+                EditMacro(macroIndex, FormatMacroDisplayName(macro.DisplayName), nil, GetMacroStubCode(macro.Id), true, macroIndex > MacroLimits.MaxGlobalMacros)
             end
             InitializeMacroIndexCache()
         end
@@ -269,8 +261,7 @@ local function BindMacros()
         BindMacrosList(MegaMacroGlobalData.Classes[MegaMacroCachedClass].Macros)
 
         if MegaMacroGlobalData.Classes[MegaMacroCachedClass].Specializations[MegaMacroCachedSpecialization] then
-            BindMacrosList(MegaMacroGlobalData.Classes[MegaMacroCachedClass].Specializations[
-                MegaMacroCachedSpecialization].Macros)
+            BindMacrosList(MegaMacroGlobalData.Classes[MegaMacroCachedClass].Specializations[MegaMacroCachedSpecialization].Macros)
         end
     end
 

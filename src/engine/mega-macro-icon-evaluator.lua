@@ -75,8 +75,7 @@ local function GetAbilityData(ability)
         local spellName, _, texture, _, _, _, spellId = GetSpellInfo(ability)
         if spellId then
             local shapeshiftFormIndex = GetShapeshiftForm()
-            local isActiveStance = shapeshiftFormIndex and shapeshiftFormIndex > 0 and
-                spellId == select(4, GetShapeshiftFormInfo(shapeshiftFormIndex))
+            local isActiveStance = shapeshiftFormIndex and shapeshiftFormIndex > 0 and spellId == select(4, GetShapeshiftFormInfo(shapeshiftFormIndex))
             return "spell", spellId, spellName, isActiveStance and MegaMacroActiveStanceTexture or texture
         end
 
@@ -212,8 +211,7 @@ local function ComputeMacroIcon(macro, staticTexture, isStaticTextureFallback)
 end
 
 local function UpdateMacro(macro)
-    local effectType, effectId, effectName, icon, target = ComputeMacroIcon(macro, macro.StaticTexture,
-        macro.IsStaticTextureFallback)
+    local effectType, effectId, effectName, icon, target = ComputeMacroIcon(macro, macro.StaticTexture, macro.IsStaticTextureFallback)
     local currentData = MacroEffectData[macro.Id]
 
     if not currentData then

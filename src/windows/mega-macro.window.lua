@@ -47,8 +47,7 @@ end
 -- Creates the button frames for the macro slots
 local function CreateMacroSlotFrames()
     for i = 1, HighestMaxMacroCount do
-        local button = CreateFrame("CheckButton", "MegaMacro_MacroButton" .. i, MegaMacro_ButtonContainer,
-            "MegaMacro_ButtonTemplate")
+        local button = CreateFrame("CheckButton", "MegaMacro_MacroButton" .. i, MegaMacro_ButtonContainer, "MegaMacro_ButtonTemplate")
         button:SetID(i)
         if i == 1 then
             button:SetPoint("TOPLEFT", MegaMacro_ButtonContainer, "TOPLEFT", 6, -6)
@@ -80,9 +79,7 @@ end
 
 local function InitializeIconListPanel()
     if not IconListInitialized then
-        BuildIconArray(MegaMacro_PopupFrame, "MegaMacro_PopupButton", "MegaMacro_PopupButtonTemplate", NUM_ICONS_PER_ROW
-            ,
-            NUM_ICON_ROWS)
+        BuildIconArray(MegaMacro_PopupFrame, "MegaMacro_PopupButton", "MegaMacro_PopupButtonTemplate", NUM_ICONS_PER_ROW, NUM_ICON_ROWS)
         FixIconPanelPosition()
         IconListInitialized = true
     end
@@ -150,8 +147,7 @@ local function RefreshSelectedMacroIcon()
             displayedTexture = data and data.Icon or MegaMacroTexture
         else
             local isStaticTextureFallback = MegaMacro_FallbackTextureCheckBox:GetChecked()
-            displayedTexture = select(4,
-                MegaMacroIconEvaluator.ComputeMacroIcon(SelectedMacro, SelectedIcon, isStaticTextureFallback))
+            displayedTexture = select(4, MegaMacroIconEvaluator.ComputeMacroIcon(SelectedMacro, SelectedIcon, isStaticTextureFallback))
         end
     end
 
@@ -297,8 +293,7 @@ local function UpdateTooltipIfButtonIsHovered(updatedMacroId)
                 if macro and macro.Id == updatedMacroId then
                     ShowToolTipForMegaMacro(macro.Id)
                 end
-            elseif focusFrame == "MegaMacro_FrameSelectedMacroButton" and SelectedMacro and
-                SelectedMacro.Id == updatedMacroId then
+            elseif focusFrame == "MegaMacro_FrameSelectedMacroButton" and SelectedMacro and SelectedMacro.Id == updatedMacroId then
                 ShowToolTipForMegaMacro(SelectedMacro.Id)
             end
         end
@@ -727,8 +722,7 @@ function MegaMacro_PopupFrame_OnUpdate()
     end
 
     -- Scrollbar stuff
-    FauxScrollFrame_Update(MegaMacro_PopupScrollFrame, ceil(numMacroIcons / NUM_ICONS_PER_ROW) + 1, NUM_ICON_ROWS,
-        MACRO_ICON_ROW_HEIGHT);
+    FauxScrollFrame_Update(MegaMacro_PopupScrollFrame, ceil(numMacroIcons / NUM_ICONS_PER_ROW) + 1, NUM_ICON_ROWS, MACRO_ICON_ROW_HEIGHT);
 end
 
 function MegaMacro_PopupButton_OnClick(self)

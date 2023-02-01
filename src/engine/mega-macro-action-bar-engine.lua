@@ -1,5 +1,4 @@
 --[[
-
 For developer refererence, these are the features of an action bar button:
  - Texture
  - Cooldown (including silence/stun cooldown display)
@@ -13,14 +12,20 @@ For developer refererence, these are the features of an action bar button:
  - Charges (spells only atm)
  - Spell Glow (such as on empowerments for Balance Druid)
  - Active Auto Attack Flash (flashes red when auto attack is active) - intentionally omitted from this addon
-
 ]]
 
 local LibActionButton = nil
 local ActionBarSystem = nil -- Blizzard or LAB or Dominos
 local BlizzardActionBars = {
-    "Action", "MultiBarBottomLeft", "MultiBarBottomRight", "MultiBarRight",
-    "MultiBarLeft", "MultiBar5", "MultiBar6", "MultiBar7", "MultiBar8"
+    "Action",
+    "MultiBarBottomLeft",
+    "MultiBarBottomRight",
+    "MultiBarRight",
+    "MultiBarLeft",
+    "MultiBar5",
+    "MultiBar6",
+    "MultiBar7",
+    "MultiBar8"
 }
 
 local rangeTimer = 5
@@ -29,13 +34,11 @@ local updateRange = false
 local ActionsBoundToMegaMacros = {}
 
 local function UpdateCurrentActionState(button, functions, abilityId)
-    local isChecked = functions.IsCurrent(abilityId) or
-        functions.IsAutoRepeat(abilityId)
+    local isChecked = functions.IsCurrent(abilityId) or functions.IsAutoRepeat(abilityId)
 
     if not isChecked and functions == MegaMacroInfoFunctions.Spell then
         local shapeshiftFormIndex = GetShapeshiftForm()
-        if shapeshiftFormIndex and shapeshiftFormIndex > 0 and abilityId ==
-            select(4, GetShapeshiftFormInfo(shapeshiftFormIndex)) then
+        if shapeshiftFormIndex and shapeshiftFormIndex > 0 and abilityId == select(4, GetShapeshiftFormInfo(shapeshiftFormIndex)) then
             isChecked = true
         end
     end
@@ -50,7 +53,9 @@ end
 local function UpdateUsable(button, functions, abilityId)
     local icon = button.icon
     local normalTexture = button.NormalTexture
-    if not normalTexture then return; end
+    if not normalTexture then
+        return;
+    end
 
     local isUsable, notEnoughMana = functions.IsUsable(abilityId)
     if isUsable then
@@ -82,18 +87,13 @@ local function LibActionButton_EndChargeCooldown(self)
     tinsert(LibActionButton.ChargeCooldowns, self)
 end
 
-local function LibActionButton_StartChargeCooldown(parent, chargeStart,
-                                                   chargeDuration, chargeModRate)
+local function LibActionButton_StartChargeCooldown(parent, chargeStart, chargeDuration, chargeModRate)
     if not parent.chargeCooldown then
         local cooldown = tremove(LibActionButton.ChargeCooldowns)
         if not cooldown then
-            LibActionButton.NumChargeCooldowns =
-            LibActionButton.NumChargeCooldowns + 1
-            cooldown = CreateFrame("Cooldown", "LAB10ChargeCooldown" ..
-                LibActionButton.NumChargeCooldowns,
-                parent, "CooldownFrameTemplate");
-            cooldown:SetScript("OnCooldownDone",
-                LibActionButton_EndChargeCooldown)
+            LibActionButton.NumChargeCooldowns = LibActionButton.NumChargeCooldowns + 1
+            cooldown = CreateFrame("Cooldown", "LAB10ChargeCooldown" .. LibActionButton.NumChargeCooldowns, parent, "CooldownFrameTemplate");
+            cooldown:SetScript("OnCooldownDone", LibActionButton_EndChargeCooldown)
             cooldown:SetHideCountdownNumbers(true)
             cooldown:SetDrawSwipe(false)
         end
@@ -105,13 +105,13 @@ local function LibActionButton_StartChargeCooldown(parent, chargeStart,
         cooldown.parent = parent
     end
     -- set cooldown
-    parent.chargeCooldown:SetDrawBling(
-        parent.chargeCooldown:GetEffectiveAlpha() > 0.5)
-    CooldownFrame_Set(parent.chargeCooldown, chargeStart, chargeDuration, true,
-        true, chargeModRate)
+    parent.chargeCooldown:SetDrawBling(parent.chargeCooldown:GetEffectiveAlpha() > 0.5)
+    CooldownFrame_Set(parent.chargeCooldown, chargeStart, chargeDuration, true, true, chargeModRate)
 
     -- update charge cooldown skin when masque is used
-    if Masque and Masque.UpdateCharge then Masque:UpdateCharge(parent) end
+    if Masque and Masque.UpdateCharge then
+        Masque:UpdateCharge(parent)
+    end
 
     if not chargeStart or chargeStart == 0 then
         LibActionButton_EndChargeCooldown(parent.chargeCooldown)
@@ -121,8 +121,7 @@ end
 local function UpdateCooldownLibActionButton(button, functions, abilityId)
     local locStart, locDuration = functions.GetLossOfControlCooldown(abilityId)
     local start, duration, enable, modRate = functions.GetCooldown(abilityId)
-    local charges, maxCharges, chargeStart, chargeDuration, chargeModRate =
-    functions.GetCharges(abilityId)
+    local charges, maxCharges, chargeStart, chargeDuration, chargeModRate = functions.GetCharges(abilityId)
 
     button.cooldown:SetDrawBling(button.cooldown:GetEffectiveAlpha() > 0.5)
 
@@ -133,8 +132,7 @@ local function UpdateCooldownLibActionButton(button, functions, abilityId)
             button.cooldown:SetHideCountdownNumbers(true)
             button.cooldown.currentCooldownType = COOLDOWN_TYPE_LOSS_OF_CONTROL
         end
-        CooldownFrame_Set(button.cooldown, locStart, locDuration, true, true,
-            modRate)
+        CooldownFrame_Set(button.cooldown, locStart, locDuration, true, true, modRate)
     else
         if button.cooldown.currentCooldownType ~= COOLDOWN_TYPE_NORMAL then
             button.cooldown:SetEdgeTexture("Interface\\Cooldown\\edge")
@@ -149,21 +147,18 @@ local function UpdateCooldownLibActionButton(button, functions, abilityId)
         end
 
         if charges and maxCharges and charges > 0 and charges < maxCharges then
-            LibActionButton_StartChargeCooldown(button, chargeStart,
-                chargeDuration, chargeModRate)
+            LibActionButton_StartChargeCooldown(button, chargeStart, chargeDuration, chargeModRate)
         elseif button.chargeCooldown then
             LibActionButton_EndChargeCooldown(button.chargeCooldown)
         end
-        CooldownFrame_Set(button.cooldown, start, duration, enable, false,
-            modRate)
+        CooldownFrame_Set(button.cooldown, start, duration, enable, false, modRate)
     end
 end
 
 local function UpdateCooldownBlizzard(button, functions, abilityId)
     locStart, locDuration = functions.GetLossOfControlCooldown(abilityId)
     start, duration, enable, modRate = functions.GetCooldown(abilityId)
-    charges, maxCharges, chargeStart, chargeDuration, chargeModRate =
-    functions.GetCharges(abilityId)
+    charges, maxCharges, chargeStart, chargeDuration, chargeModRate = functions.GetCharges(abilityId)
 
     if ((locStart + locDuration) > (start + duration)) then
         if (button.cooldown.currentCooldownType ~= COOLDOWN_TYPE_LOSS_OF_CONTROL) then
@@ -173,8 +168,7 @@ local function UpdateCooldownBlizzard(button, functions, abilityId)
             button.cooldown.currentCooldownType = COOLDOWN_TYPE_LOSS_OF_CONTROL
         end
 
-        CooldownFrame_Set(button.cooldown, locStart, locDuration, true, true,
-            modRate)
+        CooldownFrame_Set(button.cooldown, locStart, locDuration, true, true, modRate)
         ClearChargeCooldown(button)
     else
         if (button.cooldown.currentCooldownType ~= COOLDOWN_TYPE_NORMAL) then
@@ -185,19 +179,16 @@ local function UpdateCooldownBlizzard(button, functions, abilityId)
         end
 
         if (locStart > 0) then
-            button.cooldown:SetScript("OnCooldownDone",
-                ActionButton_OnCooldownDone)
+            button.cooldown:SetScript("OnCooldownDone", ActionButton_OnCooldownDone)
         end
 
         if (charges and maxCharges and maxCharges > 1 and charges < maxCharges) then
-            StartChargeCooldown(button, chargeStart, chargeDuration,
-                chargeModRate)
+            StartChargeCooldown(button, chargeStart, chargeDuration, chargeModRate)
         else
             ClearChargeCooldown(button)
         end
 
-        CooldownFrame_Set(button.cooldown, start, duration, enable, false,
-            modRate)
+        CooldownFrame_Set(button.cooldown, start, duration, enable, false, modRate)
     end
 end
 
@@ -205,14 +196,11 @@ local function UpdateCount(button, functions, abilityId)
     local countLabel = button.Count
     local count = functions.GetCount(abilityId)
 
-    local isNonEquippableItem = functions == MegaMacroInfoFunctions.Item and
-        not IsEquippableItem(abilityId)
-    local isNonItemWithCount = functions ~= MegaMacroInfoFunctions.Item and
-        count and count > 0
+    local isNonEquippableItem = functions == MegaMacroInfoFunctions.Item and not IsEquippableItem(abilityId)
+    local isNonItemWithCount = functions ~= MegaMacroInfoFunctions.Item and count and count > 0
 
     if isNonEquippableItem or isNonItemWithCount then
-        countLabel:SetText(count > (button.maxDisplayCount or 9999) and "*" or
-            count)
+        countLabel:SetText(count > (button.maxDisplayCount or 9999) and "*" or count)
     else
         local charges, maxCharges = functions.GetCharges(abilityId)
         if charges and maxCharges and maxCharges > 1 then
@@ -260,7 +248,8 @@ local function UpdateRange(button, functions, abilityId, target)
     if Bartender4 then
         if Bartender4.db.profile.outofrange == "button" then
             if checksRange and not inRange then
-                button.icon:SetVertexColor(Bartender4.db.profile.colors.range.r,
+                button.icon:SetVertexColor(
+                    Bartender4.db.profile.colors.range.r,
                     Bartender4.db.profile.colors.range.g,
                     Bartender4.db.profile.colors.range.b)
             else
@@ -292,7 +281,9 @@ local function UpdateRange(button, functions, abilityId, target)
 end
 
 local function UpdateActionBar(button, macroId)
-    if MegaMacroConfig['UseNativeActionBar'] then return end
+    if MegaMacroConfig['UseNativeActionBar'] then
+        return
+    end
 
     local data = MegaMacroIconEvaluator.GetCachedData(macroId)
     local functions = MegaMacroInfoFunctions.Unknown
@@ -341,7 +332,9 @@ local function ResetActionBar(button)
 end
 
 local function ForEachLibActionButton(func)
-    for button, _ in pairs(LibActionButton.buttonRegistry) do func(button) end
+    for button, _ in pairs(LibActionButton.buttonRegistry) do
+        func(button)
+    end
 end
 
 local function ForEachDominosButton(func)
@@ -362,16 +355,19 @@ local function ForEachDominosButton(func)
         else
             button = _G["DominosActionButton" .. (i - 60)]
         end
-        if button then func(button) end
+        if button then
+            func(button)
+        end
     end
 end
 
 local function ForEachBlizzardActionButton(func)
     for actionBarIndex = 1, #BlizzardActionBars do
         for i = 1, 12 do
-            local button = _G[BlizzardActionBars[actionBarIndex] .. "Button" ..
-                i]
-            if button then func(button) end
+            local button = _G[BlizzardActionBars[actionBarIndex] .. "Button" .. i]
+            if button then
+                func(button)
+            end
         end
     end
 end
@@ -391,7 +387,9 @@ function MegaMacroActionBarEngine.Initialize()
         ActionBarSystem = "Blizzard"
     end
 
-    MegaMacroIconEvaluator.OnIconUpdated(function() rangeTimer = -1 end)
+    MegaMacroIconEvaluator.OnIconUpdated(function()
+        rangeTimer = -1
+    end)
 end
 
 function MegaMacroActionBarEngine.OnUpdate(elapsed)
@@ -409,14 +407,15 @@ function MegaMacroActionBarEngine.OnUpdate(elapsed)
     iterator(function(button)
         local action = button:GetAttribute("action") or button.action
         local type, actionArg1 = GetActionInfo(action)
-        local macroId = type == "macro" and
-            MegaMacroEngine.GetMacroIdFromIndex(actionArg1)
+        local macroId = type == "macro" and MegaMacroEngine.GetMacroIdFromIndex(actionArg1)
 
         if macroId then
             ActionsBoundToMegaMacros[button] = true
             UpdateActionBar(button, macroId)
 
-            if button == focus then ShowToolTipForMegaMacro(macroId) end
+            if button == focus then
+                ShowToolTipForMegaMacro(macroId)
+            end
         elseif ActionsBoundToMegaMacros[button] then
             ActionsBoundToMegaMacros[button] = nil
             if not actionArg1 then
@@ -427,7 +426,10 @@ function MegaMacroActionBarEngine.OnUpdate(elapsed)
     end)
 end
 
-function MegaMacroActionBarEngine.OnTargetChanged() rangeTimer = -1 end
+function MegaMacroActionBarEngine.OnTargetChanged()
+    rangeTimer = -1
+end
 
-hooksecurefunc("ActionButton_UpdateRangeIndicator",
-    function() rangeTimer = -1 end)
+hooksecurefunc("ActionButton_UpdateRangeIndicator", function()
+    rangeTimer = -1
+end)
