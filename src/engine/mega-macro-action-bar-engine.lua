@@ -17,7 +17,7 @@ For developer refererence, these are the features of an action bar button:
 local LibActionButton = nil
 local ActionBarSystem = nil -- Blizzard or LAB or Dominos
 local BlizzardActionBars = {
-    "Action",
+    "MainMenuBar",
     "MultiBarBottomLeft",
     "MultiBarBottomRight",
     "MultiBarRight",
