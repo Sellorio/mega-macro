@@ -1,616 +1,614 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/..\..\FrameXML\UI.xsd">
-	<Script file="src/windows/mega-macro.window.lua"/>
-	<CheckButton name="MegaMacro_ButtonTemplate" inherits="SelectorButtonTemplate" virtual="true">
-		<Scripts>
-			<OnLoad>self:RegisterForDrag("LeftButton");</OnLoad>
-			<OnClick>MegaMacro_MacroButton_OnClick(self);</OnClick>
-			<OnEnter>MegaMacro_MacroButton_OnEnter(self);</OnEnter>
-			<OnLeave>MegaMacro_MacroButton_OnLeave(self);</OnLeave>
-			<OnDragStart>MegaMacro_MacroButton_OnDragStart(self);</OnDragStart>
-			<OnReceiveDrag>MegaMacro_MacroButton_OnReceiveDrag(self);</OnReceiveDrag>
-		</Scripts>
-		<Layers>
-			<Layer level="ARTWORK">
-				<FontString name="$parentName" inherits="GameFontHighlightSmall" text="">
-					<Size x="36" y="36"/>
-					<Anchors>
-						<Anchor point="CENTER" relativeTo="$parent" x="0" y="-10"/>
-					</Anchors>
-				</FontString>
-			</Layer>
-		</Layers>
-	</CheckButton>
-	<CheckButton name="MegaMacro_PopupButtonTemplate" inherits="SimplePopupButtonTemplate" virtual="true">
-		<Scripts>
-			<OnClick>MegaMacro_PopupButton_OnClick(self);</OnClick>
-			<OnEnter>MegaMacro_PopupButton_OnEnter(self);</OnEnter>
-			<OnLeave>MegaMacro_PopupButton_OnLeave(self);</OnLeave>
-		</Scripts>
-		<NormalTexture name="$parentIcon" nonBlocking="true">
-			<Size x="36" y="36"/>
-			<Anchors>
-				<Anchor point="CENTER" x="0" y="-1"/>
-			</Anchors>
-		</NormalTexture>
-		<HighlightTexture alphaMode="ADD" file="Interface\Buttons\ButtonHilight-Square"/>
-		<CheckedTexture alphaMode="ADD" file="Interface\Buttons\CheckButtonHilight"/>
-	</CheckButton>
-	<Frame name="MegaMacro_Frame" toplevel="true" movable="true" parent="UIParent" enableMouse="true" hidden="true" inherits="ButtonFrameTemplate">
-		<Size x="640" y="524"/>
-		<Attributes>
-			<Attribute name="UIPanelLayout-defined" type="boolean" value="true"/>
-			<Attribute name="UIPanelLayout-enabled" type="boolean" value="true"/>
-			<Attribute name="UIPanelLayout-area" type="string" value="left"/>
-			<Attribute name="UIPanelLayout-width" type="number" value="641"/>
-			<Attribute name="UIPanelLayout-pushable" type="number" value="1"/>
-			<Attribute name="UIPanelLayout-whileDead" type="boolean" value="true"/>
-		</Attributes>
-		<Scripts>
-			<OnLoad>
-				self:RegisterForDrag("LeftButton");
-				MegaMacro_Window_OnLoad();
-			</OnLoad>
-			<OnDragStart>
-				if not MegaMacroConfig_IsWindowDialog() then
-					self:StartMoving()
-				end
-			</OnDragStart>
-			<OnDragStop>
-				if not MegaMacroConfig_IsWindowDialog() then
-					self:StopMovingOrSizing();
-					MegaMacro_Window_OnDragStop();
-				end
-			</OnDragStop>
-			<OnShow>
-				if not MegaMacroWindowTogglingMode then
-                	PlaySound(SOUNDKIT.IG_CHARACTER_INFO_OPEN);
-                	MegaMacro_Window_OnShow();
-				end
-            </OnShow>
-			<OnHide>
-				if not MegaMacroWindowTogglingMode then
-	            	PlaySound(SOUNDKIT.IG_CHARACTER_INFO_CLOSE);
-                	MegaMacro_Window_OnHide();
-				end
-            </OnHide>
-		</Scripts>
-		<Scripts>
-		</Scripts>
-		<Layers>
-			<Layer level="OVERLAY" textureSubLevel="-1">
-				<Texture name="MegaMacro_FramePortrait" file="Interface\MacroFrame\MacroFrame-Icon">
-					<Size x="60" y="60"/>
-					<Anchors>
-						<Anchor point="TOPLEFT" x="-5" y="5"/>
-					</Anchors>
-				</Texture>
-			</Layer>
-			<Layer level="BORDER">
-				<FontString inherits="GameFontNormal" text="Mega Macro - Create Macros">
-					<Anchors>
-						<Anchor point="TOP" relativeTo="MegaMacro_Frame" x="0" y="-5"/>
-					</Anchors>
-				</FontString>
-			</Layer>
-			<Layer level="ARTWORK">
-				<Texture name="MegaMacro_HorizontalBarLeft" file="Interface\ClassTrainerFrame\UI-ClassTrainer-HorizontalBar">
-					<Size x="556" y="16"/>
-					<Anchors>
-						<Anchor point="TOPLEFT" x="0" y="-210"/>
-					</Anchors>
-					<TexCoords left="0" right="1.0" top="0" bottom="0.25"/>
-				</Texture>
-				<Texture file="Interface\ClassTrainerFrame\UI-ClassTrainer-HorizontalBar">
-					<Size x="75" y="16"/>
-					<Anchors>
-						<Anchor point="LEFT" relativeTo="MegaMacro_HorizontalBarLeft" relativePoint="RIGHT" x="0" y="0"/>
-					</Anchors>
-					<TexCoords left="0" right="0.29296875" top="0.25" bottom="0.5"/>
-				</Texture>
-				<Texture name="MegaMacro_FrameSelectedMacroBackground" file="Interface\Buttons\UI-EmptySlot">
-					<Size x="64" y="64"/>
-					<Anchors>
-						<Anchor point="TOPLEFT" x="5" y="-218"/>
-					</Anchors>
-				</Texture>
-				<FontString name="MegaMacro_FrameSelectedMacroName" inherits="GameFontNormalLarge" justifyH="LEFT">
-					<Size x="554" y="19"/>
-					<Anchors>
-						<Anchor point="TOPLEFT" relativeTo="MegaMacro_FrameSelectedMacroBackground" relativePoint="TOPRIGHT" x="-4" y="-10"/>
-					</Anchors>
-				</FontString>
-				<FontString name="MegaMacro_FrameEnterMacroText" inherits="GameFontHighlightSmall" text="ENTER_MACRO_LABEL">
-					<Anchors>
-						<Anchor point="TOPLEFT" relativeTo="MegaMacro_FrameSelectedMacroBackground" relativePoint="BOTTOMLEFT" x="8" y="3"/>
-					</Anchors>
-				</FontString>
-				<FontString name="MegaMacro_FrameCharLimitText" inherits="GameFontHighlightSmall">
-					<Size x="0" y="10"/>
-					<Anchors>
-						<Anchor point="BOTTOM" x="-15" y="30"/>
-					</Anchors>
-				</FontString>
-			</Layer>
-		</Layers>
-		<Frames>
-			<Button name="MegaMacro_ToggleWindowModeButton" frameStrata="HIGH" inherits="UIPanelButtonTemplate" text="{lock/unlock}">
-				<Size x="80" y="22"/>
-				<Anchors>
-					<Anchor point="TOPRIGHT" relativeTo="MegaMacro_Frame" relativePoint="TOPRIGHT" x="-21" y="1"/>
-				</Anchors>
-				<Scripts>
-					<OnClick>MegaMacro_ToggleWindowModeButton_OnClick();</OnClick>
-				</Scripts>
-			</Button>
-			<CheckButton name="MegaMacro_FrameSelectedMacroButton" frameStrata="HIGH" inherits="MegaMacro_ButtonTemplate" id="0">
-				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="MegaMacro_FrameSelectedMacroBackground" x="14" y="-14"/>
-				</Anchors>
-				<Scripts>
-					<OnLoad>self:RegisterForDrag("LeftButton");</OnLoad>
-					<OnDragStart>MegaMacro_FrameSelectedMacroButton_OnDragStart();</OnDragStart>
-					<OnClick>
-						self:SetChecked(false);
-						MegaMacro_FrameSelectedMacroButton_OnDragStart();
-					</OnClick>
-					<OnEnter>MegaMacro_FrameSelectedMacroButton_OnEnter();</OnEnter>
-					<OnLeave>MegaMacro_FrameSelectedMacroButton_OnLeave();</OnLeave>
-				</Scripts>
-				<Layers>
-					<Layer level="ARTWORK">
-						<Texture name="MegaMacro_FrameSelectedMacroButtonIcon" file="Interface\Buttons\UI-EmptySlot">
-							<Size x="44" y="44"/>
-							<Anchors>
-								<Anchor point="CENTER" relativeTo="$parent" x="0" y="0"/>
-							</Anchors>
-						</Texture>
-					</Layer>
-				</Layers>
-			</CheckButton>
-			<ScrollFrame name="MegaMacro_ButtonScrollFrame" inherits="UIPanelScrollFrameTemplate">
-				<Size x="593" y="146"/>
-				<Anchors>
-					<Anchor point="TOPLEFT" x="12" y="-66"/>
-				</Anchors>
-				<Layers>
-					<Layer level="ARTWORK">
-						<Texture name="$parentTop" file="Interface\PaperDollInfoFrame\UI-Character-ScrollBar">
-							<Size x="31" y="102"/>
-							<Anchors>
-								<Anchor point="TOPLEFT" relativePoint="TOPRIGHT" x="-2" y="5"/>
-							</Anchors>
-							<TexCoords left="0" right="0.484375" top="0" bottom="0.4"/>
-						</Texture>
-						<Texture name="$parentBottom" file="Interface\PaperDollInfoFrame\UI-Character-ScrollBar">
-							<Size x="31" y="106"/>
-							<Anchors>
-								<Anchor point="BOTTOMLEFT" relativePoint="BOTTOMRIGHT" x="-2" y="-2"/>
-							</Anchors>
-							<TexCoords left="0.515625" right="1.0" top="0" bottom="0.4140625"/>
-						</Texture>
-						<Texture name="$parentMiddle" file="Interface\PaperDollInfoFrame\UI-Character-ScrollBar">
-							<Size x="31" y="1"/>
-							<Anchors>
-								<Anchor point="TOP" relativeTo="$parentTop" relativePoint="BOTTOM"/>
-								<Anchor point="BOTTOM" relativeTo="$parentBottom" relativePoint="TOP"/>
-							</Anchors>
-							<TexCoords left="0" right="0.484375" top=".75" bottom="1.0"/>
-						</Texture>
-					</Layer>
-				</Layers>
-				<Scripts>
-					<OnLoad function="ScrollFrame_OnLoad"/>
-				</Scripts>
-				<ScrollChild>
-					<Frame name="MegaMacro_ButtonContainer">
-						<Size x="439" y="10"/>
-						<Anchors>
-							<Anchor point="TOPLEFT"/>
-						</Anchors>
-						<Scripts>
-							<OnLoad>MegaMacro_ButtonContainer_OnLoad();</OnLoad>
-							<OnShow>MegaMacro_ButtonContainer_OnShow();</OnShow>
-							<OnReceiveDrag>MegaMacro_ButtonContainer_OnReceiveDrag();</OnReceiveDrag>
-						</Scripts>
-						<Frames>
-							<Frame name="MegaMacro_ConfigContainer" hidden="true">
-								<Size x="439" y="10"/>
-								<Anchors>
-									<Anchor point="TOPLEFT"/>
-								</Anchors>
-							</Frame>
-						</Frames>
-					</Frame>
-				</ScrollChild>
-			</ScrollFrame>
-			<Button name="MegaMacro_EditButton" frameStrata="HIGH" inherits="UIPanelButtonTemplate" text="Edit">
-				<Size x="50" y="22"/>
-				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="MegaMacro_FrameSelectedMacroBackground" x="55" y="-32"/>
-				</Anchors>
-				<Scripts>
-					<OnClick>MegaMacro_EditButton_OnClick();</OnClick>
-				</Scripts>
-			</Button>
-			<ScrollFrame name="MegaMacro_FrameScrollFrame" inherits="UIPanelScrollFrameTemplate">
-				<Size x="591" y="185"/>
-				<Scripts>
-					<OnMouseWheel>
-						ScrollFrameTemplate_OnMouseWheel(self, delta);
-					</OnMouseWheel>
-					<OnVerticalScroll>
-						local scrollbar1 = MegaMacro_FrameScrollFrameScrollBar;
-						local scrollbar2 = MegaMacro_FormattedFrameScrollFrameScrollBar;
-						scrollbar1:SetValue(offset);
-						scrollbar2:SetValue(offset);
-						local mini1, maxi1 = scrollbar1:GetMinMaxValues();
-						local mini2, maxi2 = scrollbar2:GetMinMaxValues();
-						if delta == 0 then
-							MegaMacro_FrameScrollFrameScrollBarScrollUpButton:Disable();
-							MegaMacro_FormattedFrameScrollFrameScrollBarScrollUpButton:Disable();
-						else
-							MegaMacro_FrameScrollFrameScrollBarScrollUpButton:Enable();
-							MegaMacro_FormattedFrameScrollFrameScrollBarScrollUpButton:Enable();
-						end
-						if scrollbar1:GetValue() - maxi1 == 0 then
-							MegaMacro_FrameScrollFrameScrollBarScrollDownButton:Disable();
-							MegaMacro_FormattedFrameScrollFrameScrollBarScrollDownButton:Disable();
-						else
-							MegaMacro_FrameScrollFrameScrollBarScrollDownButton:Enable();
-							MegaMacro_FormattedFrameScrollFrameScrollBarScrollDownButton:Enable();
-						end
-					</OnVerticalScroll>
-				</Scripts>
-				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="MegaMacro_FrameSelectedMacroBackground" relativePoint="BOTTOMLEFT" x="11" y="-13"/>
-				</Anchors>
-				<ScrollChild>
-					<EditBox name="MegaMacro_FrameText" multiLine="true" letters="1023" autoFocus="false" countInvisibleLetters="true">
-						<Size x="589" y="185"/>
-						<Scripts>
-							<OnLoad>
-								ScrollingEdit_OnCursorChanged(self, 0, 0, 0, 0);
-								self:GetRegions():SetAlpha(0.2);
-							</OnLoad>
-							<OnKeyDown>MegaMacro_TextBox_OnKeyDown(self, key);</OnKeyDown>
-							<OnTextChanged>MegaMacro_TextBox_TextChanged(self);</OnTextChanged>
-							<OnCursorChanged function="ScrollingEdit_OnCursorChanged"/>
-							<OnUpdate>ScrollingEdit_OnUpdate(self, elapsed, self:GetParent());</OnUpdate>
-							<OnEscapePressed function="EditBox_ClearFocus"/>
-						</Scripts>
-						<FontString inherits="GameFontHighlightSmall"/>
-					</EditBox>
-				</ScrollChild>
-			</ScrollFrame>
-			<ScrollFrame name="MegaMacro_FormattedFrameScrollFrame" inherits="UIPanelScrollFrameTemplate">
-				<Size x="591" y="185"/>
-				<Scripts>
-					<OnMouseWheel>
-						ScrollFrameTemplate_OnMouseWheel(self, delta);
-					</OnMouseWheel>
-				</Scripts>
-				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="MegaMacro_FrameSelectedMacroBackground" relativePoint="BOTTOMLEFT" x="11" y="-13"/>
-				</Anchors>
-				<ScrollChild>
-					<EditBox name="MegaMacro_FormattedFrameText" multiLine="true" letters="9999" autoFocus="false" countInvisibleLetters="true">
-						<Size x="589" y="185"/>
-						<Scripts>
-							<OnLoad>
-								ScrollingEdit_OnCursorChanged(self, 0, 0, 0, 0);
-								MegaMacro_FrameText:SetFrameLevel(self:GetFrameLevel() + 1)
-							</OnLoad>
-							<OnCursorChanged function="ScrollingEdit_OnCursorChanged"/>
-							<OnUpdate>ScrollingEdit_OnUpdate(self, elapsed, self:GetParent());</OnUpdate>
-						</Scripts>
-						<FontString inherits="GameFontHighlightSmall"/>
-					</EditBox>
-				</ScrollChild>
-			</ScrollFrame>
-			<Button name="MegaMacro_FrameTextButton">
-				<Size x="589" y="185"/>
-				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="MegaMacro_FrameText"/>
-				</Anchors>
-				<Scripts>
-					<OnClick>MegaMacro_FrameTextButton_OnClick();</OnClick>
-				</Scripts>
-			</Button>
-			<Button name="MegaMacro_CancelButton" frameStrata="HIGH" inherits="UIPanelButtonTemplate" text="CANCEL">
-				<Size x="80" y="22"/>
-				<Anchors>
-					<Anchor point="BOTTOMRIGHT" relativeTo="MegaMacro_FrameScrollFrame" relativePoint="TOPRIGHT" x="25" y="10"/>
-				</Anchors>
-				<Scripts>
-					<OnClick>MegaMacro_CancelButton_OnClick();</OnClick>
-				</Scripts>
-			</Button>
-			<Button name="MegaMacro_SaveButton" frameStrata="HIGH" inherits="UIPanelButtonTemplate" text="SAVE">
-				<Size x="80" y="22"/>
-				<Anchors>
-					<Anchor point="BOTTOM" relativeTo="MegaMacro_CancelButton" relativePoint="TOP" x="0" y="15"/>
-				</Anchors>
-				<Scripts>
-					<OnClick>MegaMacro_SaveButton_OnClick();</OnClick>
-				</Scripts>
-			</Button>
-			<Frame name="MacroFrameTextBackground" inherits="TooltipBackdropTemplate">
-				<Size x="627" y="195"/>
-				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="MegaMacro_Frame" x="6" y="-289"/>
-				</Anchors>
-			</Frame>
-			<Button name="MegaMacro_FrameTab1" inherits="PanelTabButtonTemplate" text="Global" id="1">
-				<Anchors>
-					<Anchor point="TOPLEFT" x="51" y="-28"/>
-				</Anchors>
-				<Scripts>
-					<OnLoad>
-						PanelTemplates_TabResize(self, -8);
-<!--						_G[self:GetName().."HighlightTexture"]:SetWidth(55);-->
-					</OnLoad>
-					<OnClick>
-						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
-						MegaMacro_FrameTab_OnClick(self);
-					</OnClick>
-					<OnReceiveDrag>MegaMacro_FrameTab_OnReceiveDrag(self);</OnReceiveDrag>
-				</Scripts>
-			</Button>
-			<Button name="MegaMacro_FrameTab2" inherits="PanelTabButtonTemplate" text="{Class}" id="2">
-				<Anchors>
-					<Anchor point="LEFT" relativeTo="MegaMacro_FrameTab1" relativePoint="RIGHT" x="0" y="0"/>
-				</Anchors>
-				<Scripts>
-					<OnLoad>
-						PanelTemplates_TabResize(self, 35);
-<!--						_G[self:GetName().."HighlightTexture"]:SetWidth(103);-->
-					</OnLoad>
-					<OnClick>
-						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
-						MegaMacro_FrameTab_OnClick(self);
-					</OnClick>
-					<OnReceiveDrag>MegaMacro_FrameTab_OnReceiveDrag(self);</OnReceiveDrag>
-				</Scripts>
-			</Button>
-			<Button name="MegaMacro_FrameTab3" inherits="PanelTabButtonTemplate" text="{Spec}" id="3">
-				<Anchors>
-					<Anchor point="LEFT" relativeTo="MegaMacro_FrameTab2" relativePoint="RIGHT" x="0" y="0"/>
-				</Anchors>
-				<Scripts>
-					<OnLoad>
-						PanelTemplates_TabResize(self, 20);
-<!--						_G[self:GetName().."HighlightTexture"]:SetWidth(82);-->
-					</OnLoad>
-					<OnClick>
-						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
-						MegaMacro_FrameTab_OnClick(self);
-					</OnClick>
-					<OnReceiveDrag>MegaMacro_FrameTab_OnReceiveDrag(self);</OnReceiveDrag>
-				</Scripts>
-			</Button>
-			<Button name="MegaMacro_FrameTab4" inherits="PanelTabButtonTemplate" text="{Character}" id="4">
-				<Anchors>
-					<Anchor point="LEFT" relativeTo="MegaMacro_FrameTab3" relativePoint="RIGHT" x="0" y="0"/>
-				</Anchors>
-				<Scripts>
-					<OnLoad>
-						PanelTemplates_TabResize(self, 20);
-<!--						_G[self:GetName().."HighlightTexture"]:SetWidth(112);-->
-					</OnLoad>
-					<OnClick>
-						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
-						MegaMacro_FrameTab_OnClick(self);
-					</OnClick>
-					<OnReceiveDrag>MegaMacro_FrameTab_OnReceiveDrag(self);</OnReceiveDrag>
-				</Scripts>
-			</Button>
-			<Button name="MegaMacro_FrameTab5" inherits="PanelTabButtonTemplate" text="{Character Spec}" id="5">
-				<Anchors>
-					<Anchor point="LEFT" relativeTo="MegaMacro_FrameTab4" relativePoint="RIGHT" x="0" y="0"/>
-				</Anchors>
-				<Scripts>
-					<OnLoad>
-						PanelTemplates_TabResize(self, 60);
-<!--						_G[self:GetName().."HighlightTexture"]:SetWidth(190);-->
-					</OnLoad>
-					<OnClick>
-						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
-						MegaMacro_FrameTab_OnClick(self);
-					</OnClick>
-					<OnReceiveDrag>MegaMacro_FrameTab_OnReceiveDrag(self);</OnReceiveDrag>
-				</Scripts>
-			</Button>
-			<Button name="MegaMacro_FrameTab6" inherits="PanelTabButtonTemplate" text="Config" id="6">
-				<Anchors>
-					<Anchor point="LEFT" relativeTo="MegaMacro_FrameTab5" relativePoint="RIGHT" x="0" y="0"/>
-				</Anchors>
-				<Scripts>
-					<OnLoad>
-						PanelTemplates_TabResize(self, 60);
-					</OnLoad>
-					<OnClick>
-						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
-						MegaMacro_FrameTab_OnClick(self);
-					</OnClick>
-				</Scripts>
-			</Button>
-			<Button name="MegaMacro_DeleteButton" inherits="UIPanelButtonTemplate" text="DELETE">
-				<Size x="80" y="22"/>
-				<Anchors>
-					<Anchor point="BOTTOMLEFT" relativeTo="MegaMacro_Frame" x="4" y="4"/>
-				</Anchors>
-				<Scripts>
-					<OnClick>
-						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
-						StaticPopup_Show("CONFIRM_DELETE_SELECTED_MEGA_MACRO");
-					</OnClick>
-				</Scripts>
-			</Button>
-			<Button name="MegaMacro_ExitButton" inherits="UIPanelButtonTemplate" text="EXIT">
-				<Size x="80" y="22"/>
-				<Anchors>
-					<Anchor point="BOTTOMRIGHT" x="-5" y="4"/>
-				</Anchors>
-				<Scripts>
-					<OnClick function="HideParentPanel"/>
-				</Scripts>
-			</Button>
-		</Frames>
-	</Frame>
-	<Frame name="MegaMacro_PopupFrame" toplevel="true" frameStrata="HIGH" parent="UIParent" movable="true" enableMouse="true" hidden="true">
-		<Scripts>
-			<OnUpdate>MegaMacro_PopupFrame_OnUpdate();</OnUpdate>
-		</Scripts>
-		<Size x="525" y="564"/>
-		<Anchors>
-			<Anchor point="TOPLEFT" relativeTo="MegaMacro_Frame" relativePoint="TOPRIGHT" x="0" y="20"/>
-		</Anchors>
-		<Layers>
-			<Layer level="BACKGROUND">
-				<Texture parentKey="BG">
-					<Anchors>
-						<Anchor point="TOPLEFT" x="7" y="-7"/>
-						<Anchor point="BOTTOMRIGHT" x="-7" y="7"/>
-					</Anchors>
-					<Color r="0" g="0" b="0" a=".80"/>
-				</Texture>
-			</Layer>
-		</Layers>
-		<Frames>
-			<Frame parentKey="BorderBox" inherits="SelectionFrameTemplate" frameLevel="50" hidden="false">
-				<KeyValues>
-					<KeyValue key="OnOkay" value="MegaMacro_EditOkButton_OnClick_Wrapper" type="global"/>
-					<KeyValue key="OnCancel" value="MegaMacro_EditCancelButton_OnClick_Wrapper" type="global"/>
-				</KeyValues>
-				<Anchors>
-					<Anchor point="TOPLEFT"/>
-					<Anchor point="BOTTOMRIGHT"/>
-				</Anchors>
-				<Layers>
-					<Layer level="BORDER">
-						<FontString name="MegaMacro_DisplayNameLabel" inherits="GameFontHighlight" text="Display Name">
-							<Anchors>
-								<Anchor point="TOPLEFT" relativeTo="MegaMacro_PopupFrame" x="30" y="-29"/>
-							</Anchors>
-						</FontString>
-						<FontString name="MegaMacro_FallbackTextureLabel" inherits="GameFontHighlight" text="Is Fallback?">
-							<Anchors>
-								<Anchor point="BOTTOMLEFT" relativeTo="MegaMacro_PopupFrame" x="30" y="474"/>
-							</Anchors>
-						</FontString>
-						<FontString name="MegaMacro_FallbackTextureDescription" inherits="GameFontHighlightSmall" text="when no spell/item is shown, the icon below will be used.">
-							<Anchors>
-								<Anchor point="BOTTOMRIGHT" relativeTo="MegaMacro_PopupFrame" x="-30" y="475"/>
-							</Anchors>
-						</FontString>
-						<FontString name="MegaMacro_IconSearchPlaceholder" inherits="ChatFontNormal" text="search">
-							<Anchors>
-								<Anchor point="BOTTOMLEFT" relativeTo="MegaMacro_PopupFrame" x="31" y="448"/>
-							</Anchors>
-						</FontString>
-					</Layer>
-				</Layers>
-				<Frames>
-					<EditBox name="MegaMacro_PopupEditBox" letters="100" historyLines="0">
-						<Size x="313" y="22"/>
-						<Anchors>
-							<Anchor point="TOPLEFT" x="161" y="-22"/>
-						</Anchors>
-						<Layers>
-							<Layer level="BACKGROUND">
-								<Texture name="MegaMacro_PopupNameLeft" file="Interface\ClassTrainerFrame\UI-ClassTrainer-FilterBorder">
-									<Size x="12" y="29"/>
-									<Anchors>
-										<Anchor point="TOPLEFT" x="-11" y="0"/>
-									</Anchors>
-									<TexCoords left="0" right="0.09375" top="0" bottom="1.0"/>
-								</Texture>
-								<Texture name="MegaMacro_PopupNameMiddle" file="Interface\ClassTrainerFrame\UI-ClassTrainer-FilterBorder">
-									<Size x="306" y="29"/>
-									<Anchors>
-										<Anchor point="LEFT" relativeTo="MegaMacro_PopupNameLeft" relativePoint="RIGHT"/>
-									</Anchors>
-									<TexCoords left="0.09375" right="0.90625" top="0" bottom="1.0"/>
-								</Texture>
-								<Texture name="MegaMacro_PopupNameRight" file="Interface\ClassTrainerFrame\UI-ClassTrainer-FilterBorder">
-									<Size x="12" y="29"/>
-									<Anchors>
-										<Anchor point="LEFT" relativeTo="MegaMacro_PopupNameMiddle" relativePoint="RIGHT"/>
-									</Anchors>
-									<TexCoords left="0.90625" right="1.0" top="0" bottom="1.0"/>
-								</Texture>
-							</Layer>
-						</Layers>
-						<Scripts>
-							<OnEscapePressed>MegaMacro_EditCancelButton_OnClick();</OnEscapePressed>
-							<OnEnterPressed>
-								if MegaMacro_PopupFrame.BorderBox.OkayButton:IsEnabled() then
-									MegaMacro_EditOkButton_OnClick();
-								end
-							</OnEnterPressed>
-						</Scripts>
-						<FontString inherits="ChatFontNormal"/>
-					</EditBox>
-				</Frames>
-			</Frame>
-			<CheckButton name="MegaMacro_FallbackTextureCheckBox" inherits="ChatConfigCheckButtonTemplate">
-				<Anchors>
-					<Anchor point="BOTTOMLEFT" relativeTo="MegaMacro_PopupFrame" x="150" y="468"/>
-				</Anchors>
-				<Scripts>
-					<OnClick>MegaMacro_FallbackTextureCheckBox_OnClick();</OnClick>
-				</Scripts>
-			</CheckButton>
-			<EditBox name="MegaMacro_IconSearchBox" letters="100" historyLines="0">
-				<Size x="182" y="22"/>
-				<Anchors>
-					<Anchor point="BOTTOMLEFT" relativeTo="MegaMacro_PopupFrame" x="31" y="444" />
-				</Anchors>
-				<Layers>
-					<Layer level="BACKGROUND">
-						<Texture name="MegaMacro_IconSearchLeft" file="Interface\ClassTrainerFrame\UI-ClassTrainer-FilterBorder">
-							<Size x="12" y="29"/>
-							<Anchors>
-								<Anchor point="TOPLEFT" x="-11" y="0"/>
-							</Anchors>
-							<TexCoords left="0" right="0.09375" top="0" bottom="1.0"/>
-						</Texture>
-						<Texture name="MegaMacro_IconSearchMiddle" file="Interface\ClassTrainerFrame\UI-ClassTrainer-FilterBorder">
-							<Size x="175" y="29"/>
-							<Anchors>
-								<Anchor point="LEFT" relativeTo="MegaMacro_IconSearchLeft" relativePoint="RIGHT"/>
-							</Anchors>
-							<TexCoords left="0.09375" right="0.90625" top="0" bottom="1.0"/>
-						</Texture>
-						<Texture name="MegaMacro_IconSearchRight" file="Interface\ClassTrainerFrame\UI-ClassTrainer-FilterBorder">
-							<Size x="12" y="29"/>
-							<Anchors>
-								<Anchor point="LEFT" relativeTo="MegaMacro_IconSearchMiddle" relativePoint="RIGHT"/>
-							</Anchors>
-							<TexCoords left="0.90625" right="1.0" top="0" bottom="1.0"/>
-						</Texture>
-					</Layer>
-				</Layers>
-				<Scripts>
-					<OnEscapePressed function="EditBox_ClearFocus"/>
-					<OnTextChanged>MegaMacro_IconSearchBox_TextChanged();</OnTextChanged>
-				</Scripts>
-				<FontString inherits="ChatFontNormal"/>
-			</EditBox>
-			<ScrollFrame name="MegaMacro_PopupScrollFrame" inherits="UIPanelScrollFrameTemplate">
-				<Size x="485" y="389"/>
-				<Anchors>
-					<Anchor point="BOTTOMRIGHT" relativeTo="MegaMacro_PopupFrame" x="-36" y="48"/>
-				</Anchors>
-				<Scripts>
-					<OnVerticalScroll>FauxScrollFrame_OnVerticalScroll(self, offset, MACRO_ICON_ROW_HEIGHT, MacroPopupFrame_Update);</OnVerticalScroll>
-				</Scripts>
-				<ScrollChild>
-					<Frame name="$parentScrollChildFrame">
-						<Size x="485" y="389"/>
-					</Frame>
-				</ScrollChild>
-			</ScrollFrame>
-		</Frames>
-	</Frame>
+  <Script file="src/windows/mega-macro.window.lua" />
+  <CheckButton name="MegaMacro_ButtonTemplate" inherits="SelectorButtonTemplate" virtual="true">
+    <Scripts>
+      <OnLoad>self:RegisterForDrag("LeftButton");</OnLoad>
+      <OnClick>MegaMacro_MacroButton_OnClick(self);</OnClick>
+      <OnEnter>MegaMacro_MacroButton_OnEnter(self);</OnEnter>
+      <OnLeave>MegaMacro_MacroButton_OnLeave(self);</OnLeave>
+      <OnDragStart>MegaMacro_MacroButton_OnDragStart(self);</OnDragStart>
+      <OnReceiveDrag>MegaMacro_MacroButton_OnReceiveDrag(self);</OnReceiveDrag>
+    </Scripts>
+    <Layers>
+      <Layer level="ARTWORK">
+        <FontString name="$parentName" inherits="GameFontHighlightSmall" text="">
+          <Size x="36" y="36" />
+          <Anchors>
+            <Anchor point="CENTER" relativeTo="$parent" x="0" y="-10" />
+          </Anchors>
+        </FontString>
+      </Layer>
+    </Layers>
+  </CheckButton>
+  <CheckButton name="MegaMacro_PopupButtonTemplate" inherits="SimplePopupButtonTemplate" virtual="true">
+    <Scripts>
+      <OnClick>MegaMacro_PopupButton_OnClick(self);</OnClick>
+      <OnEnter>MegaMacro_PopupButton_OnEnter(self);</OnEnter>
+      <OnLeave>MegaMacro_PopupButton_OnLeave(self);</OnLeave>
+    </Scripts>
+    <NormalTexture name="$parentIcon" nonBlocking="true">
+      <Size x="36" y="36" />
+      <Anchors>
+        <Anchor point="CENTER" x="0" y="-1" />
+      </Anchors>
+    </NormalTexture>
+    <HighlightTexture alphaMode="ADD" file="Interface\Buttons\ButtonHilight-Square" />
+    <CheckedTexture alphaMode="ADD" file="Interface\Buttons\CheckButtonHilight" />
+  </CheckButton>
+  <Frame name="MegaMacro_Frame" toplevel="true" movable="true" parent="UIParent" enableMouse="true" hidden="true" inherits="ButtonFrameTemplate">
+    <Size x="640" y="524" />
+    <Attributes>
+      <Attribute name="UIPanelLayout-defined" type="boolean" value="true" />
+      <Attribute name="UIPanelLayout-enabled" type="boolean" value="true" />
+      <Attribute name="UIPanelLayout-area" type="string" value="left" />
+      <Attribute name="UIPanelLayout-width" type="number" value="641" />
+      <Attribute name="UIPanelLayout-pushable" type="number" value="1" />
+      <Attribute name="UIPanelLayout-whileDead" type="boolean" value="true" />
+    </Attributes>
+    <Scripts>
+      <OnLoad>
+        self:RegisterForDrag("LeftButton");
+        MegaMacro_Window_OnLoad();
+      </OnLoad>
+      <OnDragStart>
+        if not MegaMacroConfig_IsWindowDialog() then
+        self:StartMoving()
+        end
+      </OnDragStart>
+      <OnDragStop>
+        if not MegaMacroConfig_IsWindowDialog() then
+        self:StopMovingOrSizing();
+        MegaMacro_Window_OnDragStop();
+        end
+      </OnDragStop>
+      <OnShow>
+        if not MegaMacroWindowTogglingMode then
+        PlaySound(SOUNDKIT.IG_CHARACTER_INFO_OPEN);
+        MegaMacro_Window_OnShow();
+        end
+      </OnShow>
+      <OnHide>
+        if not MegaMacroWindowTogglingMode then
+        PlaySound(SOUNDKIT.IG_CHARACTER_INFO_CLOSE);
+        MegaMacro_Window_OnHide();
+        end
+      </OnHide>
+    </Scripts>
+    <Scripts>
+    </Scripts>
+    <Layers>
+      <Layer level="OVERLAY" textureSubLevel="-1">
+        <Texture name="MegaMacro_FramePortrait" file="Interface\MacroFrame\MacroFrame-Icon">
+          <Size x="60" y="60" />
+          <Anchors>
+            <Anchor point="TOPLEFT" x="-5" y="7" />
+          </Anchors>
+        </Texture>
+      </Layer>
+      <Layer level="ARTWORK">
+        <Texture name="MegaMacro_HorizontalBarLeft" file="Interface\ClassTrainerFrame\UI-ClassTrainer-HorizontalBar">
+          <Size x="556" y="16" />
+          <Anchors>
+            <Anchor point="TOPLEFT" x="0" y="-210" />
+          </Anchors>
+          <TexCoords left="0" right="1.0" top="0" bottom="0.25" />
+        </Texture>
+        <Texture file="Interface\ClassTrainerFrame\UI-ClassTrainer-HorizontalBar">
+          <Size x="75" y="16" />
+          <Anchors>
+            <Anchor point="LEFT" relativeTo="MegaMacro_HorizontalBarLeft" relativePoint="RIGHT" x="0" y="0" />
+          </Anchors>
+          <TexCoords left="0" right="0.29296875" top="0.25" bottom="0.5" />
+        </Texture>
+        <Texture name="MegaMacro_FrameSelectedMacroBackground" file="Interface\Buttons\UI-EmptySlot">
+          <Size x="64" y="64" />
+          <Anchors>
+            <Anchor point="TOPLEFT" x="5" y="-218" />
+          </Anchors>
+        </Texture>
+        <FontString name="MegaMacro_FrameSelectedMacroName" inherits="GameFontNormalLarge" justifyH="LEFT">
+          <Size x="554" y="19" />
+          <Anchors>
+            <Anchor point="TOPLEFT" relativeTo="MegaMacro_FrameSelectedMacroBackground" relativePoint="TOPRIGHT" x="-4" y="-10" />
+          </Anchors>
+        </FontString>
+        <FontString name="MegaMacro_FrameEnterMacroText" inherits="GameFontHighlightSmall" text="ENTER_MACRO_LABEL">
+          <Anchors>
+            <Anchor point="TOPLEFT" relativeTo="MegaMacro_FrameSelectedMacroBackground" relativePoint="BOTTOMLEFT" x="8" y="3" />
+          </Anchors>
+        </FontString>
+        <FontString name="MegaMacro_FrameCharLimitText" inherits="GameFontHighlightSmall">
+          <Size x="0" y="10" />
+          <Anchors>
+            <Anchor point="BOTTOM" x="-15" y="30" />
+          </Anchors>
+        </FontString>
+      </Layer>
+    </Layers>
+    <Frames>
+      <Frame name="$parentTitleText" frameStrata="HIGH">
+        <Size x="0" y="0" />
+        <Anchors>
+          <Anchor point="TOP" relativeTo="$parent" relativePoint="TOP" x="0" y="-5" />
+        </Anchors>
+        <Layers>
+          <Layer level="OVERLAY">
+            <FontString inherits="GameFontNormal" text="Mega Macro v1.1.0">
+              <Anchors>
+                <Anchor relativeTo="$parent" point="TOP" x="-20" y="0" />
+              </Anchors>
+            </FontString>
+          </Layer>
+        </Layers>
+      </Frame>
+      <Button name="MegaMacro_ToggleWindowModeButton" frameStrata="HIGH" inherits="UIPanelButtonTemplate" text="{lock/unlock}">
+        <Size x="80" y="19" />
+        <Anchors>
+          <Anchor point="TOPRIGHT" relativeTo="MegaMacro_Frame" relativePoint="TOPRIGHT" x="-21" y="-1.5" />
+        </Anchors>
+        <Scripts>
+          <OnClick>MegaMacro_ToggleWindowModeButton_OnClick();</OnClick>
+        </Scripts>
+      </Button>
+      <CheckButton name="MegaMacro_FrameSelectedMacroButton" frameStrata="HIGH" inherits="MegaMacro_ButtonTemplate" id="0">
+        <Anchors>
+          <Anchor point="TOPLEFT" relativeTo="MegaMacro_FrameSelectedMacroBackground" x="14" y="-14" />
+        </Anchors>
+        <Scripts>
+          <OnLoad>self:RegisterForDrag("LeftButton");</OnLoad>
+          <OnDragStart>MegaMacro_FrameSelectedMacroButton_OnDragStart();</OnDragStart>
+          <OnClick>
+            self:SetChecked(false);
+            MegaMacro_FrameSelectedMacroButton_OnDragStart();
+          </OnClick>
+          <OnEnter>MegaMacro_FrameSelectedMacroButton_OnEnter();</OnEnter>
+          <OnLeave>MegaMacro_FrameSelectedMacroButton_OnLeave();</OnLeave>
+        </Scripts>
+        <Layers>
+          <Layer level="ARTWORK">
+            <Texture name="MegaMacro_FrameSelectedMacroButtonIcon" file="Interface\Buttons\UI-EmptySlot">
+              <Size x="44" y="44" />
+              <Anchors>
+                <Anchor point="CENTER" relativeTo="$parent" x="0" y="0" />
+              </Anchors>
+            </Texture>
+          </Layer>
+        </Layers>
+      </CheckButton>
+      <ScrollFrame name="MegaMacro_ButtonScrollFrame" inherits="UIPanelScrollFrameTemplate">
+        <Size x="593" y="146" />
+        <Anchors>
+          <Anchor point="TOPLEFT" x="12" y="-66" />
+        </Anchors>
+        <Layers>
+          <Layer level="ARTWORK">
+            <Texture name="$parentTop" file="Interface\PaperDollInfoFrame\UI-Character-ScrollBar">
+              <Size x="31" y="102" />
+              <Anchors>
+                <Anchor point="TOPLEFT" relativePoint="TOPRIGHT" x="-2" y="5" />
+              </Anchors>
+              <TexCoords left="0" right="0.484375" top="0" bottom="0.4" />
+            </Texture>
+            <Texture name="$parentBottom" file="Interface\PaperDollInfoFrame\UI-Character-ScrollBar">
+              <Size x="31" y="106" />
+              <Anchors>
+                <Anchor point="BOTTOMLEFT" relativePoint="BOTTOMRIGHT" x="-2" y="-2" />
+              </Anchors>
+              <TexCoords left="0.515625" right="1.0" top="0" bottom="0.4140625" />
+            </Texture>
+            <Texture name="$parentMiddle" file="Interface\PaperDollInfoFrame\UI-Character-ScrollBar">
+              <Size x="31" y="1" />
+              <Anchors>
+                <Anchor point="TOP" relativeTo="$parentTop" relativePoint="BOTTOM" />
+                <Anchor point="BOTTOM" relativeTo="$parentBottom" relativePoint="TOP" />
+              </Anchors>
+              <TexCoords left="0" right="0.484375" top=".75" bottom="1.0" />
+            </Texture>
+          </Layer>
+        </Layers>
+        <Scripts>
+          <OnLoad function="ScrollFrame_OnLoad" />
+        </Scripts>
+        <ScrollChild>
+          <Frame name="MegaMacro_ButtonContainer">
+            <Size x="439" y="10" />
+            <Anchors>
+              <Anchor point="TOPLEFT" />
+            </Anchors>
+            <Scripts>
+              <OnLoad>MegaMacro_ButtonContainer_OnLoad();</OnLoad>
+              <OnShow>MegaMacro_ButtonContainer_OnShow();</OnShow>
+              <OnReceiveDrag>MegaMacro_ButtonContainer_OnReceiveDrag();</OnReceiveDrag>
+            </Scripts>
+            <Frames>
+              <Frame name="MegaMacro_ConfigContainer" hidden="true">
+                <Size x="439" y="10" />
+                <Anchors>
+                  <Anchor point="TOPLEFT" />
+                </Anchors>
+              </Frame>
+            </Frames>
+          </Frame>
+        </ScrollChild>
+      </ScrollFrame>
+      <Button name="MegaMacro_EditButton" frameStrata="HIGH" inherits="UIPanelButtonTemplate" text="Edit">
+        <Size x="50" y="22" />
+        <Anchors>
+          <Anchor point="TOPLEFT" relativeTo="MegaMacro_FrameSelectedMacroBackground" x="55" y="-32" />
+        </Anchors>
+        <Scripts>
+          <OnClick>MegaMacro_EditButton_OnClick();</OnClick>
+        </Scripts>
+      </Button>
+      <ScrollFrame name="MegaMacro_FrameScrollFrame" inherits="UIPanelScrollFrameTemplate">
+        <Size x="591" y="185" />
+        <Scripts>
+          <OnMouseWheel>
+            ScrollFrameTemplate_OnMouseWheel(self, delta);
+          </OnMouseWheel>
+          <OnVerticalScroll>
+            local scrollbar1 = MegaMacro_FrameScrollFrameScrollBar;
+            local scrollbar2 = MegaMacro_FormattedFrameScrollFrameScrollBar;
+            scrollbar1:SetValue(offset);
+            scrollbar2:SetValue(offset);
+            local mini1, maxi1 = scrollbar1:GetMinMaxValues();
+            local mini2, maxi2 = scrollbar2:GetMinMaxValues();
+            if delta == 0 then
+            MegaMacro_FrameScrollFrameScrollBarScrollUpButton:Disable();
+            MegaMacro_FormattedFrameScrollFrameScrollBarScrollUpButton:Disable();
+            else
+            MegaMacro_FrameScrollFrameScrollBarScrollUpButton:Enable();
+            MegaMacro_FormattedFrameScrollFrameScrollBarScrollUpButton:Enable();
+            end
+            if scrollbar1:GetValue() - maxi1 == 0 then
+            MegaMacro_FrameScrollFrameScrollBarScrollDownButton:Disable();
+            MegaMacro_FormattedFrameScrollFrameScrollBarScrollDownButton:Disable();
+            else
+            MegaMacro_FrameScrollFrameScrollBarScrollDownButton:Enable();
+            MegaMacro_FormattedFrameScrollFrameScrollBarScrollDownButton:Enable();
+            end
+          </OnVerticalScroll>
+        </Scripts>
+        <Anchors>
+          <Anchor point="TOPLEFT" relativeTo="MegaMacro_FrameSelectedMacroBackground" relativePoint="BOTTOMLEFT" x="11" y="-13" />
+        </Anchors>
+        <ScrollChild>
+          <EditBox name="MegaMacro_FrameText" multiLine="true" letters="1023" autoFocus="false" countInvisibleLetters="true">
+            <Size x="589" y="185" />
+            <Scripts>
+              <OnLoad>
+                ScrollingEdit_OnCursorChanged(self, 0, 0, 0, 0);
+                self:GetRegions():SetAlpha(0.2);
+              </OnLoad>
+              <OnKeyDown>MegaMacro_TextBox_OnKeyDown(self, key);</OnKeyDown>
+              <OnTextChanged>MegaMacro_TextBox_TextChanged(self);</OnTextChanged>
+              <OnCursorChanged function="ScrollingEdit_OnCursorChanged" />
+              <OnUpdate>ScrollingEdit_OnUpdate(self, elapsed, self:GetParent());</OnUpdate>
+              <OnEscapePressed function="EditBox_ClearFocus" />
+            </Scripts>
+            <FontString inherits="GameFontHighlightSmall" />
+          </EditBox>
+        </ScrollChild>
+      </ScrollFrame>
+      <ScrollFrame name="MegaMacro_FormattedFrameScrollFrame" inherits="UIPanelScrollFrameTemplate">
+        <Size x="591" y="185" />
+        <Scripts>
+          <OnMouseWheel>
+            ScrollFrameTemplate_OnMouseWheel(self, delta);
+          </OnMouseWheel>
+        </Scripts>
+        <Anchors>
+          <Anchor point="TOPLEFT" relativeTo="MegaMacro_FrameSelectedMacroBackground" relativePoint="BOTTOMLEFT" x="11" y="-13" />
+        </Anchors>
+        <ScrollChild>
+          <EditBox name="MegaMacro_FormattedFrameText" multiLine="true" letters="9999" autoFocus="false" countInvisibleLetters="true">
+            <Size x="589" y="185" />
+            <Scripts>
+              <OnLoad>
+                ScrollingEdit_OnCursorChanged(self, 0, 0, 0, 0);
+                MegaMacro_FrameText:SetFrameLevel(self:GetFrameLevel() + 1)
+              </OnLoad>
+              <OnCursorChanged function="ScrollingEdit_OnCursorChanged" />
+              <OnUpdate>ScrollingEdit_OnUpdate(self, elapsed, self:GetParent());</OnUpdate>
+            </Scripts>
+            <FontString inherits="GameFontHighlightSmall" />
+          </EditBox>
+        </ScrollChild>
+      </ScrollFrame>
+      <Button name="MegaMacro_FrameTextButton">
+        <Size x="589" y="185" />
+        <Anchors>
+          <Anchor point="TOPLEFT" relativeTo="MegaMacro_FrameText" />
+        </Anchors>
+        <Scripts>
+          <OnClick>MegaMacro_FrameTextButton_OnClick();</OnClick>
+        </Scripts>
+      </Button>
+      <Button name="MegaMacro_CancelButton" frameStrata="HIGH" inherits="UIPanelButtonTemplate" text="CANCEL">
+        <Size x="82" y="34" />
+        <Anchors>
+          <Anchor point="BOTTOMRIGHT" relativeTo="MegaMacro_FrameScrollFrame" relativePoint="TOPRIGHT" x="23" y="6" />
+        </Anchors>
+        <Scripts>
+          <OnClick>MegaMacro_CancelButton_OnClick();</OnClick>
+        </Scripts>
+      </Button>
+      <Button name="MegaMacro_SaveButton" frameStrata="HIGH" inherits="UIPanelButtonTemplate" text="SAVE">
+        <Size x="82" y="34" />
+        <Anchors>
+          <Anchor point="BOTTOM" relativeTo="MegaMacro_CancelButton" relativePoint="TOP" x="0" y="-1" />
+        </Anchors>
+        <Scripts>
+          <OnClick>MegaMacro_SaveButton_OnClick();</OnClick>
+        </Scripts>
+      </Button>
+      <Frame name="MacroFrameTextBackground" inherits="TooltipBackdropTemplate">
+        <Size x="627" y="195" />
+        <Anchors>
+          <Anchor point="TOPLEFT" relativeTo="MegaMacro_Frame" x="6" y="-289" />
+        </Anchors>
+      </Frame>
+      <Button name="MegaMacro_FrameTab1" inherits="PanelTabButtonTemplate" text="Global" id="1">
+        <Anchors>
+          <Anchor point="TOPLEFT" x="51" y="-28" />
+        </Anchors>
+        <Scripts>
+          <OnLoad> PanelTemplates_TabResize(self, -8); <!--						_G[self:GetName().."HighlightTexture"]:SetWidth(55);-->
+          </OnLoad>
+          <OnClick>
+            PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
+            MegaMacro_FrameTab_OnClick(self);
+          </OnClick>
+          <OnReceiveDrag>MegaMacro_FrameTab_OnReceiveDrag(self);</OnReceiveDrag>
+        </Scripts>
+      </Button>
+      <Button name="MegaMacro_FrameTab2" inherits="PanelTabButtonTemplate" text="{Class}" id="2">
+        <Anchors>
+          <Anchor point="LEFT" relativeTo="MegaMacro_FrameTab1" relativePoint="RIGHT" x="0" y="0" />
+        </Anchors>
+        <Scripts>
+          <OnLoad> PanelTemplates_TabResize(self, 35); <!--						_G[self:GetName().."HighlightTexture"]:SetWidth(103);-->
+          </OnLoad>
+          <OnClick>
+            PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
+            MegaMacro_FrameTab_OnClick(self);
+          </OnClick>
+          <OnReceiveDrag>MegaMacro_FrameTab_OnReceiveDrag(self);</OnReceiveDrag>
+        </Scripts>
+      </Button>
+      <Button name="MegaMacro_FrameTab3" inherits="PanelTabButtonTemplate" text="{Spec}" id="3">
+        <Anchors>
+          <Anchor point="LEFT" relativeTo="MegaMacro_FrameTab2" relativePoint="RIGHT" x="0" y="0" />
+        </Anchors>
+        <Scripts>
+          <OnLoad> PanelTemplates_TabResize(self, 20); <!--						_G[self:GetName().."HighlightTexture"]:SetWidth(82);-->
+          </OnLoad>
+          <OnClick>
+            PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
+            MegaMacro_FrameTab_OnClick(self);
+          </OnClick>
+          <OnReceiveDrag>MegaMacro_FrameTab_OnReceiveDrag(self);</OnReceiveDrag>
+        </Scripts>
+      </Button>
+      <Button name="MegaMacro_FrameTab4" inherits="PanelTabButtonTemplate" text="{Character}" id="4">
+        <Anchors>
+          <Anchor point="LEFT" relativeTo="MegaMacro_FrameTab3" relativePoint="RIGHT" x="0" y="0" />
+        </Anchors>
+        <Scripts>
+          <OnLoad> PanelTemplates_TabResize(self, 20); <!--						_G[self:GetName().."HighlightTexture"]:SetWidth(112);-->
+          </OnLoad>
+          <OnClick>
+            PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
+            MegaMacro_FrameTab_OnClick(self);
+          </OnClick>
+          <OnReceiveDrag>MegaMacro_FrameTab_OnReceiveDrag(self);</OnReceiveDrag>
+        </Scripts>
+      </Button>
+      <Button name="MegaMacro_FrameTab5" inherits="PanelTabButtonTemplate" text="{Character Spec}" id="5">
+        <Anchors>
+          <Anchor point="LEFT" relativeTo="MegaMacro_FrameTab4" relativePoint="RIGHT" x="0" y="0" />
+        </Anchors>
+        <Scripts>
+          <OnLoad> PanelTemplates_TabResize(self, 60); <!--						_G[self:GetName().."HighlightTexture"]:SetWidth(190);-->
+          </OnLoad>
+          <OnClick>
+            PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
+            MegaMacro_FrameTab_OnClick(self);
+          </OnClick>
+          <OnReceiveDrag>MegaMacro_FrameTab_OnReceiveDrag(self);</OnReceiveDrag>
+        </Scripts>
+      </Button>
+      <Button name="MegaMacro_FrameTab6" inherits="PanelTabButtonTemplate" text="Config" id="6">
+        <Anchors>
+          <Anchor point="LEFT" relativeTo="MegaMacro_FrameTab5" relativePoint="RIGHT" x="0" y="0" />
+        </Anchors>
+        <Scripts>
+          <OnLoad>
+            PanelTemplates_TabResize(self, 60);
+          </OnLoad>
+          <OnClick>
+            PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
+            MegaMacro_FrameTab_OnClick(self);
+          </OnClick>
+        </Scripts>
+      </Button>
+      <Button name="MegaMacro_DeleteButton" inherits="UIPanelButtonTemplate" text="DELETE">
+        <Size x="80" y="22" />
+        <Anchors>
+          <Anchor point="BOTTOMLEFT" relativeTo="MegaMacro_Frame" x="4" y="4" />
+        </Anchors>
+        <Scripts>
+          <OnClick>
+            PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
+            StaticPopup_Show("CONFIRM_DELETE_SELECTED_MEGA_MACRO");
+          </OnClick>
+        </Scripts>
+      </Button>
+      <Button name="MegaMacro_ExitButton" inherits="UIPanelButtonTemplate" text="EXIT">
+        <Size x="80" y="22" />
+        <Anchors>
+          <Anchor point="BOTTOMRIGHT" x="-5" y="4" />
+        </Anchors>
+        <Scripts>
+          <OnClick function="HideParentPanel" />
+        </Scripts>
+      </Button>
+    </Frames>
+  </Frame>
+  <Frame name="MegaMacro_PopupFrame" toplevel="true" frameStrata="HIGH" parent="UIParent" movable="true" enableMouse="true" hidden="true">
+    <Scripts>
+      <OnUpdate>MegaMacro_PopupFrame_OnUpdate();</OnUpdate>
+    </Scripts>
+    <Size x="525" y="564" />
+    <Anchors>
+      <Anchor point="TOPLEFT" relativeTo="MegaMacro_Frame" relativePoint="TOPRIGHT" x="0" y="20" />
+    </Anchors>
+    <Layers>
+      <Layer level="BACKGROUND">
+        <Texture parentKey="BG">
+          <Anchors>
+            <Anchor point="TOPLEFT" x="7" y="-7" />
+            <Anchor point="BOTTOMRIGHT" x="-7" y="7" />
+          </Anchors>
+          <Color r="0" g="0" b="0" a=".80" />
+        </Texture>
+      </Layer>
+    </Layers>
+    <Frames>
+      <Frame parentKey="BorderBox" inherits="SelectionFrameTemplate" frameLevel="50" hidden="false">
+        <KeyValues>
+          <KeyValue key="OnOkay" value="MegaMacro_EditOkButton_OnClick_Wrapper" type="global" />
+          <KeyValue key="OnCancel" value="MegaMacro_EditCancelButton_OnClick_Wrapper" type="global" />
+        </KeyValues>
+        <Anchors>
+          <Anchor point="TOPLEFT" />
+          <Anchor point="BOTTOMRIGHT" />
+        </Anchors>
+        <Layers>
+          <Layer level="BORDER">
+            <FontString name="MegaMacro_DisplayNameLabel" inherits="GameFontHighlight" text="Display Name">
+              <Anchors>
+                <Anchor point="TOPLEFT" relativeTo="MegaMacro_PopupFrame" x="30" y="-29" />
+              </Anchors>
+            </FontString>
+            <FontString name="MegaMacro_FallbackTextureLabel" inherits="GameFontHighlight" text="Is Fallback?">
+              <Anchors>
+                <Anchor point="BOTTOMLEFT" relativeTo="MegaMacro_PopupFrame" x="30" y="474" />
+              </Anchors>
+            </FontString>
+            <FontString name="MegaMacro_FallbackTextureDescription" inherits="GameFontHighlightSmall" text="when no spell/item is shown, the icon below will be used.">
+              <Anchors>
+                <Anchor point="BOTTOMRIGHT" relativeTo="MegaMacro_PopupFrame" x="-30" y="475" />
+              </Anchors>
+            </FontString>
+            <FontString name="MegaMacro_IconSearchPlaceholder" inherits="ChatFontNormal" text="search">
+              <Anchors>
+                <Anchor point="BOTTOMLEFT" relativeTo="MegaMacro_PopupFrame" x="31" y="448" />
+              </Anchors>
+            </FontString>
+          </Layer>
+        </Layers>
+        <Frames>
+          <EditBox name="MegaMacro_PopupEditBox" letters="100" historyLines="0">
+            <Size x="313" y="22" />
+            <Anchors>
+              <Anchor point="TOPLEFT" x="161" y="-22" />
+            </Anchors>
+            <Layers>
+              <Layer level="BACKGROUND">
+                <Texture name="MegaMacro_PopupNameLeft" file="Interface\ClassTrainerFrame\UI-ClassTrainer-FilterBorder">
+                  <Size x="12" y="29" />
+                  <Anchors>
+                    <Anchor point="TOPLEFT" x="-11" y="0" />
+                  </Anchors>
+                  <TexCoords left="0" right="0.09375" top="0" bottom="1.0" />
+                </Texture>
+                <Texture name="MegaMacro_PopupNameMiddle" file="Interface\ClassTrainerFrame\UI-ClassTrainer-FilterBorder">
+                  <Size x="306" y="29" />
+                  <Anchors>
+                    <Anchor point="LEFT" relativeTo="MegaMacro_PopupNameLeft" relativePoint="RIGHT" />
+                  </Anchors>
+                  <TexCoords left="0.09375" right="0.90625" top="0" bottom="1.0" />
+                </Texture>
+                <Texture name="MegaMacro_PopupNameRight" file="Interface\ClassTrainerFrame\UI-ClassTrainer-FilterBorder">
+                  <Size x="12" y="29" />
+                  <Anchors>
+                    <Anchor point="LEFT" relativeTo="MegaMacro_PopupNameMiddle" relativePoint="RIGHT" />
+                  </Anchors>
+                  <TexCoords left="0.90625" right="1.0" top="0" bottom="1.0" />
+                </Texture>
+              </Layer>
+            </Layers>
+            <Scripts>
+              <OnEscapePressed>MegaMacro_EditCancelButton_OnClick();</OnEscapePressed>
+              <OnEnterPressed>
+                if MegaMacro_PopupFrame.BorderBox.OkayButton:IsEnabled() then
+                MegaMacro_EditOkButton_OnClick();
+                end
+              </OnEnterPressed>
+            </Scripts>
+            <FontString inherits="ChatFontNormal" />
+          </EditBox>
+        </Frames>
+      </Frame>
+      <CheckButton name="MegaMacro_FallbackTextureCheckBox" inherits="ChatConfigCheckButtonTemplate">
+        <Anchors>
+          <Anchor point="BOTTOMLEFT" relativeTo="MegaMacro_PopupFrame" x="150" y="468" />
+        </Anchors>
+        <Scripts>
+          <OnClick>MegaMacro_FallbackTextureCheckBox_OnClick();</OnClick>
+        </Scripts>
+      </CheckButton>
+      <EditBox name="MegaMacro_IconSearchBox" letters="100" historyLines="0">
+        <Size x="182" y="22" />
+        <Anchors>
+          <Anchor point="BOTTOMLEFT" relativeTo="MegaMacro_PopupFrame" x="31" y="444" />
+        </Anchors>
+        <Layers>
+          <Layer level="BACKGROUND">
+            <Texture name="MegaMacro_IconSearchLeft" file="Interface\ClassTrainerFrame\UI-ClassTrainer-FilterBorder">
+              <Size x="12" y="29" />
+              <Anchors>
+                <Anchor point="TOPLEFT" x="-11" y="0" />
+              </Anchors>
+              <TexCoords left="0" right="0.09375" top="0" bottom="1.0" />
+            </Texture>
+            <Texture name="MegaMacro_IconSearchMiddle" file="Interface\ClassTrainerFrame\UI-ClassTrainer-FilterBorder">
+              <Size x="175" y="29" />
+              <Anchors>
+                <Anchor point="LEFT" relativeTo="MegaMacro_IconSearchLeft" relativePoint="RIGHT" />
+              </Anchors>
+              <TexCoords left="0.09375" right="0.90625" top="0" bottom="1.0" />
+            </Texture>
+            <Texture name="MegaMacro_IconSearchRight" file="Interface\ClassTrainerFrame\UI-ClassTrainer-FilterBorder">
+              <Size x="12" y="29" />
+              <Anchors>
+                <Anchor point="LEFT" relativeTo="MegaMacro_IconSearchMiddle" relativePoint="RIGHT" />
+              </Anchors>
+              <TexCoords left="0.90625" right="1.0" top="0" bottom="1.0" />
+            </Texture>
+          </Layer>
+        </Layers>
+        <Scripts>
+          <OnEscapePressed function="EditBox_ClearFocus" />
+          <OnTextChanged>MegaMacro_IconSearchBox_TextChanged();</OnTextChanged>
+        </Scripts>
+        <FontString inherits="ChatFontNormal" />
+      </EditBox>
+      <ScrollFrame name="MegaMacro_PopupScrollFrame" inherits="UIPanelScrollFrameTemplate">
+        <Size x="485" y="389" />
+        <Anchors>
+          <Anchor point="BOTTOMRIGHT" relativeTo="MegaMacro_PopupFrame" x="-36" y="48" />
+        </Anchors>
+        <Scripts>
+          <OnVerticalScroll>FauxScrollFrame_OnVerticalScroll(self, offset, MACRO_ICON_ROW_HEIGHT, MacroPopupFrame_Update);</OnVerticalScroll>
+        </Scripts>
+        <ScrollChild>
+          <Frame name="$parentScrollChildFrame">
+            <Size x="485" y="389" />
+          </Frame>
+        </ScrollChild>
+      </ScrollFrame>
+    </Frames>
+  </Frame>
 </Ui>
