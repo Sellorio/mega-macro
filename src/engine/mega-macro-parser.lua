@@ -212,7 +212,8 @@ local function ParseConditional(parsingContext)
         newResult = ParseConditionalPart(parsingContext)
     end
 
-    return ConditionalBroken .. result
+    -- Should never get here
+    -- return ConditionalBroken .. result
 end
 
 local function ParseCommand(parsingContext)

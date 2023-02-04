@@ -1,6 +1,6 @@
 local FetchesPerFrame = 1000
 
-local IconLoadingStarted = false
+local LoadIcons = false
 local MissCount = 0
 local CurrentSpellId = 0
 local IconLoadingFinished = false
@@ -78,12 +78,12 @@ end
 
 MegaMacroIconNavigator = {}
 
-function MegaMacroIconNavigator.BeginLoadingIcons()
-    IconLoadingStarted = true
+function MegaMacroIconNavigator.EnableIconLoading()
+    LoadIcons = true
 end
 
-function MegaMacroIconNavigator.OnUpdate()
-    if IconLoadingStarted and not IconLoadingFinished then
+function MegaMacroIconNavigator.LoadIcons()
+    if LoadIcons and not IconLoadingFinished then
         for _ = 1, FetchesPerFrame do
             CurrentSpellId = CurrentSpellId + 1
             local name, _, icon, _, _, _, spellId = GetSpellInfo(CurrentSpellId)

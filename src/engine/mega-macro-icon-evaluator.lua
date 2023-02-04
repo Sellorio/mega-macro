@@ -312,8 +312,8 @@ function MegaMacroIconEvaluator.Initialize()
     UpdateAllMacros()
 end
 
-function MegaMacroIconEvaluator.Update(elapsedMs)
-    local macrosToScan = elapsedMs * MacrosToUpdatePerMs
+function MegaMacroIconEvaluator.Update(elapsed)
+    local macrosToScan = elapsed * 1000 * MacrosToUpdatePerMs
 
     for _ = 1, macrosToScan do
         if not UpdateNextMacro() then

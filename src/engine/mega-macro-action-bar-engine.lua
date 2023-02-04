@@ -17,7 +17,7 @@ For developer refererence, these are the features of an action bar button:
 local LibActionButton = nil
 local ActionBarSystem = nil -- Blizzard or LAB or Dominos
 local BlizzardActionBars = {
-    "MainMenuBar",
+    "Action",
     "MultiBarBottomLeft",
     "MultiBarBottomRight",
     "MultiBarRight",
@@ -260,24 +260,25 @@ local function UpdateRange(button, functions, abilityId, target)
         end
     end
 
-    if button.HotKey:GetText() == RANGE_INDICATOR then
-        if checksRange then
-            button.HotKey:Show();
-            if (inRange) then
-                button.HotKey:SetVertexColor(LIGHTGRAY_FONT_COLOR:GetRGB());
-            else
-                button.HotKey:SetVertexColor(RED_FONT_COLOR:GetRGB());
-            end
-        else
-            button.HotKey:Hide();
-        end
-    else
-        if checksRange and not inRange then
-            button.HotKey:SetVertexColor(RED_FONT_COLOR:GetRGB());
-        else
-            button.HotKey:SetVertexColor(LIGHTGRAY_FONT_COLOR:GetRGB());
-        end
-    end
+    -- TODO: Temporarily disabled, see https://github.com/Sellorio/mega-macro/issues/176
+    -- if button.HotKey:GetText() == RANGE_INDICATOR then
+    --     if checksRange then
+    --         button.HotKey:Show();
+    --         if (inRange) then
+    --             button.HotKey:SetVertexColor(LIGHTGRAY_FONT_COLOR:GetRGB());
+    --         else
+    --             button.HotKey:SetVertexColor(RED_FONT_COLOR:GetRGB());
+    --         end
+    --     else
+    --         button.HotKey:Hide();
+    --     end
+    -- else
+    --     if checksRange and not inRange then
+    --         button.HotKey:SetVertexColor(RED_FONT_COLOR:GetRGB());
+    --     else
+    --         button.HotKey:SetVertexColor(LIGHTGRAY_FONT_COLOR:GetRGB());
+    --     end
+    -- end
 end
 
 local function UpdateActionBar(button, macroId)
@@ -363,10 +364,13 @@ end
 
 local function ForEachBlizzardActionButton(func)
     for actionBarIndex = 1, #BlizzardActionBars do
-        for i = 1, 12 do
-            local button = _G[BlizzardActionBars[actionBarIndex] .. "Button" .. i]
-            if button then
-                func(button)
+        local actionBar = BlizzardActionBars[actionBarIndex]
+        if actionBar ~= "Action" then -- TODO: Temporarily disable MainMenuBar ("Action"), see https://github.com/Sellorio/mega-macro/issues/200
+            for i = 1, 12 do
+                local button = _G[actionBar .. "Button" .. i]
+                if button then
+                    func(button)
+                end
             end
         end
     end
@@ -392,7 +396,7 @@ function MegaMacroActionBarEngine.Initialize()
     end)
 end
 
-function MegaMacroActionBarEngine.OnUpdate(elapsed)
+function MegaMacroActionBarEngine.Update(elapsed)
     UpdateRangeTimer(elapsed)
 
     local focus = GetMouseFocus()

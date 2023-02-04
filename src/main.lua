@@ -1,58 +1,63 @@
 MegaMacroCachedClass = nil
 MegaMacroCachedSpecialization = nil
 MegaMacroFullyActive = false
-MegaMacroSystemTime = GetTime()
+MegaMacroUpdateInterval = 0.01 -- 10ms
+MegaMacroShiftClicksRegistered = false
 
-local f = CreateFrame("Frame", "MegaMacro_EventFrame", UIParent)
-f:RegisterEvent("PLAYER_ENTERING_WORLD")
-f:RegisterEvent("PLAYER_LEAVING_WORLD")
-f:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
-f:RegisterEvent("PLAYER_TARGET_CHANGED")
+local function MegaMacroOnUpdate(self, elapsed)
+    -- Load icons if EnableIconLoading has been called
+    MegaMacroIconNavigator.LoadIcons()
 
-local function OnUpdate(_, elapsed)
-    MegaMacroSystemTime = GetTime()
-    local elapsedMs = elapsed * 1000
-    MegaMacroIconNavigator.OnUpdate()
+    -- Don't update rest if native action bar is active
     if MegaMacroConfig['UseNativeActionBar'] and not MegaMacro_Frame:IsVisible() then
         return
     end
-    MegaMacroIconEvaluator.Update(elapsedMs)
-    MegaMacroActionBarEngine.OnUpdate(elapsed)
+
+    self.TimeSinceLastUpdate = self.TimeSinceLastUpdate + elapsed;
+    while (self.TimeSinceLastUpdate > MegaMacroUpdateInterval) do
+        MegaMacroActionBarEngine.Update(elapsed)
+
+        self.TimeSinceLastUpdate = self.TimeSinceLastUpdate - MegaMacroUpdateInterval;
+    end
+    MegaMacroIconEvaluator.Update(elapsed)
 end
 
-local function Initialize()
-    MegaMacro_InitialiseConfig()
-    MegaMacroIconNavigator.BeginLoadingIcons()
-
-    SLASH_Mega1 = "/m"
-    SLASH_Mega2 = "/macro"
-    SlashCmdList["Mega"] = function()
-        MegaMacroWindow.Show()
-
-        if not MegaMacroFullyActive then
-            ShowMacroFrame()
-        end
-    end
-
-    local specIndex = GetSpecialization()
-    if specIndex then
-        MegaMacroCachedClass = UnitClass("player")
-        MegaMacroCachedSpecialization = select(2, GetSpecializationInfo(specIndex))
-
-        MegaMacroCodeInfo.ClearAll()
-        MegaMacroIconEvaluator.Initialize()
-        MegaMacroActionBarEngine.Initialize()
-        MegaMacroEngine.SafeInitialize()
-        MegaMacroFullyActive = MegaMacroGlobalData.Activated and MegaMacroCharacterData.Activated
-        f:SetScript("OnUpdate", OnUpdate)
-    end
-end
-
-f:SetScript("OnEvent", function(self, event)
+function MegaMacroOnEvent(self, event)
     if event == "PLAYER_ENTERING_WORLD" then
-        Initialize()
+        MegaMacro_InitialiseConfig()
+
+        -- Enable icon loading
+        MegaMacroIconNavigator.EnableIconLoading()
+
+        SLASH_Mega1 = "/m"
+        SLASH_Mega2 = "/macro"
+        SlashCmdList["Mega"] = function()
+            MegaMacroWindow.Show()
+
+            if not MegaMacroFullyActive then
+                ShowMacroFrame()
+            end
+        end
+
+        local specIndex = GetSpecialization()
+        if specIndex then
+            MegaMacroCachedClass = UnitClass("player")
+            MegaMacroCachedSpecialization = select(2, GetSpecializationInfo(specIndex))
+
+            MegaMacroCodeInfo.ClearAll()
+            MegaMacroIconEvaluator.Initialize()
+            MegaMacroActionBarEngine.Initialize()
+            MegaMacroEngine.SafeInitialize()
+            MegaMacroFullyActive = MegaMacroGlobalData.Activated and MegaMacroCharacterData.Activated
+
+            self:SetScript("OnUpdate", MegaMacroOnUpdate)
+        end
+        if not MegaMacroShiftClicksRegistered then
+            MegaMacro_RegisterShiftClicks()
+            MegaMacroShiftClicksRegistered = true
+        end
     elseif event == "PLAYER_LEAVING_WORLD" then
-        f:SetScript("OnUpdate", nil)
+        self:SetScript("OnUpdate", nil)
     elseif event == "PLAYER_SPECIALIZATION_CHANGED" then
         MegaMacroWindow.SaveMacro()
 
@@ -69,6 +74,4 @@ f:SetScript("OnEvent", function(self, event)
     elseif event == "PLAYER_TARGET_CHANGED" then
         MegaMacroActionBarEngine.OnTargetChanged()
     end
-end)
-
-MegaMacro_RegisterShiftClicks()
+end

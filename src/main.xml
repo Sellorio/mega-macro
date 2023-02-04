@@ -1,0 +1,15 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/..\..\FrameXML\UI.xsd">
+  <Script file="src/main.lua" />
+  <Frame name="MegaMacro_EventFrame" parent="UIParent">
+    <Scripts>
+      <OnLoad>
+        self.TimeSinceLastUpdate = 0;
+        self:RegisterEvent("PLAYER_ENTERING_WORLD");
+        self:RegisterEvent("PLAYER_LEAVING_WORLD");
+        self:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED");
+        self:RegisterEvent("PLAYER_TARGET_CHANGED");
+      </OnLoad>
+      <OnEvent function="MegaMacroOnEvent" />
+    </Scripts>
+  </Frame>
+</Ui>

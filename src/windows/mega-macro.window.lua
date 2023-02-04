@@ -791,7 +791,9 @@ function MegaMacro_RegisterShiftClicks()
         end
     end
 
-    -- This is a kind of a hack, but it gets the shift click to work. We loop through all the spellbook buttons and hook their OnClick functions individually, since the generic SpellButton_OnModifiedClick was removed.
+    -- This is a kind of a hack, but it gets the shift click to work. We loop through all the
+    -- spellbook buttons and hook their OnClick functions individually, since the generic
+    -- SpellButton_OnModifiedClick was removed.
     for i = 1, 120 do
         local buttonName = "SpellButton" .. i
         if _G[buttonName] ~= nil then

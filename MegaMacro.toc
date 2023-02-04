@@ -1,11 +1,14 @@
 ## Interface: 100005
 ## Title: Mega Macro
 ## Author: Sellorio
-## Version: 1.0.0
+## Version: 1.1.0
 ## OptionalDeps: ElvUI
 
 ## SavedVariables: MegaMacroConfig, MegaMacroGlobalData
 ## SavedVariablesPerCharacter: MegaMacroCharacterData
+
+libs/utf8/utf8.lua
+libs/utf8/utf8data.lua
 
 src/constants.lua
 src/config.lua
@@ -23,6 +26,5 @@ src/engine/parsing/colours.lua
 src/engine/parsing/conditions.lua
 src/engine/mega-macro-parser.lua
 
+src/main.xml
 src/windows/mega-macro.window.xml
-
-src/main.lua

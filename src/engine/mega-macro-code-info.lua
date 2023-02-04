@@ -32,7 +32,7 @@ end
 
 local function Char(str, index)
     if string.len(str) >= index then
-        return string.sub(str, index, index)
+        return string.utf8sub(str, index, index)
     end
 end
 
@@ -64,7 +64,7 @@ local function ParseWord(parsingContext)
     local word = ""
 
     local character = Char(parsingContext.Code, parsingContext.Index)
-    while character and (string.match(character, "[a-z]") or string.match(character, "[A-Z]") or string.match(character, "[0-9]") or character == "_") do
+    while character and (string.match(character, "[a-zA-Z0-9_äöüÄÖÜß]")) do
         word = word .. character
         result = true
         parsingContext.Index = parsingContext.Index + 1

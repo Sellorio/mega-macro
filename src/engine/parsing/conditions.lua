@@ -177,7 +177,6 @@ end
 
 local function TalentModifier(parsingContext)
     local hasModifier = IsModifierSeparator(parsingContext)
-
     if hasModifier then
         local row = GetWord(parsingContext, 1)
         if not IsNumber(row) then
@@ -243,6 +242,8 @@ local Conditionals = {
     unithasvehicleui = NoModifier,
     vehicleui = NoModifier,
     worn = RequiredWordModifier,
+    known = NumberModifier,
+    noknown = NumberModifier,
 }
 
 function GetMegaMacroParsingConditionsData()
