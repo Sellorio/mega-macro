@@ -325,18 +325,18 @@
         </Scripts>
       </Button>
       <Button name="MegaMacro_CancelButton" frameStrata="HIGH" inherits="UIPanelButtonTemplate" text="CANCEL">
-        <Size x="82" y="34" />
+        <Size x="82" y="31" />
         <Anchors>
-          <Anchor point="BOTTOMRIGHT" relativeTo="MegaMacro_FrameScrollFrame" relativePoint="TOPRIGHT" x="23" y="6" />
+          <Anchor point="BOTTOMRIGHT" relativeTo="MegaMacro_FrameScrollFrame" relativePoint="TOPRIGHT" x="20" y="9" />
         </Anchors>
         <Scripts>
           <OnClick>MegaMacro_CancelButton_OnClick();</OnClick>
         </Scripts>
       </Button>
       <Button name="MegaMacro_SaveButton" frameStrata="HIGH" inherits="UIPanelButtonTemplate" text="SAVE">
-        <Size x="82" y="34" />
+        <Size x="82" y="31" />
         <Anchors>
-          <Anchor point="BOTTOM" relativeTo="MegaMacro_CancelButton" relativePoint="TOP" x="0" y="-1" />
+          <Anchor point="BOTTOM" relativeTo="MegaMacro_CancelButton" relativePoint="TOP" x="0" y="-0.5" />
         </Anchors>
         <Scripts>
           <OnClick>MegaMacro_SaveButton_OnClick();</OnClick>
