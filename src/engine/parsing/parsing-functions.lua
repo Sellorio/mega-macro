@@ -1,7 +1,7 @@
 local function GetCharacter(parsingContext, offset)
     local index = parsingContext.Index + (offset or 0)
     local result = string.utf8sub(parsingContext.Code, index, index)
-    -- string.utf8sub returns inpput itself if index is out of bounds
+    -- string.utf8sub returns input itself if index is out of bounds
     -- string.utf8sub("Foo", 4, 4) -> "Foo"
     if result == parsingContext.Code then
         return nil
