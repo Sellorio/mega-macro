@@ -45,7 +45,7 @@ local ModifierKeyNames = {
 }
 
 local function IsNumber(word)
-    local wordLength = #word
+    local wordLength = string.utf8len(word)
 
     if wordLength == 0 then
         return false
@@ -78,7 +78,7 @@ local function NumberModifier(parsingContext)
     local hasModifier = IsModifierSeparator(parsingContext)
     if hasModifier then
         local word = GetWord(parsingContext, 1)
-        local wordLength = #word
+        local wordLength = string.utf8len(word)
         if not IsNumber(word) then
             return "", false
         end
@@ -94,13 +94,34 @@ local function OptionalWordModifier(parsingContext)
     local hasModifier = IsModifierSeparator(parsingContext)
 
     if hasModifier then
-        local word = GetWord(parsingContext, 1)
-        local wordLength = #word
-        if wordLength == 0 then
-            return "", false
+        local parsingResult = ""
+        local isFirstWord = true
+        while true do
+            local wordStart = isFirstWord and 1 or 0
+
+            local word = GetWord(parsingContext, wordStart) -- returns empty string if no word found e.g. ":]" or "foo]"
+            local wordLength = string.utf8len(word)
+            if wordLength == 0 then
+                if isFirstWord then
+                    return "", false
+                else
+                    return parsingResult, true
+                end
+            else -- e.g. "foo ]", "foo]", "foo bar]"
+                local parseTillPosition = wordLength + 1
+                local nextChar = GetCharacter(parsingContext, wordLength + wordStart)
+                if nextChar ~= " " then -- adjust parseTillPosition if next char is not a space, e.g. "foo]" instead of "foo ]"
+                    parseTillPosition = wordLength
+                end
+
+                if isFirstWord then
+                    parsingResult = ParseResult(parsingContext, 1, Colours.Syntax) .. ParseResult(parsingContext, parseTillPosition, Colours.String)
+                else
+                    parsingResult = parsingResult .. ParseResult(parsingContext, parseTillPosition, Colours.String)
+                end
+            end
+            isFirstWord = false
         end
-        return ParseResult(parsingContext, 1, Colours.Syntax) .. ParseResult(parsingContext, wordLength, Colours.String)
-            , true
     else
         return "", true
     end
@@ -111,7 +132,7 @@ local function RequiredWordModifier(parsingContext)
 
     if hasModifier then
         local word = GetWord(parsingContext, 1)
-        local wordLength = #word
+        local wordLength = string.utf8len(word)
         if wordLength == 0 then
             return "", false
         end
@@ -242,8 +263,8 @@ local Conditionals = {
     unithasvehicleui = NoModifier,
     vehicleui = NoModifier,
     worn = RequiredWordModifier,
-    known = NumberModifier,
-    noknown = NumberModifier,
+    known = OptionalWordModifier,
+    noknown = OptionalWordModifier,
 }
 
 function GetMegaMacroParsingConditionsData()
