@@ -1,8 +1,8 @@
-# Mega Macro (a World of Warcraft AddOn)
+<h1 align="center">Mega Macro</h1>
 
-![Screenshot 1](https://raw.githubusercontent.com/Sellorio/mega-macro/master/Screenshot1.png)
 
-**IMPORTANT:** Before you use this AddOn, make sure you read the `before you use` section!
+
+## **IMPORTANT:** Before you use this AddOn, make sure you read the `before you use` section!
 
 ## Features
 
@@ -121,6 +121,18 @@ xcopy /e /i /y %USERPROFILE%\Games\wow-macro-backup "C:\Program Files (x86)\Worl
 
 3. click OK
 
-## Special Thanks
+## Contributors
 
-Special thanks to `aurelion314` (`Cubelicious` in-game) and `Dannez83` for contributing many hours to update this addon for Dragonflight!
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tbody>
+    <tr>
+      <td align="center"><a href="https://github.com/Sellorio"><img src="https://avatars.githubusercontent.com/u/6982020?v=4?s=64" width="64px;" alt="Sellorio"/><br /><sub><b>Sellorio</b></sub></a><br /><a href="https://github.com/Sellorio/mega-macro/commits?author=Sellorio" title="Code">💻</a> <a href="#maintenance-Sellorio" title="Maintenance">🚧</a> <a href="https://github.com/Sellorio/mega-macro/commits?author=Sellorio" title="Documentation">📖</a> <a href="#ideas-Sellorio" title="Ideas, Planning, & Feedback">🤔</a></td>
+      <td align="center"><a href="https://github.com/aurelion314"><img src="https://avatars.githubusercontent.com/u/23002984?v=4?s=64" width="64px;" alt="Mike"/><br /><sub><b>Mike</b></sub></a><br /><a href="https://github.com/Sellorio/mega-macro/commits?author=aurelion314" title="Code">💻</a> <a href="#maintenance-aurelion314" title="Maintenance">🚧</a> <a href="https://github.com/Sellorio/mega-macro/commits?author=aurelion314" title="Documentation">📖</a> <a href="#ideas-aurelion314" title="Ideas, Planning, & Feedback">🤔</a></td>
+      <td align="center"><a href="https://github.com/Dannez83"><img src="https://avatars.githubusercontent.com/u/60705967?v=4?s=64" width="64px;" alt="Dannez83"/><br /><sub><b>Sellorio</b></sub></a><br /><a href="https://github.com/Sellorio/mega-macro/commits?author=Dannez83" title="Code">💻</a>
+      <td align="center"><a href="https://github.com/paulbuechner"><img src="https://avatars.githubusercontent.com/u/45827409?s=400&u=a62152a15513e36652b045b5879f39f124120254&v=4?s=64" width="64px;" alt="Paul Büchner"/><br /><sub><b>Paul Büchner</b></sub></a><br /><a href="https://github.com/Sellorio/mega-macro/commits?author=paulbuechner" title="Code">💻</a> <a href="#maintenance-paulbuechner" title="Maintenance">🚧</a> <a href="https://github.com/Sellorio/mega-macro/commits?author=paulbuechner" title="Documentation">📖</a> <a href="#ideas-paulbuechner" title="Ideas, Planning, & Feedback">🤔</a></td>
+    </tr>
+  </tbody>
+</table>
