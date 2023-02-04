@@ -1,8 +1,10 @@
-<!-- <h1 align="center">Mega Macro</h1> -->
+<h1 align="center">Mega Macro</h1>
+
+A World of Warcraft AddOn that replaces the built in macro functionality allowing for more and bigger macros. 
 
 ![MegaMacro_Screenshot](https://user-images.githubusercontent.com/45827409/216745146-aa228af9-8fb9-4843-9cf9-aba19f2da91e.png)
 
-### **IMPORTANT:** Before you use this AddOn, make sure you read the `before you use` section!
+### **IMPORTANT:** Before you use this AddOn, make sure you read the [Before you use](#before-you-use) section below.
 
 ## Features
 
