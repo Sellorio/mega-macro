@@ -1,21 +1,31 @@
-local CodeInfoCache = {}
-
 --[[
-{
-    "macroid": {
-        {
-            type: "cast",               cast/stopmacro/use/castsequence/showtooltip/fallback
-            body: "[mod:alt] X; Y"
-        },
-        ...
+    Table holding the parsed macro code info.
+
+    {
+        "macroid": {
+            {
+                --cast/stopmacro/use/castsequence/showtooltip/fallback
+                type: "cast",
+                body: "[mod:alt] X; Y"
+            },
+            ...
+        }
     }
-}
---]]
+]]
+local CodeInfoCache = {}
 
 local function trim(s)
     return s:gsub("^%s*(.-)%s*$", "%1")
 end
 
+--[[
+    Get the index of the last occurence of the given match in the given string,
+    or nil if not found.
+
+    Example: lastIndexOf("foo", "o") -> 3
+    Example: lastIndexOf("foo", "o", 2) -> 2
+    Example: lastIndexOf("foo", "o", 1) -> nil
+ ]]
 local function lastIndexOf(str, match, maxIndex)
     local index = string.find(str, match)
 
@@ -30,12 +40,26 @@ local function lastIndexOf(str, match, maxIndex)
     return index
 end
 
+--[[
+    Get the character at the given index, or nil if the index is out of bounds
+
+    Example: Char("foo", 1) -> "f"
+    Example: Char("foo", 2) -> "o"
+    Example: Char("foo", 3) -> "o"
+    Example: Char("foo", 4) -> nil
+ ]]
 local function Char(str, index)
-    if string.len(str) >= index then
+    if string.utf8len(str) >= index then
         return string.utf8sub(str, index, index)
     end
 end
 
+--[[
+    Parse spaces and move the index forward until a non-space character is found.
+
+    Example: "  foo" -> "foo" (returns true)
+    Example: "foo" -> "foo" (returns false)
+ ]]
 local function ParseSpaces(parsingContext)
     local result = false
 
@@ -47,6 +71,11 @@ local function ParseSpaces(parsingContext)
     return result
 end
 
+--[[
+    Parse given context until a newline is found. Returns true if a newline was found, false otherwise.
+
+    Example: "foo bar baz" -> "foo bar baz" (returns true)
+ ]]
 local function ParseEndOfLine(parsingContext)
     local result = false
 
@@ -59,6 +88,13 @@ local function ParseEndOfLine(parsingContext)
     return result
 end
 
+--[[
+    Parse a word and move the index forward until a non-word character is found.
+    Returns true if a word was found, false otherwise. The word is returned as a string.
+
+    Example: "foo bar baz" -> "foo" (returns true, "foo")
+    Example: " " -> "" (returns false, "")
+ ]]
 local function ParseWord(parsingContext)
     local result = false
     local word = ""
@@ -74,6 +110,12 @@ local function ParseWord(parsingContext)
     return result, word
 end
 
+--[[
+    Get the remaining line of code, ignoring comments.
+
+    Example: "foo bar baz" -> "foo bar baz"
+    Example: "foo # bar baz" -> "foo "
+ ]]
 local function GrabRemainingLineCode(parsingContext)
     local code = ""
     local character = Char(parsingContext.Code, parsingContext.Index)
@@ -165,7 +207,7 @@ local function ParseCommand(parsingContext)
         local wordResult, word = ParseWord(parsingContext)
 
         if wordResult then
-            word = string.lower(word)
+            word = string.utf8lower(word)
             result = true
             ParseSpaces(parsingContext)
 
@@ -210,9 +252,9 @@ local function ParseShowtooltip(parsingContext)
         parsingContext.Index = parsingContext.Index + 1
         local wordResult, word = ParseWord(parsingContext)
 
-        if wordResult and string.lower(word) == "showtooltip" then
+        if wordResult and string.utf8lower(word) == "showtooltip" then
             local body = trim(GrabRemainingLineCode(parsingContext))
-            if string.len(body) > 0 then
+            if string.utf8len(body) > 0 then
                 table.insert(
                     CodeInfoCache[parsingContext.MacroId],
                     {
@@ -241,7 +283,7 @@ local function AddFallbackAbility(macroId)
             endOfAbility = endOfAbility and (endOfAbility - 1)
             local endOfConditions = (lastIndexOf(codeInfo[i].Body, "%]", endOfAbility) or 0) + 1
 
-            local abilityName = trim(string.sub(codeInfo[i].Body, endOfConditions, endOfAbility))
+            local abilityName = trim(string.utf8sub(codeInfo[i].Body, endOfConditions, endOfAbility))
 
             table.insert(
                 codeInfo,
@@ -255,7 +297,7 @@ local function AddFallbackAbility(macroId)
             endOfSequence = endOfSequence and (endOfSequence - 1)
             local endOfConditions = (lastIndexOf(codeInfo[i].Body, "%]", endOfSequence) or 0) + 1
 
-            local sequence = trim(string.sub(codeInfo[i].Body, endOfConditions, endOfSequence))
+            local sequence = trim(string.utf8sub(codeInfo[i].Body, endOfConditions, endOfSequence))
 
             table.insert(
                 codeInfo,
@@ -277,7 +319,7 @@ local function AddFallbackAbility(macroId)
             endOfAbility = endOfAbility and (endOfAbility - 1)
             local endOfConditions = (lastIndexOf(codeInfo[i].Body, "%]", endOfAbility) or 0) + 1
 
-            local firstSetMentioned = trim(string.sub(codeInfo[i].Body, endOfConditions, endOfAbility))
+            local firstSetMentioned = trim(string.utf8sub(codeInfo[i].Body, endOfConditions, endOfAbility))
 
             table.insert(
                 codeInfo,
@@ -287,7 +329,7 @@ local function AddFallbackAbility(macroId)
                 })
         elseif type == "click" then
             local endOfConditions = (lastIndexOf(codeInfo[i].Body, "%]") or 0) + 1
-            local buttonName = trim(string.sub(codeInfo[i].Body, endOfConditions))
+            local buttonName = trim(string.utf8sub(codeInfo[i].Body, endOfConditions))
 
             table.insert(
                 codeInfo,
@@ -309,9 +351,9 @@ local function CalculateMacroInfo(macro)
     ParseSpaces(parsingContext)
     ParseEndOfLine(parsingContext)
 
-    if parsingContext.Index < string.len(parsingContext.Code) then
+    if parsingContext.Index < string.utf8len(parsingContext.Code) then
         if not ParseShowtooltip(parsingContext) then
-            while parsingContext.Index <= string.len(parsingContext.Code) do
+            while parsingContext.Index <= string.utf8len(parsingContext.Code) do
                 ParseCommand(parsingContext)
             end
         end

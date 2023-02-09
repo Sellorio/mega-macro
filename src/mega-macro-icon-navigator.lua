@@ -93,7 +93,7 @@ function MegaMacroIconNavigator.LoadIcons()
                 MissCount = 0
             elseif name then
                 if #name > 0 and icon then
-                    name = string.lower(name)
+                    name = string.utf8lower(name)
                     MissCount = 0
                     local cachedIconList = IconCache[name]
                     if not cachedIconList then
@@ -135,7 +135,7 @@ function MegaMacroIconNavigator.Search(searchText)
     local presentIcons = {}
 
     if searchText and #searchText > 2 then
-        searchText = string.lower(searchText)
+        searchText = string.utf8lower(searchText)
         local escapedSearch = string.gsub(searchText, "([%(%)%.%+%-%*%?%[%]%^%$%%])", "%%%1")
 
         for _, key in ipairs(IconCacheKeys) do

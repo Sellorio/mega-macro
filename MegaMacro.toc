@@ -7,8 +7,8 @@
 ## SavedVariables: MegaMacroConfig, MegaMacroGlobalData
 ## SavedVariablesPerCharacter: MegaMacroCharacterData
 
-libs/utf8/utf8.lua
 libs/utf8/utf8data.lua
+libs/utf8/utf8.lua
 
 src/constants.lua
 src/config.lua

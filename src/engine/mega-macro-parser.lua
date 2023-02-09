@@ -4,8 +4,8 @@ local Commands = {
     "3"
 }
 for globalName, command in pairs(_G) do
-    if string.sub(globalName, 1, 6) == "SLASH_" then
-        table.insert(Commands, string.sub(command, 2))
+    if string.utf8sub(globalName, 1, 6) == "SLASH_" then
+        table.insert(Commands, string.utf8sub(command, 2))
     end
 end
 for i = 1, 999 do
@@ -13,7 +13,7 @@ for i = 1, 999 do
     if not emote then
         break
     end
-    table.insert(Commands, string.lower(emote))
+    table.insert(Commands, string.utf8lower(emote))
 end
 
 local Colours = GetMegaMacroParsingColourData()
@@ -76,8 +76,8 @@ local function ParseRestOfLineAsError(parsingContext)
 end
 
 local function IsIndexedUnitId(unitId, unitType, maxIndex)
-    if string.sub(unitId, 1, #unitType) == unitType then
-        local index = tonumber(string.sub(unitId, #unitType + 1))
+    if string.utf8sub(unitId, 1, #unitType) == unitType then
+        local index = tonumber(string.utf8sub(unitId, #unitType + 1))
         if index and index > 0 and index <= maxIndex then
             return true
         end
@@ -153,19 +153,20 @@ local function ParseConditionalPart(parsingContext)
         result = result .. ParseWhiteSpace(parsingContext)
 
         local word = GetWord(parsingContext)
+        local wordLength = string.utf8len(word)
         local modifierParseFunction = Conditions[word]
 
         if not modifierParseFunction then
-            result = result .. ParseResult(parsingContext, #word, Colours.Error)
+            result = result .. ParseResult(parsingContext, wordLength, Colours.Error)
         else
-            local conditionCode = ParseResult(parsingContext, #word, Colours.Condition)
+            local conditionCode = ParseResult(parsingContext, wordLength, Colours.Condition)
             newResult, success = modifierParseFunction(parsingContext)
 
             if success then
                 result = result .. conditionCode .. newResult
             else
-                parsingContext.Index = parsingContext.Index - #word
-                result = result .. ParseResult(parsingContext, #word, Colours.Error)
+                parsingContext.Index = parsingContext.Index - wordLength
+                result = result .. ParseResult(parsingContext, wordLength, Colours.Error)
             end
         end
     end

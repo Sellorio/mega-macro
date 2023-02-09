@@ -4,19 +4,19 @@ local Initialized = false
 
 local function GenerateIdPrefix(id)
     local result = "00" .. id
-    return "#" .. string.sub(result, -3)
+    return "#" .. string.utf8sub(result, -3)
 end
 
 local function FormatMacroDisplayName(megaMacroDisplayName)
     if not megaMacroDisplayName or #megaMacroDisplayName == 0 then
         return " "
     else
-        return string.sub(megaMacroDisplayName, 1, 18)
+        return string.utf8sub(megaMacroDisplayName, 1, 18)
     end
 end
 
 local function GetIdFromMacroCode(macroCode)
-    return macroCode and tonumber(string.sub(macroCode, 2, 4))
+    return macroCode and tonumber(string.utf8sub(macroCode, 2, 4))
 end
 
 local function InitializeMacroIndexCache()

@@ -51,7 +51,7 @@ local function IsNumber(word)
         return false
     end
     for i = 1, wordLength do
-        if not string.match(string.sub(word, i, i), "[0-9]") then
+        if not string.match(string.utf8sub(word, i, i), "[0-9]") then
             return false
         end
     end
@@ -149,11 +149,12 @@ local function GroupModifier(parsingContext)
 
     if hasModifier then
         local word = GetWord(parsingContext, 1)
+        local wordLength = string.utf8len(word)
         if word ~= "party" and word ~= "raid" then
             return "", false
         end
         return ParseResult(parsingContext, 1, Colours.Syntax) ..
-            ParseResult(parsingContext, #word, Colours.String),
+            ParseResult(parsingContext, wordLength, Colours.String),
             true
     else
         return "", false
@@ -167,8 +168,9 @@ local function KeyModifier(parsingContext)
         local word = GetWord(parsingContext, 1)
         for i = 1, #ModifierKeyNames do
             if word == ModifierKeyNames[i] then
+                local wordLength = string.utf8len(word)
                 return ParseResult(parsingContext, 1, Colours.Syntax) ..
-                    ParseResult(parsingContext, #word, Colours.String),
+                    ParseResult(parsingContext, wordLength, Colours.String),
                     true
             end
         end
@@ -186,8 +188,9 @@ local function MouseButtonModifier(parsingContext)
         local word = GetWord(parsingContext, 1)
         for i = 1, #MouseButtonNames do
             if word == MouseButtonNames[i] then
+                local wordLength = string.utf8len(word)
                 return ParseResult(parsingContext, 1, Colours.Syntax) ..
-                    ParseResult(parsingContext, #word, Colours.String),
+                    ParseResult(parsingContext, wordLength, Colours.String),
                     true
             end
         end
