@@ -1,7 +1,7 @@
-## Interface: 100005
+## Interface: 100007
 ## Title: Mega Macro
 ## Author: Sellorio
-## Version: 1.1.0
+## Version: 1.1.1
 ## OptionalDeps: ElvUI
 
 ## SavedVariables: MegaMacroConfig, MegaMacroGlobalData
