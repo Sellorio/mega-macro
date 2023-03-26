@@ -13,7 +13,6 @@ For developer refererence, these are the features of an action bar button:
  - Spell Glow (such as on empowerments for Balance Druid)
  - Active Auto Attack Flash (flashes red when auto attack is active) - intentionally omitted from this addon
 ]]
-
 local LibActionButton = nil
 local ActionBarSystem = nil -- Blizzard or LAB or Dominos
 local BlizzardActionBars = {
@@ -282,9 +281,10 @@ local function UpdateRange(button, functions, abilityId, target)
 end
 
 local function UpdateActionBar(button, macroId)
-    if MegaMacroConfig['UseNativeActionBar'] then
-        return
-    end
+    -- Removed as return already happens in main.lua -> MegaMacroButton_OnUpdate
+    -- if MegaMacroConfig['UseNativeActionBar'] then
+    --     return
+    -- end
 
     local data = MegaMacroIconEvaluator.GetCachedData(macroId)
     local functions = MegaMacroInfoFunctions.Unknown
@@ -342,17 +342,17 @@ local function ForEachDominosButton(func)
     for i = 1, 120 do
         local button = nil
         if i <= 12 then
-            button = _G[('ActionButton%d'):format(i)]
+            button = _G[("ActionButton%d"):format(i)]
         elseif i <= 24 then
             button = _G["DominosActionButton" .. (i - 12)]
         elseif i <= 36 then
-            button = _G[('MultiBarRightButton%d'):format(i - 24)]
+            button = _G[("MultiBarRightButton%d"):format(i - 24)]
         elseif i <= 48 then
-            button = _G[('MultiBarLeftButton%d'):format(i - 36)]
+            button = _G[("MultiBarLeftButton%d"):format(i - 36)]
         elseif i <= 60 then
-            button = _G[('MultiBarBottomRightButton%d'):format(i - 48)]
+            button = _G[("MultiBarBottomRightButton%d"):format(i - 48)]
         elseif i <= 72 then
-            button = _G[('MultiBarBottomLeftButton%d'):format(i - 60)]
+            button = _G[("MultiBarBottomLeftButton%d"):format(i - 60)]
         else
             button = _G["DominosActionButton" .. (i - 60)]
         end
@@ -410,21 +410,23 @@ function MegaMacroActionBarEngine.Update(elapsed)
 
     iterator(function(button)
         local action = button:GetAttribute("action") or button.action
-        local type, actionArg1 = GetActionInfo(action)
-        local macroId = type == "macro" and MegaMacroEngine.GetMacroIdFromIndex(actionArg1)
+        local actionType, id, _ = GetActionInfo(action)
+        if actionType or id then
+            local macroId = actionType == "macro" and MegaMacroEngine.GetMacroIdFromIndex(id)
 
-        if macroId then
-            ActionsBoundToMegaMacros[button] = true
-            UpdateActionBar(button, macroId)
+            if macroId then
+                ActionsBoundToMegaMacros[button] = true
+                UpdateActionBar(button, macroId)
 
-            if button == focus then
-                ShowToolTipForMegaMacro(macroId)
-            end
-        elseif ActionsBoundToMegaMacros[button] then
-            ActionsBoundToMegaMacros[button] = nil
-            if not actionArg1 then
-                -- was a mega macro, now unbound, make sure to reset a few values
-                ResetActionBar(button)
+                if button == focus then
+                    ShowToolTipForMegaMacro(macroId)
+                end
+            elseif ActionsBoundToMegaMacros[button] then
+                ActionsBoundToMegaMacros[button] = nil
+                if not id then
+                    -- was a mega macro, now unbound, make sure to reset a few values
+                    ResetActionBar(button)
+                end
             end
         end
     end)
