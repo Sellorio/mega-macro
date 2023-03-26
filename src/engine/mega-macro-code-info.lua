@@ -252,7 +252,7 @@ local function ParseShowtooltip(parsingContext)
         parsingContext.Index = parsingContext.Index + 1
         local wordResult, word = ParseWord(parsingContext)
 
-        if wordResult and string.utf8lower(word) == "showtooltip" then
+        if wordResult and string.lower(word) == "showtooltip" then
             local body = trim(GrabRemainingLineCode(parsingContext))
             if string.utf8len(body) > 0 then
                 table.insert(
@@ -351,9 +351,10 @@ local function CalculateMacroInfo(macro)
     ParseSpaces(parsingContext)
     ParseEndOfLine(parsingContext)
 
-    if parsingContext.Index < string.utf8len(parsingContext.Code) then
+    local parsingContextCodeLength = string.utf8len(parsingContext.Code)
+    if parsingContext.Index < parsingContextCodeLength then
         if not ParseShowtooltip(parsingContext) then
-            while parsingContext.Index <= string.utf8len(parsingContext.Code) do
+            while parsingContext.Index <= parsingContextCodeLength do
                 ParseCommand(parsingContext)
             end
         end

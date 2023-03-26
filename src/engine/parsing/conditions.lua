@@ -115,7 +115,8 @@ local function OptionalWordModifier(parsingContext)
                 end
 
                 if isFirstWord then
-                    parsingResult = ParseResult(parsingContext, 1, Colours.Syntax) .. ParseResult(parsingContext, parseTillPosition, Colours.String)
+                    parsingResult = ParseResult(parsingContext, 1, Colours.Syntax) ..
+                        ParseResult(parsingContext, parseTillPosition, Colours.String)
                 else
                     parsingResult = parsingResult .. ParseResult(parsingContext, parseTillPosition, Colours.String)
                 end
@@ -206,18 +207,19 @@ local function TalentModifier(parsingContext)
         if not IsNumber(row) then
             return "", false
         end
-        local separator = GetCharacter(parsingContext, 1 + #row)
+        local rowLength = string.utf8len(row)
+        local separator = GetCharacter(parsingContext, 1 + rowLength)
         if separator ~= "/" then
             return "", false
         end
-        local col = GetWord(parsingContext, 1 + #row + 1)
+        local col = GetWord(parsingContext, 1 + rowLength + 1)
         if not IsNumber(row) then
             return "", false
         end
         return ParseResult(parsingContext, 1, Colours.Syntax) ..
-            ParseResult(parsingContext, #row, Colours.Number) ..
+            ParseResult(parsingContext, rowLength, Colours.Number) ..
             ParseResult(parsingContext, 1, Colours.Number) ..
-            ParseResult(parsingContext, #col, Colours.Number),
+            ParseResult(parsingContext, string.utf8len(col), Colours.Number),
             true
     else
         return "", false
