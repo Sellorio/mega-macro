@@ -9,16 +9,16 @@ local function MegaMacroOnUpdate(self, elapsed)
     MegaMacroIconNavigator.LoadIcons()
 
     -- Don't update rest if native action bar is active
-    if MegaMacroConfig['UseNativeActionBar'] and not MegaMacro_Frame:IsVisible() then
+    if MegaMacroConfig["UseNativeActionBar"] and not MegaMacro_Frame:IsVisible() then
         return
     end
 
-    self.TimeSinceLastUpdate = self.TimeSinceLastUpdate + elapsed;
-    while (self.TimeSinceLastUpdate > MegaMacroUpdateInterval) do
-        MegaMacroActionBarEngine.Update(elapsed)
-
-        self.TimeSinceLastUpdate = self.TimeSinceLastUpdate - MegaMacroUpdateInterval;
-    end
+    -- Limit update rate to fixed interval
+    -- self.TimeSinceLastUpdate = self.TimeSinceLastUpdate + elapsed;
+    -- while (self.TimeSinceLastUpdate > MegaMacroUpdateInterval) do
+    --     self.TimeSinceLastUpdate = self.TimeSinceLastUpdate - MegaMacroUpdateInterval;
+    -- end
+    MegaMacroActionBarEngine.Update(elapsed)
     MegaMacroIconEvaluator.Update(elapsed)
 end
 
