@@ -217,8 +217,8 @@ local function BindMacro(macro)
         local macroIndex = MacroIndexCache[macro.Id]
 
         if macroIndex then
-            if MegaMacroConfig['UseNativeMacros'] then
-                EditMacro(macroIndex, FormatMacroDisplayName(macro.DisplayName), nil, GenerateIdPrefix(macro.Id) .. '\n' .. macro.Code, true, macroIndex > MacroLimits.MaxGlobalMacros)
+            if MegaMacroConfig["UseNativeMacros"] then
+                EditMacro(macroIndex, FormatMacroDisplayName(macro.DisplayName), nil, GenerateIdPrefix(macro.Id) .. "\n" .. macro.Code, true, macroIndex > MacroLimits.MaxGlobalMacros)
             else
                 GetOrCreateClicky(macro.Id):SetAttribute("macrotext", macro.Code)
                 EditMacro(macroIndex, FormatMacroDisplayName(macro.DisplayName), nil, GetMacroStubCode(macro.Id), true, macroIndex > MacroLimits.MaxGlobalMacros)

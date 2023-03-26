@@ -229,6 +229,8 @@
         "APIDocumentation",
         "GameFontNormal",
         "WorldFrame",
-        "class"
+        "class",
+        "QueryCastSequence",
+        "message"
     ]
 }

@@ -23,7 +23,7 @@ function MegaMacro_InitialiseConfig()
         }
     end
 
-    MegaMacroConfig['MaxMacroLength'] = MegaMacroConfig['UseNativeMacros'] and 250 or MegaMacroCodeMaxLength
+    MegaMacroConfig["MaxMacroLength"] = MegaMacroConfig["UseNativeMacros"] and 250 or MegaMacroCodeMaxLength
 end
 
 function MegaMacroConfig_IsWindowDialog()
@@ -40,9 +40,9 @@ end
 function MecaMacro_GenerateConfig()
     -- Blizzard Macro option
     MecaMacroConfig_GenerateCheckbox(
-        'UseBlizzardMacros',
-        'Blizzard Style Macros',
-        'Set Character Limit to 250.\n\nUses Blizzards Macro Buttons while keeping\nMegaMacro interface and organizer.\n\nEnable this if you have stability issues or need\nto uninstall MegaMacro.\n\nNote: Uninstalling may still cause you to lose\nclass and spec Macros since they are not\nsupported by Blizzard. Move them to global\nor character tabs before uninstalling.',
+        "UseBlizzardMacros",
+        "Blizzard Style Macros",
+        "Set Character Limit to 250.\n\nUses Blizzards Macro Buttons while keeping\nMegaMacro interface and organizer.\n\nEnable this if you have stability issues or need\nto uninstall MegaMacro.\n\nNote: Uninstalling may still cause you to lose\nclass and spec Macros since they are not\nsupported by Blizzard. Move them to global\nor character tabs before uninstalling.",
         0,
         0,
         MegaMacroConfig.UseNativeMacros,
@@ -53,9 +53,9 @@ function MecaMacro_GenerateConfig()
     )
     -- Blizzard Action Bar Icons
     MecaMacroConfig_GenerateCheckbox(
-        'UseBlizzardActionIcons',
-        'Blizzard Action Bar Icons',
-        'Disable Mega Macro Action Bar Engine.\n\nOnly Use with Blizzard Style Macros.',
+        "UseBlizzardActionIcons",
+        "Blizzard Action Bar Icons",
+        "Disable Mega Macro Action Bar Engine.\n\nOnly Use with Blizzard Style Macros.",
         0,
         -25,
         MegaMacroConfig.UseNativeActionBar,

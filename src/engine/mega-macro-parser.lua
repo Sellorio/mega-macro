@@ -25,7 +25,7 @@ local ConditionalBroken = "|c" .. Colours.Error .. "[|r"
 
 local function IsEndOfLine(parsingContext, offset)
     local character = GetCharacter(parsingContext, offset)
-    return not character or character == '\n'
+    return not character or character == "\n"
 end
 
 local function ParseWhiteSpace(parsingContext)
@@ -58,7 +58,7 @@ local function ParseComment(parsingContext)
         character = GetCharacter(parsingContext, offset)
     end
 
-    if character == '\n' then
+    if character == "\n" then
         offset = offset + 1
     end
 
@@ -108,7 +108,7 @@ local function ParseTarget(parsingContext)
     local character = GetCharacter(parsingContext)
     local indexBeforeTarget = parsingContext.Index
 
-    if character == '@' then
+    if character == "@" then
         result = ParseResult(parsingContext, 1, Colours.Target)
     elseif GetWord(parsingContext) == "target" then
         result = ParseResult(parsingContext, 6, Colours.Target)
@@ -116,7 +116,7 @@ local function ParseTarget(parsingContext)
 
         character = GetCharacter(parsingContext)
 
-        if character ~= '=' then
+        if character ~= "=" then
             parsingContext.Index = indexBeforeTarget
             return "", false
         end
@@ -146,7 +146,7 @@ local function ParseConditionalPart(parsingContext)
     if success then
         result = result .. newResult
     else
-        if GetCharacter(parsingContext) == 'n' and GetCharacter(parsingContext, 1) == 'o' then
+        if GetCharacter(parsingContext) == "n" and GetCharacter(parsingContext, 1) == "o" then
             result = result .. ParseResult(parsingContext, 2, Colours.Condition)
         end
 
@@ -174,7 +174,7 @@ local function ParseConditionalPart(parsingContext)
     result = result .. ParseWhiteSpace(parsingContext)
 
     local character = GetCharacter(parsingContext)
-    while character and character ~= ',' and character ~= ']' and character ~= '\n' do
+    while character and character ~= "," and character ~= "]" and character ~= "\n" do
         result = result .. ParseResult(parsingContext, 1, Colours.Error)
         character = GetCharacter(parsingContext)
     end
@@ -185,7 +185,7 @@ end
 local function ParseConditional(parsingContext)
     local character = GetCharacter(parsingContext)
 
-    if character ~= '[' then
+    if character ~= "[" then
         return "", false
     end
 
@@ -201,10 +201,10 @@ local function ParseConditional(parsingContext)
         if IsEndOfLine(parsingContext) then
             return ConditionalBroken .. result, true
         end
-        if character == ']' then
+        if character == "]" then
             return ConditionalEnclosed .. result .. ParseResult(parsingContext, 1, Colours.Syntax), true
         end
-        if character ~= ',' then
+        if character ~= "," then
             return ConditionalBroken .. result .. ParseRestOfLineAsError(), true
         end
 
@@ -220,7 +220,7 @@ end
 local function ParseCommand(parsingContext)
     local character = GetCharacter(parsingContext)
 
-    if character ~= '/' then
+    if character ~= "/" then
         return "", false
     end
 

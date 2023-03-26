@@ -224,7 +224,6 @@ local function UpdateMacro(macro)
         or currentData.Name ~= effectName
         or currentData.Icon ~= icon
         or currentData.Target ~= target then
-
         currentData.Type = effectType
         currentData.Id = effectId
         currentData.Name = effectName
@@ -236,7 +235,7 @@ local function UpdateMacro(macro)
         end
     end
 
-    if MegaMacroConfig['UseNativeActionBar'] then
+    if MegaMacroConfig["UseNativeActionBar"] then
         return
     end
 
