@@ -1,5 +1,7 @@
-<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/..\..\FrameXML\UI.xsd">
+<Ui xmlns="http://www.blizzard.com/wow/ui/"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/..\..\FrameXML\UI.xsd">
   <Script file="src/windows/mega-macro.window.lua" />
+
   <CheckButton name="MegaMacro_ButtonTemplate" inherits="SelectorButtonTemplate" virtual="true">
     <Scripts>
       <OnLoad>self:RegisterForDrag("LeftButton");</OnLoad>
@@ -20,6 +22,7 @@
       </Layer>
     </Layers>
   </CheckButton>
+
   <CheckButton name="MegaMacro_PopupButtonTemplate" inherits="SimplePopupButtonTemplate" virtual="true">
     <Scripts>
       <OnClick>MegaMacro_PopupButton_OnClick(self);</OnClick>
@@ -35,16 +38,9 @@
     <HighlightTexture alphaMode="ADD" file="Interface\Buttons\ButtonHilight-Square" />
     <CheckedTexture alphaMode="ADD" file="Interface\Buttons\CheckButtonHilight" />
   </CheckButton>
+
   <Frame name="MegaMacro_Frame" toplevel="true" movable="true" parent="UIParent" enableMouse="true" hidden="true" inherits="ButtonFrameTemplate">
-    <Size x="640" y="524" />
-    <Attributes>
-      <Attribute name="UIPanelLayout-defined" type="boolean" value="true" />
-      <Attribute name="UIPanelLayout-enabled" type="boolean" value="true" />
-      <Attribute name="UIPanelLayout-area" type="string" value="left" />
-      <Attribute name="UIPanelLayout-width" type="number" value="641" />
-      <Attribute name="UIPanelLayout-pushable" type="number" value="1" />
-      <Attribute name="UIPanelLayout-whileDead" type="boolean" value="true" />
-    </Attributes>
+    <Size x="630" y="524" />
     <Scripts>
       <OnLoad>
         self:RegisterForDrag("LeftButton");
@@ -87,7 +83,7 @@
       </Layer>
       <Layer level="ARTWORK">
         <Texture name="MegaMacro_HorizontalBarLeft" file="Interface\ClassTrainerFrame\UI-ClassTrainer-HorizontalBar">
-          <Size x="556" y="16" />
+          <Size x="550" y="16" />
           <Anchors>
             <Anchor point="TOPLEFT" x="0" y="-210" />
           </Anchors>
@@ -107,7 +103,7 @@
           </Anchors>
         </Texture>
         <FontString name="MegaMacro_FrameSelectedMacroName" inherits="GameFontNormalLarge" justifyH="LEFT">
-          <Size x="554" y="19" />
+          <Size x="550" y="19" />
           <Anchors>
             <Anchor point="TOPLEFT" relativeTo="MegaMacro_FrameSelectedMacroBackground" relativePoint="TOPRIGHT" x="-4" y="-10" />
           </Anchors>
@@ -133,7 +129,7 @@
         </Anchors>
         <Layers>
           <Layer level="OVERLAY">
-            <FontString inherits="GameFontNormal" text="Mega Macro v1.1.0">
+            <FontString inherits="GameFontNormal" text="Mega Macro v1.2.0">
               <Anchors>
                 <Anchor relativeTo="$parent" point="TOP" x="-20" y="0" />
               </Anchors>
@@ -141,6 +137,7 @@
           </Layer>
         </Layers>
       </Frame>
+
       <Button name="MegaMacro_ToggleWindowModeButton" frameStrata="HIGH" inherits="UIPanelButtonTemplate" text="{lock/unlock}">
         <Size x="80" y="19" />
         <Anchors>
@@ -150,6 +147,7 @@
           <OnClick>MegaMacro_ToggleWindowModeButton_OnClick();</OnClick>
         </Scripts>
       </Button>
+
       <CheckButton name="MegaMacro_FrameSelectedMacroButton" frameStrata="HIGH" inherits="MegaMacro_ButtonTemplate" id="0">
         <Anchors>
           <Anchor point="TOPLEFT" relativeTo="MegaMacro_FrameSelectedMacroBackground" x="14" y="-14" />
@@ -175,43 +173,15 @@
           </Layer>
         </Layers>
       </CheckButton>
-      <ScrollFrame name="MegaMacro_ButtonScrollFrame" inherits="UIPanelScrollFrameTemplate">
-        <Size x="593" y="146" />
+
+      <ScrollFrame name="MegaMacro_ButtonScrollFrame" inherits="MegaMacro_FrameScrollFrameTemplate">
+        <Size x="590" y="146" />
         <Anchors>
           <Anchor point="TOPLEFT" x="12" y="-66" />
         </Anchors>
-        <Layers>
-          <Layer level="ARTWORK">
-            <Texture name="$parentTop" file="Interface\PaperDollInfoFrame\UI-Character-ScrollBar">
-              <Size x="31" y="102" />
-              <Anchors>
-                <Anchor point="TOPLEFT" relativePoint="TOPRIGHT" x="-2" y="5" />
-              </Anchors>
-              <TexCoords left="0" right="0.484375" top="0" bottom="0.4" />
-            </Texture>
-            <Texture name="$parentBottom" file="Interface\PaperDollInfoFrame\UI-Character-ScrollBar">
-              <Size x="31" y="106" />
-              <Anchors>
-                <Anchor point="BOTTOMLEFT" relativePoint="BOTTOMRIGHT" x="-2" y="-2" />
-              </Anchors>
-              <TexCoords left="0.515625" right="1.0" top="0" bottom="0.4140625" />
-            </Texture>
-            <Texture name="$parentMiddle" file="Interface\PaperDollInfoFrame\UI-Character-ScrollBar">
-              <Size x="31" y="1" />
-              <Anchors>
-                <Anchor point="TOP" relativeTo="$parentTop" relativePoint="BOTTOM" />
-                <Anchor point="BOTTOM" relativeTo="$parentBottom" relativePoint="TOP" />
-              </Anchors>
-              <TexCoords left="0" right="0.484375" top=".75" bottom="1.0" />
-            </Texture>
-          </Layer>
-        </Layers>
-        <Scripts>
-          <OnLoad function="ScrollFrame_OnLoad" />
-        </Scripts>
         <ScrollChild>
           <Frame name="MegaMacro_ButtonContainer">
-            <Size x="439" y="10" />
+            <Size x="590" y="10" />
             <Anchors>
               <Anchor point="TOPLEFT" />
             </Anchors>
@@ -222,7 +192,7 @@
             </Scripts>
             <Frames>
               <Frame name="MegaMacro_ConfigContainer" hidden="true">
-                <Size x="439" y="10" />
+                <Size x="590" y="10" />
                 <Anchors>
                   <Anchor point="TOPLEFT" />
                 </Anchors>
@@ -231,90 +201,59 @@
           </Frame>
         </ScrollChild>
       </ScrollFrame>
-      <Button name="MegaMacro_EditButton" frameStrata="HIGH" inherits="UIPanelButtonTemplate" text="Edit">
-        <Size x="50" y="22" />
+
+      <Button name="MegaMacro_EditButton" frameStrata="HIGH" inherits="UIPanelButtonTemplate" motionScriptsWhileDisabled="true" text="CHANGE_MACRO_NAME_ICON">
+        <Size x="170" y="22" />
         <Anchors>
-          <Anchor point="TOPLEFT" relativeTo="MegaMacro_FrameSelectedMacroBackground" x="55" y="-32" />
+          <Anchor point="TOPLEFT" relativeTo="MegaMacro_FrameSelectedMacroBackground" x="56" y="-32" />
         </Anchors>
         <Scripts>
           <OnClick>MegaMacro_EditButton_OnClick();</OnClick>
         </Scripts>
       </Button>
-      <ScrollFrame name="MegaMacro_FrameScrollFrame" inherits="UIPanelScrollFrameTemplate">
-        <Size x="591" y="185" />
-        <Scripts>
-          <OnMouseWheel>
-            ScrollFrameTemplate_OnMouseWheel(self, delta);
-          </OnMouseWheel>
-          <OnVerticalScroll>
-            local scrollbar1 = MegaMacro_FrameScrollFrameScrollBar;
-            local scrollbar2 = MegaMacro_FormattedFrameScrollFrameScrollBar;
-            scrollbar1:SetValue(offset);
-            scrollbar2:SetValue(offset);
-            local mini1, maxi1 = scrollbar1:GetMinMaxValues();
-            local mini2, maxi2 = scrollbar2:GetMinMaxValues();
-            if delta == 0 then
-            MegaMacro_FrameScrollFrameScrollBarScrollUpButton:Disable();
-            MegaMacro_FormattedFrameScrollFrameScrollBarScrollUpButton:Disable();
-            else
-            MegaMacro_FrameScrollFrameScrollBarScrollUpButton:Enable();
-            MegaMacro_FormattedFrameScrollFrameScrollBarScrollUpButton:Enable();
-            end
-            if scrollbar1:GetValue() - maxi1 == 0 then
-            MegaMacro_FrameScrollFrameScrollBarScrollDownButton:Disable();
-            MegaMacro_FormattedFrameScrollFrameScrollBarScrollDownButton:Disable();
-            else
-            MegaMacro_FrameScrollFrameScrollBarScrollDownButton:Enable();
-            MegaMacro_FormattedFrameScrollFrameScrollBarScrollDownButton:Enable();
-            end
-          </OnVerticalScroll>
-        </Scripts>
+
+      <ScrollFrame name="MegaMacro_FrameScrollFrame" inherits="MegaMacro_InputScrollFrameTemplate">
+        <Size x="582" y="185" />
         <Anchors>
           <Anchor point="TOPLEFT" relativeTo="MegaMacro_FrameSelectedMacroBackground" relativePoint="BOTTOMLEFT" x="11" y="-13" />
         </Anchors>
         <ScrollChild>
           <EditBox name="MegaMacro_FrameText" multiLine="true" letters="1023" autoFocus="false" countInvisibleLetters="true">
-            <Size x="589" y="185" />
+            <Size x="582" y="185" />
             <Scripts>
               <OnLoad>
-                ScrollingEdit_OnCursorChanged(self, 0, 0, 0, 0);
                 self:GetRegions():SetAlpha(0.2);
               </OnLoad>
-              <OnKeyDown>MegaMacro_TextBox_OnKeyDown(self, key);</OnKeyDown>
-              <OnTextChanged>MegaMacro_TextBox_TextChanged(self);</OnTextChanged>
-              <OnCursorChanged function="ScrollingEdit_OnCursorChanged" />
-              <OnUpdate>ScrollingEdit_OnUpdate(self, elapsed, self:GetParent());</OnUpdate>
-              <OnEscapePressed function="EditBox_ClearFocus" />
+              <OnKeyDown function="MegaMacro_TextBox_OnKeyDown" />
+              <OnTextChanged function="MegaMacro_TextBox_TextChanged"/>
+              <OnCursorChanged function="MegaMacro_ScrollingEdit_OnCursorChanged" />
+              <OnEscapePressed function="MegaMacro_EditBox_ClearFocus" />
+              <OnUpdate function="MegaMacro_InputScrollFrame_OnUpdate"/>
             </Scripts>
             <FontString inherits="GameFontHighlightSmall" />
           </EditBox>
         </ScrollChild>
       </ScrollFrame>
-      <ScrollFrame name="MegaMacro_FormattedFrameScrollFrame" inherits="UIPanelScrollFrameTemplate">
-        <Size x="591" y="185" />
-        <Scripts>
-          <OnMouseWheel>
-            ScrollFrameTemplate_OnMouseWheel(self, delta);
-          </OnMouseWheel>
-        </Scripts>
+
+      <ScrollFrame name="MegaMacro_FormattedFrameScrollFrame" inherits="MegaMacro_InputScrollFrameTemplate">
+        <Size x="582" y="185" />
         <Anchors>
-          <Anchor point="TOPLEFT" relativeTo="MegaMacro_FrameSelectedMacroBackground" relativePoint="BOTTOMLEFT" x="11" y="-13" />
+          <Anchor point="TOPLEFT" relativeTo="MegaMacro_FrameScrollFrame"/>
         </Anchors>
         <ScrollChild>
           <EditBox name="MegaMacro_FormattedFrameText" multiLine="true" letters="9999" autoFocus="false" countInvisibleLetters="true">
-            <Size x="589" y="185" />
+            <Size x="582" y="185" />
             <Scripts>
               <OnLoad>
-                ScrollingEdit_OnCursorChanged(self, 0, 0, 0, 0);
+                MegaMacro_ScrollingEdit_OnCursorChanged(self, 0, 0, 0, 0);
                 MegaMacro_FrameText:SetFrameLevel(self:GetFrameLevel() + 1)
               </OnLoad>
-              <OnCursorChanged function="ScrollingEdit_OnCursorChanged" />
-              <OnUpdate>ScrollingEdit_OnUpdate(self, elapsed, self:GetParent());</OnUpdate>
             </Scripts>
             <FontString inherits="GameFontHighlightSmall" />
           </EditBox>
         </ScrollChild>
       </ScrollFrame>
+
       <Button name="MegaMacro_FrameTextButton">
         <Size x="589" y="185" />
         <Anchors>
@@ -324,36 +263,40 @@
           <OnClick>MegaMacro_FrameTextButton_OnClick();</OnClick>
         </Scripts>
       </Button>
+
       <Button name="MegaMacro_CancelButton" frameStrata="HIGH" inherits="UIPanelButtonTemplate" text="CANCEL">
-        <Size x="82" y="31" />
+        <Size x="82" y="28" />
         <Anchors>
-          <Anchor point="BOTTOMRIGHT" relativeTo="MegaMacro_FrameScrollFrame" relativePoint="TOPRIGHT" x="20" y="9" />
+          <Anchor point="BOTTOMRIGHT" relativeTo="MegaMacro_Frame" relativePoint="TOPRIGHT" x="-12" y="-284" />
         </Anchors>
         <Scripts>
           <OnClick>MegaMacro_CancelButton_OnClick();</OnClick>
         </Scripts>
       </Button>
+
       <Button name="MegaMacro_SaveButton" frameStrata="HIGH" inherits="UIPanelButtonTemplate" text="SAVE">
-        <Size x="82" y="31" />
+        <Size x="82" y="28" />
         <Anchors>
-          <Anchor point="BOTTOM" relativeTo="MegaMacro_CancelButton" relativePoint="TOP" x="0" y="-0.5" />
+          <Anchor point="BOTTOM" relativeTo="MegaMacro_CancelButton" relativePoint="TOP" x="0" y="2" />
         </Anchors>
         <Scripts>
           <OnClick>MegaMacro_SaveButton_OnClick();</OnClick>
         </Scripts>
       </Button>
+
       <Frame name="MacroFrameTextBackground" inherits="TooltipBackdropTemplate">
-        <Size x="627" y="195" />
+        <Size x="615" y="195" />
         <Anchors>
-          <Anchor point="TOPLEFT" relativeTo="MegaMacro_Frame" x="6" y="-289" />
+          <Anchor point="TOPLEFT" relativeTo="MegaMacro_Frame" x="7" y="-289" />
         </Anchors>
       </Frame>
+
       <Button name="MegaMacro_FrameTab1" inherits="PanelTabButtonTemplate" text="Global" id="1">
         <Anchors>
           <Anchor point="TOPLEFT" x="51" y="-28" />
         </Anchors>
         <Scripts>
-          <OnLoad> PanelTemplates_TabResize(self, -8); <!--						_G[self:GetName().."HighlightTexture"]:SetWidth(55);-->
+          <OnLoad> PanelTemplates_TabResize(self, -8);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             <!--						_G[self:GetName().."HighlightTexture"]:SetWidth(55);-->
           </OnLoad>
           <OnClick>
             PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
@@ -362,12 +305,13 @@
           <OnReceiveDrag>MegaMacro_FrameTab_OnReceiveDrag(self);</OnReceiveDrag>
         </Scripts>
       </Button>
+
       <Button name="MegaMacro_FrameTab2" inherits="PanelTabButtonTemplate" text="{Class}" id="2">
         <Anchors>
           <Anchor point="LEFT" relativeTo="MegaMacro_FrameTab1" relativePoint="RIGHT" x="0" y="0" />
         </Anchors>
         <Scripts>
-          <OnLoad> PanelTemplates_TabResize(self, 35); <!--						_G[self:GetName().."HighlightTexture"]:SetWidth(103);-->
+          <OnLoad> PanelTemplates_TabResize(self, 35);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             <!--						_G[self:GetName().."HighlightTexture"]:SetWidth(103);-->
           </OnLoad>
           <OnClick>
             PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
@@ -376,12 +320,13 @@
           <OnReceiveDrag>MegaMacro_FrameTab_OnReceiveDrag(self);</OnReceiveDrag>
         </Scripts>
       </Button>
+
       <Button name="MegaMacro_FrameTab3" inherits="PanelTabButtonTemplate" text="{Spec}" id="3">
         <Anchors>
           <Anchor point="LEFT" relativeTo="MegaMacro_FrameTab2" relativePoint="RIGHT" x="0" y="0" />
         </Anchors>
         <Scripts>
-          <OnLoad> PanelTemplates_TabResize(self, 20); <!--						_G[self:GetName().."HighlightTexture"]:SetWidth(82);-->
+          <OnLoad> PanelTemplates_TabResize(self, 20);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             <!--						_G[self:GetName().."HighlightTexture"]:SetWidth(82);-->
           </OnLoad>
           <OnClick>
             PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
@@ -390,12 +335,13 @@
           <OnReceiveDrag>MegaMacro_FrameTab_OnReceiveDrag(self);</OnReceiveDrag>
         </Scripts>
       </Button>
+
       <Button name="MegaMacro_FrameTab4" inherits="PanelTabButtonTemplate" text="{Character}" id="4">
         <Anchors>
           <Anchor point="LEFT" relativeTo="MegaMacro_FrameTab3" relativePoint="RIGHT" x="0" y="0" />
         </Anchors>
         <Scripts>
-          <OnLoad> PanelTemplates_TabResize(self, 20); <!--						_G[self:GetName().."HighlightTexture"]:SetWidth(112);-->
+          <OnLoad> PanelTemplates_TabResize(self, 20);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             <!--						_G[self:GetName().."HighlightTexture"]:SetWidth(112);-->
           </OnLoad>
           <OnClick>
             PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
@@ -404,12 +350,13 @@
           <OnReceiveDrag>MegaMacro_FrameTab_OnReceiveDrag(self);</OnReceiveDrag>
         </Scripts>
       </Button>
+
       <Button name="MegaMacro_FrameTab5" inherits="PanelTabButtonTemplate" text="{Character Spec}" id="5">
         <Anchors>
           <Anchor point="LEFT" relativeTo="MegaMacro_FrameTab4" relativePoint="RIGHT" x="0" y="0" />
         </Anchors>
         <Scripts>
-          <OnLoad> PanelTemplates_TabResize(self, 60); <!--						_G[self:GetName().."HighlightTexture"]:SetWidth(190);-->
+          <OnLoad> PanelTemplates_TabResize(self, 60);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             <!--						_G[self:GetName().."HighlightTexture"]:SetWidth(190);-->
           </OnLoad>
           <OnClick>
             PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
@@ -418,6 +365,7 @@
           <OnReceiveDrag>MegaMacro_FrameTab_OnReceiveDrag(self);</OnReceiveDrag>
         </Scripts>
       </Button>
+
       <Button name="MegaMacro_FrameTab6" inherits="PanelTabButtonTemplate" text="Config" id="6">
         <Anchors>
           <Anchor point="LEFT" relativeTo="MegaMacro_FrameTab5" relativePoint="RIGHT" x="0" y="0" />
@@ -432,6 +380,7 @@
           </OnClick>
         </Scripts>
       </Button>
+
       <Button name="MegaMacro_DeleteButton" inherits="UIPanelButtonTemplate" text="DELETE">
         <Size x="80" y="22" />
         <Anchors>
@@ -444,6 +393,7 @@
           </OnClick>
         </Scripts>
       </Button>
+
       <Button name="MegaMacro_ExitButton" inherits="UIPanelButtonTemplate" text="EXIT">
         <Size x="80" y="22" />
         <Anchors>
@@ -455,9 +405,10 @@
       </Button>
     </Frames>
   </Frame>
+
   <Frame name="MegaMacro_PopupFrame" toplevel="true" frameStrata="HIGH" parent="UIParent" movable="true" enableMouse="true" hidden="true">
     <Scripts>
-      <OnUpdate>MegaMacro_PopupFrame_OnUpdate();</OnUpdate>
+      <OnUpdate function="MegaMacro_PopupFrame_OnUpdate" />
     </Scripts>
     <Size x="525" y="564" />
     <Anchors>
@@ -551,6 +502,7 @@
           </EditBox>
         </Frames>
       </Frame>
+
       <CheckButton name="MegaMacro_FallbackTextureCheckBox" inherits="ChatConfigCheckButtonTemplate">
         <Anchors>
           <Anchor point="BOTTOMLEFT" relativeTo="MegaMacro_PopupFrame" x="150" y="468" />
@@ -559,6 +511,7 @@
           <OnClick>MegaMacro_FallbackTextureCheckBox_OnClick();</OnClick>
         </Scripts>
       </CheckButton>
+
       <EditBox name="MegaMacro_IconSearchBox" letters="100" historyLines="0">
         <Size x="182" y="22" />
         <Anchors>
@@ -595,6 +548,7 @@
         </Scripts>
         <FontString inherits="ChatFontNormal" />
       </EditBox>
+
       <ScrollFrame name="MegaMacro_PopupScrollFrame" inherits="UIPanelScrollFrameTemplate">
         <Size x="485" y="389" />
         <Anchors>
@@ -609,6 +563,21 @@
           </Frame>
         </ScrollChild>
       </ScrollFrame>
+
+      <!-- <ScrollFrame name="MegaMacro_PopupScrollFrame" inherits="MegaMacro_FrameScrollFrameTemplate">
+        <Size x="485" y="389" />
+        <Anchors>
+          <Anchor point="BOTTOMRIGHT" relativeTo="MegaMacro_PopupFrame" x="-36" y="48" />
+        </Anchors>
+        <Scripts>
+          <OnUpdate function="MegaMacro_PopupFrame_OnUpdate1" />
+        </Scripts>
+        <ScrollChild>
+          <Frame name="$parentScrollChildFrame">
+            <Size x="485" y="389" />
+          </Frame>
+        </ScrollChild>
+      </ScrollFrame> -->
     </Frames>
   </Frame>
 </Ui>

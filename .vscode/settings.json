@@ -231,6 +231,25 @@
         "WorldFrame",
         "class",
         "QueryCastSequence",
-        "message"
+        "message",
+        "hooksecurefunc",
+        "tremove",
+        "SetMacroSpell",
+        "GetMacroItem",
+        "SetMacroItem",
+        "GetLooseMacroIcons",
+        "GetLooseMacroItemIcons",
+        "GetMacroIcons",
+        "GetMacroItemIcons",
+        "GetNumSpellTabs",
+        "GetSpellTabInfo",
+        "GetSpellBookItemInfo",
+        "GetSpellBookItemTexture",
+        "GetFlyoutInfo",
+        "GetFlyoutSlotInfo",
+        "UnitName",
+        "ceil",
+        "GetSpellBookItemName",
+        "IsPassiveSpell"
     ]
 }

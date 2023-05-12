@@ -1,7 +1,7 @@
-## Interface: 100007
+## Interface: 100100
 ## Title: Mega Macro
 ## Author: Sellorio
-## Version: 1.1.1
+## Version: 1.2.1
 ## OptionalDeps: ElvUI
 
 ## SavedVariables: MegaMacroConfig, MegaMacroGlobalData
@@ -27,4 +27,7 @@ src/engine/parsing/conditions.lua
 src/engine/mega-macro-parser.lua
 
 src/main.xml
+src/windows/mega-macro.input-scrollframe.lua
+src/windows/mega-macro.input-scrollframe.xml
+src/windows/mega-macro.scrollframe.xml
 src/windows/mega-macro.window.xml

@@ -1,3 +1,5 @@
+UIPanelWindows["MegaMacro_Frame"] = { area = "left", pushable = 1, whileDead = 1, width = PANEL_DEFAULT_WIDTH };
+
 local rendering = {
     MacrosPerRow = 12,
     CharLimitMessageFormat = "%s/%s Characters Used"
@@ -90,7 +92,7 @@ local function InitializeTabs()
     MegaMacro_FrameTab2:SetText(MegaMacroCachedClass)
     MegaMacro_FrameTab4:SetText(playerName)
 
-    if MegaMacroCachedSpecialization == '' then
+    if MegaMacroCachedSpecialization == "" then
         MegaMacro_FrameTab3:SetText("Locked")
         MegaMacro_FrameTab5:SetText("Locked")
         MegaMacro_FrameTab3:Disable()
@@ -194,6 +196,7 @@ local function SelectMacro(macro)
             MegaMacro_FrameSelectedMacroName:SetText(macro.DisplayName)
             MegaMacro_FrameSelectedMacroButtonIcon:SetTexture(buttonIcon:GetTexture())
             MegaMacro_FrameText:SetText(macro.Code)
+            MegaMacro_FrameText:SetCursorPosition(0)
             MegaMacro_EditButton:Enable();
             MegaMacro_DeleteButton:Enable();
             MegaMacro_FrameText:Enable()
@@ -408,7 +411,7 @@ MegaMacroWindow = {
         else
             local relativePoint, x, y = MegaMacroConfig_GetWindowPosition()
             MegaMacro_Frame:SetMovable(true)
-            MegaMacro_Frame:SetSize(640, 524)
+            -- MegaMacro_Frame:SetSize(640, 524)
             MegaMacro_Frame:ClearAllPoints()
             MegaMacro_Frame:SetPoint(relativePoint, x, y)
             MegaMacro_ToggleWindowModeButton:SetText("Lock")
@@ -485,7 +488,7 @@ function MegaMacro_FrameTab_OnClick(self)
         MegaMacro_ButtonScrollFrame:SetVerticalScroll(0)
 
         if tabIndex == 6 then
-            SelectedScope = 'config'
+            SelectedScope = "config"
             MegaMacro_FrameTab_ShowConfig()
             return
         else
@@ -497,7 +500,6 @@ function MegaMacro_FrameTab_OnClick(self)
         InitializeMacroSlots()
         SetMacroItems()
         InitializeTabs()
-
     end
 end
 
@@ -610,11 +612,13 @@ function MegaMacro_TextBox_TextChanged(self)
     MegaMacro_FrameCharLimitText:SetFormattedText(
         rendering.CharLimitMessageFormat,
         MegaMacro_FrameText:GetNumLetters(),
-        MegaMacroConfig['MaxMacroLength'])
+        MegaMacroConfig["MaxMacroLength"])
 
-    ScrollingEdit_OnTextChanged(self, self:GetParent())
-    ScrollingEdit_OnTextChanged(MegaMacro_FormattedFrameText, MegaMacro_FormattedFrameText:GetParent())
+    MegaMacro_ScrollingEdit_OnTextChanged(self, self:GetParent())
+
+    MegaMacro_ScrollingEdit_OnTextChanged(MegaMacro_FormattedFrameText, MegaMacro_FormattedFrameText:GetParent())
     MegaMacro_FormattedFrameText:SetText(MegaMacroParser.Parse(text))
+    MegaMacro_FormattedFrameText:SetCursorPosition(0)
 end
 
 function MegaMacro_CancelButton_OnClick()
@@ -622,6 +626,7 @@ function MegaMacro_CancelButton_OnClick()
 
     if SelectedMacro ~= nil then
         MegaMacro_FrameText:SetText(SelectedMacro.Code)
+        MegaMacro_FrameText:SetCursorPosition(0)
     end
 
     MegaMacro_PopupFrame:Hide()
@@ -655,7 +660,7 @@ function MegaMacro_BlizMacro_Toggle()
     MegaMacro_FrameCharLimitText:SetFormattedText(
         rendering.CharLimitMessageFormat,
         MegaMacro_FrameText:GetNumLetters(),
-        MegaMacroConfig['MaxMacroLength'])
+        MegaMacroConfig["MaxMacroLength"])
 end
 
 function MegaMacro_EditOkButton_OnClick()
@@ -701,6 +706,10 @@ function MegaMacro_PopupFrame_OnUpdate()
     local macroPopupOffset = FauxScrollFrame_GetOffset(MegaMacro_PopupScrollFrame);
     local index;
 
+    -- print("MegaMacro_PopupFrame_OnUpdate")
+    -- print("numMacroIcons: " .. numMacroIcons)
+    -- print("macroPopupOffset: " .. macroPopupOffset)
+
     -- Icon list
     for i = 1, NUM_MACRO_ICONS_SHOWN do
         macroPopupButton = _G["MegaMacro_PopupButton" .. i];
@@ -724,6 +733,33 @@ function MegaMacro_PopupFrame_OnUpdate()
     -- Scrollbar stuff
     FauxScrollFrame_Update(MegaMacro_PopupScrollFrame, ceil(numMacroIcons / NUM_ICONS_PER_ROW) + 1, NUM_ICON_ROWS, MACRO_ICON_ROW_HEIGHT);
 end
+
+-- function MegaMacro_PopupFrame_OnUpdate1(self)
+--     local numMacroIcons = #IconList;
+--     local macroPopupIcon, macroPopupButton;
+--     local macroPopupOffset = self.cursorOffset;
+--     local index;
+
+--     -- Icon list
+--     for i = 1, NUM_MACRO_ICONS_SHOWN do
+--         macroPopupButton = _G["MegaMacro_PopupButton" .. i];
+--         macroPopupIcon = _G["MegaMacro_PopupButton" .. i .. "Icon"];
+--         index = (macroPopupOffset * NUM_ICONS_PER_ROW) + i;
+--         local iconListData = IconList[index]
+
+--         if index <= numMacroIcons and iconListData then
+--             macroPopupIcon:SetTexture(iconListData.Icon);
+--             macroPopupButton.SpellId = iconListData.SpellId
+--             macroPopupButton:Show();
+--         else
+--             macroPopupIcon:SetTexture("");
+--             macroPopupButton.SpellId = nil
+--             macroPopupButton:Hide();
+--         end
+
+--         macroPopupButton:SetChecked(iconListData and SelectedIcon == iconListData.Icon)
+--     end
+-- end
 
 function MegaMacro_PopupButton_OnClick(self)
     local buttonIcon = _G[self:GetName() .. "Icon"]

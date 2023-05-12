@@ -1,0 +1,22 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+..\..\FrameXML\UI_shared.xsd">
+  <ScrollFrame name="MegaMacro_FrameScrollFrameTemplate" inherits="ScrollFrameTemplate" virtual="true">
+    <KeyValues>
+      <KeyValue key="scrollBarX" value="2" type="number"/>
+      <KeyValue key="scrollBarTopY" value="-5" type="number"/>
+      <KeyValue key="scrollBarBottomY" value="5" type="number"/>
+      <KeyValue key="scrollBarHideIfUnscrollable" value="false" type="boolean"/>
+    </KeyValues>
+  </ScrollFrame>
+</Ui>
+
+<!-- https://wowpedia.fandom.com/wiki/Patch_10.1.0/API_changes#Scroll_Templates
+noScrollBar 	                          If true, don't create a scrollbar when the template is loaded.
+scrollBarBottomY 	                      Bottom anchor offest for the scroll bar.
+scrollBarHideIfUnscrollable 	          If true, hide the scrollbar automatically if the scrollframe contents cannot be scrolled.
+scrollBarHideTrackIfThumbExceedsTrack 	If true, hide the scrollbar track and thumb if the thumb would be too large to fit in the scrollbar.
+scrollBarTemplate 	                    The name of a template to instantiate for the scrollbar. Defaults to MinimalScrollBar.
+scrollBarTopY 	                        Top anchor Vertical offset for the scroll bar.
+scrollBarX 	                            Left anchor offset for the scroll bar.
+-->
