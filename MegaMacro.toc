@@ -6,6 +6,7 @@
 
 ## SavedVariables: MegaMacroConfig, MegaMacroGlobalData
 ## SavedVariablesPerCharacter: MegaMacroCharacterData
+## IconTexture: Interface\MacroFrame\MacroFrame-Icon
 
 libs/utf8/utf8data.lua
 libs/utf8/utf8.lua
