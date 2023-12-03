@@ -401,8 +401,12 @@ function MegaMacroActionBarEngine.OnUpdate(elapsed)
 
 	iterator(function(button)
 		local action = button:GetAttribute("action") or button.action
+		local macroName = GetActionText(action)
+		local macroCode = GetMacroBody(macroName)
         local type, actionArg1 = GetActionInfo(action)
-        local macroId = type == "macro" and MegaMacroEngine.GetMacroIdFromIndex(actionArg1)
+		-- As of 10.2 GetActionInfo isn't returning the correct value for actionArg1
+        -- local macroId = type == "macro" and MegaMacroEngine.GetMacroIdFromIndex(actionArg1)
+        local macroId = type == "macro" and macroCode and tonumber(string.sub(macroCode, 2, 4))
 
 		if macroId then
 			ActionsBoundToMegaMacros[button] = true
