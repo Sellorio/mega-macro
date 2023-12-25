@@ -154,6 +154,26 @@ local function TryImportCharacterMacros()
     return true
 end
 
+local function MergeCharacterSpecializationMacros()
+    -- Remove the character specialization macros and add them to character macros.
+    local characterSpecializationMacros = MegaMacroCharacterData.Specializations[MegaMacroCachedSpecialization].Macros
+    local characterMacros = MegaMacroCharacterData.Macros
+    for i=1, #characterSpecializationMacros do
+        -- if we don't have room, move to inactive
+        if #characterMacros >= MacroLimits.MaxCharacterMacros then
+            local macro = characterSpecializationMacros[i]
+            macro.Scope = MegaMacroScopes.Inactive
+            table.insert(MegaMacroGlobalData.InactiveMacros, macro)
+        else 
+            local macro = characterSpecializationMacros[i]
+            macro.Scope = MegaMacroScopes.Character
+            table.insert(characterMacros, macro)
+        end
+    end
+    MegaMacroCharacterData.Specializations[MegaMacroCachedSpecialization].Macros = {}
+end
+
+
 function MegaMacroEngine.GetMacroStubCode(macroId)
     -- Fix a bug that causes click events not to register only when CVar ActionButtonUseKeyDown is set to 1. 
     local keyDownOrUp = GetCVar("ActionButtonUseKeyDown")
@@ -338,6 +358,8 @@ function MegaMacroEngine.ImportMacros()
     else
         message(errorMessage)
     end
+
+    MergeCharacterSpecializationMacros()
 end
 
 function MegaMacroEngine.GetMacroIdFromIndex(macroIndex)
