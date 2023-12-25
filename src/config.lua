@@ -18,7 +18,7 @@ function MegaMacro_InitialiseConfig()
 
     if MegaMacroConfig == nil then
         MegaMacroConfig = {
-            UseNativeActionBar = false,
+            UseNativeActionBar = true,
         }
     end
     if MegaMacroBackup == nil then
