@@ -1,10 +1,10 @@
-## Interface: 100000
+## Interface: 100200
 ## Title: Mega Macro
 ## Author: Sellorio
 ## Version: 1.0.0
 ## OptionalDeps: ElvUI
 
-## SavedVariables: MegaMacroConfig, MegaMacroGlobalData
+## SavedVariables: MegaMacroConfig, MegaMacroGlobalData, MegaMacroBackup
 ## SavedVariablesPerCharacter: MegaMacroCharacterData
 
 src/constants.lua
