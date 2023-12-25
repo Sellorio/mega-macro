@@ -239,17 +239,20 @@ local function UpdateRange(button, functions, abilityId, target)
     local inRange = checksRange and valid;
 	rangeTimer = 1;
 
+	local hotkeyUpdated = false
 	if Bartender4 then
-		if Bartender4.db.profile.outofrange == "button" then
-			if checksRange and not inRange then
+		if checksRange and not inRange then
+			if Bartender4.db.profile.outofrange == "button" then
 				button.icon:SetVertexColor(
 					Bartender4.db.profile.colors.range.r,
 					Bartender4.db.profile.colors.range.g,
 					Bartender4.db.profile.colors.range.b)
-			else
-				button.icon:SetVertexColor(1, 1, 1)
+			elseif Bartender4.db.profile.outofrange == "hotkey" then
+				button.HotKey:SetVertexColor(
+					Bartender4.db.profile.colors.range.r,
+					Bartender4.db.profile.colors.range.g,
+					Bartender4.db.profile.colors.range.b)
 			end
-		elseif Bartender4.db.profile.outofrange == "none" then
 			return
 		end
 	end
@@ -259,14 +262,14 @@ local function UpdateRange(button, functions, abilityId, target)
 			button.HotKey:Show();
 			if ( inRange ) then
 				button.HotKey:SetVertexColor(LIGHTGRAY_FONT_COLOR:GetRGB());
-            else
+			elseif not hotkeyUpdated then
 				button.HotKey:SetVertexColor(RED_FONT_COLOR:GetRGB());
 			end
 		else
 			button.HotKey:Hide();
 		end
 	else
-		if checksRange and not inRange then
+		if checksRange and not inRange and not hotkeyUpdated then
 			button.HotKey:SetVertexColor(RED_FONT_COLOR:GetRGB());
 		else
 			button.HotKey:SetVertexColor(LIGHTGRAY_FONT_COLOR:GetRGB());
@@ -304,9 +307,11 @@ local function UpdateActionBar(button, macroId)
 			UpdateCooldownBlizzard(button, functions, data.Id)
 		end
 
-		if updateRange then
-			UpdateRange(button, functions, data.Id, data.Target)
-		end
+		-- this throttle was causing a flickering icon issue for bartender users
+		-- after having it disabled for about a month, I've noticed no performance drop
+		--if updateRange then
+		UpdateRange(button, functions, data.Id, data.Target)
+		--end
 	end
 end
 
@@ -400,8 +405,12 @@ function MegaMacroActionBarEngine.OnUpdate(elapsed)
 
 	iterator(function(button)
 		local action = button:GetAttribute("action") or button.action
+		local macroName = GetActionText(action)
+		local macroCode = GetMacroBody(macroName)
         local type, actionArg1 = GetActionInfo(action)
-        local macroId = type == "macro" and MegaMacroEngine.GetMacroIdFromIndex(actionArg1)
+		-- As of 10.2 GetActionInfo isn't returning the correct value for actionArg1
+        -- local macroId = type == "macro" and MegaMacroEngine.GetMacroIdFromIndex(actionArg1)
+        local macroId = type == "macro" and macroCode and tonumber(string.sub(macroCode, 2, 4))
 
 		if macroId then
 			ActionsBoundToMegaMacros[button] = true
