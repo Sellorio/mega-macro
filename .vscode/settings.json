@@ -2,5 +2,38 @@
     "Lua.diagnostics.disable": [
         "lowercase-global",
         "unused-function"
+    ],
+    "Lua.diagnostics.globals": [
+        "CooldownFrame_Set",
+        "ActionButton_HideOverlayGlow",
+        "ClearChargeCooldown",
+        "ActionButton_ShowOverlayGlow",
+        "RANGE_INDICATOR",
+        "COOLDOWN_TYPE_LOSS_OF_CONTROL",
+        "COOLDOWN_TYPE_NORMAL",
+        "StartChargeCooldown",
+        "RED_FONT_COLOR",
+        "LIGHTGRAY_FONT_COLOR",
+        "FauxScrollFrame_Update",
+        "BuildIconArray",
+        "FauxScrollFrame_GetOffset",
+        "SpellBook_GetSpellBookSlot",
+        "MAX_SPELLS",
+        "SpellBookFrame",
+        "MacroFrame",
+        "QueryCastSequence",
+        "message",
+        "UIPanelWindows",
+        "UISpecialFrames",
+        "SlashCmdList",
+        "ShowMacroFrame",
+        "GameTooltip_SetDefaultAnchor",
+        "StaticPopupDialogs",
+        "CONFIRM_DELETE_MACRO",
+        "OKAY",
+        "CANCEL",
+        "PanelTemplates_SetNumTabs",
+        "PanelTemplates_SetTab",
+        "ScrollingEdit_OnTextChanged"
     ]
 }

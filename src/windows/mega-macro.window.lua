@@ -35,7 +35,7 @@ local function GetScopeFromTabIndex(tabIndex)
 	elseif tabIndex == 4 then
 		return MegaMacroScopes.Character
 	elseif tabIndex == 5 then
-		return MegaMacroScopes.CharacterSpecialization
+		return MegaMacroScopes.Inactive
 	end
 end
 
@@ -89,17 +89,15 @@ local function InitializeTabs()
 	local playerName = UnitName("player")
 	MegaMacro_FrameTab2:SetText(MegaMacroCachedClass)
 	MegaMacro_FrameTab4:SetText(playerName)
-
+	MegaMacro_FrameTab5:SetText("Inactive")
+	MegaMacro_FrameTab6:SetText("Config")
+	
 	if MegaMacroCachedSpecialization == '' then
 		MegaMacro_FrameTab3:SetText("Locked")
-		MegaMacro_FrameTab5:SetText("Locked")
 		MegaMacro_FrameTab3:Disable()
-		MegaMacro_FrameTab5:Disable()
 	else
 		MegaMacro_FrameTab3:SetText(MegaMacroCachedSpecialization)
-		MegaMacro_FrameTab5:SetText(playerName.." "..MegaMacroCachedSpecialization)
 		MegaMacro_FrameTab3:Enable()
-		MegaMacro_FrameTab5:Enable()
 	end
 end
 
@@ -228,7 +226,7 @@ local function SetMacroItems()
 			-- buttonFrame:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
 			buttonName:SetText(macro.DisplayName)
 			local data = MegaMacroIconEvaluator.GetCachedData(macro.Id)
-			buttonIcon:SetTexture(data and data.Icon)
+			buttonIcon:SetTexture(data and data.Icon or MegaMacroTexture)
 			buttonIcon:SetDesaturated(false)
 			buttonIcon:SetTexCoord(0, 1, 0, 1)
 			buttonIcon:SetAlpha(1)
@@ -610,7 +608,7 @@ function MegaMacro_TextBox_TextChanged(self)
     MegaMacro_FrameCharLimitText:SetFormattedText(
 		rendering.CharLimitMessageFormat,
 		MegaMacro_FrameText:GetNumLetters(),
-		MegaMacroConfig['MaxMacroLength'])
+		MegaMacroCodeMaxLength)
 
 	ScrollingEdit_OnTextChanged(self, self:GetParent())
 	ScrollingEdit_OnTextChanged(MegaMacro_FormattedFrameText, MegaMacro_FormattedFrameText:GetParent())
@@ -655,7 +653,7 @@ function MegaMacro_BlizMacro_Toggle()
 	MegaMacro_FrameCharLimitText:SetFormattedText(
 		rendering.CharLimitMessageFormat,
 		MegaMacro_FrameText:GetNumLetters(),
-		MegaMacroConfig['MaxMacroLength'])
+		MegaMacroCodeMaxLength)
 end
 
 
@@ -802,3 +800,65 @@ function MegaMacro_RegisterShiftClicks()
 	end
 end
 
+-- Create the Config options
+function MecaMacro_GenerateConfig()
+    -- Blizzard Action Bar Icons
+    MecaMacroConfig_GenerateCheckbox('UseBlizzardActionIcons', 'Blizzard Action Bar Icons', 'Disable Mega Macro Action Bar Engine. \nMacro Icons will be decided by blizzard instead of Mega Macro.', 0, -5, MegaMacroConfig.UseNativeActionBar, function(value) 
+        MegaMacroConfig.UseNativeActionBar = value
+    end)
+	-- Make button "Uninstall"
+	MecaMacroConfig_GenerateButton('Uninstall', 'Uninstall', 'Removes MegaMacro information from Macros. Disable MegaMacro before reload to avoid re-importing them. \n\nNote: Current Class and Spec macros will become global. \nMacros for other Classes and Specs will be lost since Blizzard Macros do not have room for them.', 0, -30, function()
+		-- Warn and get confirmation
+		StaticPopupDialogs["MEGAMACRO_UNINSTALL_WARNING"] = {
+			text = "Are you sure you want to uninstall MegaMacro?",
+			button1 = "Yes",
+			button2 = "No",
+			OnAccept = function()
+				MegaMacroEngine.Uninstall()
+				print("MegaMacro uninstalled.")
+			end,
+			OnCancel = function()
+				print("Uninstallation cancelled.")
+			end,
+			timeout = 0,
+			whileDead = true,
+			hideOnEscape = true,
+			preferredIndex = 3, -- to avoid UI taint
+		}
+
+		StaticPopup_Show("MEGAMACRO_UNINSTALL_WARNING")
+	end)
+end
+
+function MecaMacroConfig_GenerateCheckbox(name, text, tooltip, x, y, checked, onClick)
+    local checkbox = CreateFrame("CheckButton", "MegaMacro_ConfigContainer_" .. name, MegaMacro_ConfigContainer, "ChatConfigCheckButtonTemplate")
+    checkbox:SetPoint("TOPLEFT", x, y)
+    checkbox:SetChecked(checked)
+    checkbox:SetScript("OnClick", function(self)
+        onClick(checkbox:GetChecked())
+    end)
+    checkbox.tooltip = tooltip
+    
+    local textFrame = _G[checkbox:GetName() .. "Text"]
+    textFrame:SetFontObject("GameFontNormalSmall")
+    textFrame:SetText(text)
+
+    return checkbox
+end
+
+function MecaMacroConfig_GenerateButton(name, text, tooltip, x, y, onClick)
+	local button = CreateFrame("Button", "MegaMacro_ConfigContainer_" .. name, MegaMacro_ConfigContainer, "UIPanelButtonTemplate")
+	button:SetPoint("TOPLEFT", x, y)
+	-- set width
+	button:SetWidth(100)
+	button:SetScript("OnClick", function(self)
+		onClick()
+	end)
+	button.tooltipText = tooltip
+	
+	local textFrame = _G[button:GetName() .. "Text"]
+	textFrame:SetFontObject("GameFontNormalSmall")
+	textFrame:SetText(text)
+
+	return button
+end

@@ -3,6 +3,7 @@ function MegaMacro_InitialiseConfig()
         MegaMacroGlobalData = {
             Activated = false,
             Macros = {},
+            InactiveMacros = {},
             Classes = {}
         }
     end
@@ -17,13 +18,9 @@ function MegaMacro_InitialiseConfig()
 
     if MegaMacroConfig == nil then
         MegaMacroConfig = {
-            UseNativeMacros = false,
-            MaxMacroLength = MegaMacroCodeMaxLength,
-            UseNativeActionBar = false,
+            UseNativeActionBar = true,
         }
     end
-
-    MegaMacroConfig['MaxMacroLength'] = MegaMacroConfig['UseNativeMacros'] and 250 or MegaMacroCodeMaxLength
 end
 
 function MegaMacroConfig_IsWindowDialog()
@@ -36,31 +33,3 @@ function MegaMacroConfig_GetWindowPosition()
     end
 end
 
--- Create the Config options
-function MecaMacro_GenerateConfig()
-    -- Blizzard Macro option
-    MecaMacroConfig_GenerateCheckbox('UseBlizzardMacros', 'Blizzard Style Macros', '250 Char limit. \nUses Blizzards Macro Buttons while keeping MegaMacro interface and organizer. \n\nEnable this if you have stability issues or need to uninstall MegaMacro. \n\nNote: Uninstalling may still cause you to lose class and spec Macros since they are not supported by Blizzard. Move them to global or character tabs before uninstalling.', 0, 0, MegaMacroConfig.UseNativeMacros, function(value) 
-        MegaMacroConfig.UseNativeMacros = value
-        MegaMacro_BlizMacro_Toggle()
-    end)
-    -- Blizzard Action Bar Icons
-    MecaMacroConfig_GenerateCheckbox('UseBlizzardActionIcons', 'Blizzard Action Bar Icons', 'Disable Mega Macro Action Bar Engine. \nOnly Use with Blizzard Style Macros', 0, -25, MegaMacroConfig.UseNativeActionBar, function(value) 
-        MegaMacroConfig.UseNativeActionBar = value
-    end)
-end
-
-function MecaMacroConfig_GenerateCheckbox(name, text, tooltip, x, y, checked, onClick)
-    local checkbox = CreateFrame("CheckButton", "MegaMacro_ConfigContainer_" .. name, MegaMacro_ConfigContainer, "ChatConfigCheckButtonTemplate")
-    checkbox:SetPoint("TOPLEFT", x, y)
-    checkbox:SetChecked(checked)
-    checkbox:SetScript("OnClick", function(self)
-        onClick(checkbox:GetChecked())
-    end)
-    checkbox.tooltip = tooltip
-    
-    local textFrame = _G[checkbox:GetName() .. "Text"]
-    textFrame:SetFontObject("GameFontNormalSmall")
-    textFrame:SetText(text)
-
-    return checkbox
-end

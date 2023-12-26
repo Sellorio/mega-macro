@@ -363,7 +363,6 @@
 				<Scripts>
 					<OnLoad>
 						PanelTemplates_TabResize(self, 35);
-<!--						_G[self:GetName().."HighlightTexture"]:SetWidth(103);-->
 					</OnLoad>
 					<OnClick>
 						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
@@ -378,8 +377,7 @@
 				</Anchors>
 				<Scripts>
 					<OnLoad>
-						PanelTemplates_TabResize(self, 20);
-<!--						_G[self:GetName().."HighlightTexture"]:SetWidth(82);-->
+						PanelTemplates_TabResize(self, 30);
 					</OnLoad>
 					<OnClick>
 						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
@@ -394,8 +392,7 @@
 				</Anchors>
 				<Scripts>
 					<OnLoad>
-						PanelTemplates_TabResize(self, 20);
-<!--						_G[self:GetName().."HighlightTexture"]:SetWidth(112);-->
+						PanelTemplates_TabResize(self, 30);
 					</OnLoad>
 					<OnClick>
 						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
@@ -404,14 +401,13 @@
 					<OnReceiveDrag>MegaMacro_FrameTab_OnReceiveDrag(self);</OnReceiveDrag>
 				</Scripts>
 			</Button>
-			<Button name="MegaMacro_FrameTab5" inherits="PanelTabButtonTemplate" text="{Character Spec}" id="5">
+			<Button name="MegaMacro_FrameTab5" inherits="PanelTabButtonTemplate" text="Inactive" id="5">
 				<Anchors>
 					<Anchor point="LEFT" relativeTo="MegaMacro_FrameTab4" relativePoint="RIGHT" x="0" y="0"/>
 				</Anchors>
 				<Scripts>
 					<OnLoad>
-						PanelTemplates_TabResize(self, 60);
-<!--						_G[self:GetName().."HighlightTexture"]:SetWidth(190);-->
+						PanelTemplates_TabResize(self, 40);
 					</OnLoad>
 					<OnClick>
 						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
@@ -426,7 +422,7 @@
 				</Anchors>
 				<Scripts>
 					<OnLoad>
-						PanelTemplates_TabResize(self, 60);
+						PanelTemplates_TabResize(self, 40);
 					</OnLoad>
 					<OnClick>
 						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
