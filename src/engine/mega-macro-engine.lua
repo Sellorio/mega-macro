@@ -59,7 +59,7 @@ local function BindMacro(macro, macroIndex)
         -- Find a free slot. Need to know if global or character
         local isGlobal = macro.Scope == MegaMacroScopes.Global or macro.Scope == MegaMacroScopes.Class or macro.Scope == MegaMacroScopes.Specialization
         macroIndex = isGlobal and MegaMacroEngine.FindAvailableGlobalMacro() or MegaMacroEngine.FindAvailableCharacterMacro()
-        print("Mega Macro: Found available macro slot for " .. macro.DisplayName .. " at " .. macroIndex)
+        -- print("Mega Macro: Found available macro slot for " .. macro.DisplayName .. " at " .. macroIndex)
     end
     -- Bind code to macro
     if macroIndex then
@@ -71,7 +71,7 @@ local function BindMacro(macro, macroIndex)
         end
         InitializeMacroIndexCache()
     else
-        print("Mega Macro: Failed to bind macro " .. macro.DisplayName .. ". " .. macroIndex .. " is not a valid index.")
+        print("Mega Macro: Failed to bind macro " .. macro.DisplayName .. ".")
     end
 end
 
@@ -111,7 +111,6 @@ local function TryImportCharacterMacros()
         local name, _, body, _ = GetMacroInfo(i)
         -- First, is it already a Mega Macro?
         local macroId = GetIdFromMacroCode(body)
-        -- print(i, name, body, macroId)
 
         if not macroId then
             local macro = MegaMacro.Create(name, MegaMacroScopes.Character, MegaMacroTexture)
