@@ -609,6 +609,22 @@ function MegaMacro_TextBox_TextChanged(self)
 		rendering.CharLimitMessageFormat,
 		MegaMacro_FrameText:GetNumLetters(),
 		MegaMacroCodeMaxLength)
+	-- Set color of text based on length
+	if MegaMacro_FrameText:GetNumLetters() > MegaMacroCodeMaxLengthForNative then
+		MegaMacro_FrameCharLimitText:SetTextColor(1, 0.85, 0)
+	else
+		MegaMacro_FrameCharLimitText:SetTextColor(1,1,1) --0.2, 0.867, 1.0
+	end
+	-- Limit. Custom hover tooltip
+	MegaMacro_FrameCharLimitText:SetScript("OnEnter", function(self)
+		GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT")
+		GameTooltip:AddLine("MegaMacro: Character Limit", 1, 1, 1)
+		GameTooltip:AddLine("\nMacros over 250 characters rely on custom macro logic. They will not have a dynamic icon if you are not using MegaMacros icon rendering. This option can be set in the config tab.", 1, 1, 1, true)
+		GameTooltip:Show()
+	end)
+	MegaMacro_FrameCharLimitText:SetScript("OnLeave", function(self)
+		GameTooltip:Hide()
+	end)
 
 	ScrollingEdit_OnTextChanged(self, self:GetParent())
 	ScrollingEdit_OnTextChanged(MegaMacro_FormattedFrameText, MegaMacro_FormattedFrameText:GetParent())

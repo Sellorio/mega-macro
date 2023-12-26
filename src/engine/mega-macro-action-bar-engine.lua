@@ -316,6 +316,9 @@ local function UpdateActionBar(button, macroId)
 end
 
 local function ResetActionBar(button)
+	if MegaMacroConfig['UseNativeActionBar'] then
+		return
+	end
 	button:SetChecked(false)
 	button.Count:SetText("")
 	button.Border:Hide() -- reset eqipped border
