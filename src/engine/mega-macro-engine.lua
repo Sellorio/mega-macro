@@ -52,6 +52,19 @@ local function InitializeMacroIndexCache()
     end
 end
 
+local function GenerateNativeMacroCode(macro)
+    -- Check if there is #showtooltip already. If not, add it to the start.
+    local code = macro.Code
+    if #code <= MegaMacroCodeMaxLengthForNative - 14 then
+        if not string.find(code, "#showtooltip") then
+            code = "#showtooltip\n" .. code
+        end
+    end
+    code = GenerateIdPrefix(macro.Id) .. "\n" .. code
+    return code
+end
+
+
 local function BindMacro(macro, macroIndex)
     local macroIndex = macroIndex or MacroIndexCache[macro.Id]
 
@@ -64,7 +77,7 @@ local function BindMacro(macro, macroIndex)
     -- Bind code to macro
     if macroIndex then
         if #macro.Code <= MegaMacroCodeMaxLengthForNative then
-            EditMacro(macroIndex, FormatMacroDisplayName(macro.DisplayName), nil, GenerateIdPrefix(macro.Id).."\n"..macro.Code, true, macroIndex > MacroLimits.MaxGlobalMacros)
+            EditMacro(macroIndex, FormatMacroDisplayName(macro.DisplayName), nil, GenerateNativeMacroCode(macro), true, macroIndex > MacroLimits.MaxGlobalMacros)
         else
             MegaMacroEngine.GetOrCreateClicky(macro.Id):SetAttribute("macrotext", macro.Code)
             EditMacro(macroIndex, FormatMacroDisplayName(macro.DisplayName), nil, MegaMacroEngine.GetMacroStubCode(macro.Id), true, macroIndex > MacroLimits.MaxGlobalMacros)
