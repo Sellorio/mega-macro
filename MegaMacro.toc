@@ -4,7 +4,7 @@
 ## Version: 1.0.0
 ## OptionalDeps: ElvUI
 
-## SavedVariables: MegaMacroConfig, MegaMacroGlobalData, MegaMacroBackup
+## SavedVariables: MegaMacroConfig, MegaMacroGlobalData
 ## SavedVariablesPerCharacter: MegaMacroCharacterData
 
 src/constants.lua

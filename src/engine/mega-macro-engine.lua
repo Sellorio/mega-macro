@@ -75,29 +75,6 @@ local function BindMacro(macro, macroIndex)
     end
 end
 
-local function BackupMacros()
-    local globalCount, characterCount = GetNumMacros()
-
-    local globalMacros = {}
-    local characterMacros = {}
-
-    for i=1, globalCount do
-        local name, _, body, _ = GetMacroInfo(i)
-        table.insert(globalMacros, {name, body})
-    end
-
-    for i=1 + MacroIndexOffsets.NativeCharacterMacros, characterCount + MacroIndexOffsets.NativeCharacterMacros do
-        local name, _, body, _ = GetMacroInfo(i)
-        table.insert(characterMacros, {name, body})
-    end
-
-    local characterName = UnitName("player")
-    MegaMacroBackup.Global = globalMacros
-    MegaMacroBackup.Characters[characterName] = characterMacros
-    MegaMacroBackup.BackUpTime = time()
-
-end
-
 local function TryImportGlobalMacros()
     local numberOfGlobalMacros = GetNumMacros()
 
