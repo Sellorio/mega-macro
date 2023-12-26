@@ -21,13 +21,6 @@ function MegaMacro_InitialiseConfig()
             UseNativeActionBar = true,
         }
     end
-    if MegaMacroBackup == nil then
-        MegaMacroBackup = {
-            Global = {},
-            Characters = {},
-            BackUpTime = 0
-        }
-    end
 end
 
 function MegaMacroConfig_IsWindowDialog()
