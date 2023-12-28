@@ -89,6 +89,24 @@ local function NumberModifier(parsingContext)
     return "", false
 end
 
+local function MultiNumberModifier(parsingContext)
+    local hasModifier = IsModifierSeparator(parsingContext)
+    if hasModifier then
+        local word = GetWord(parsingContext, 1)
+        local wordLength = #word
+
+        -- Check for a single number or a sequence of numbers separated by slashes
+        if word:match("^%d+$") or word:match("%d+(/%d+)$") then
+            local result = ParseResult(parsingContext, 1, Colours.Syntax)..ParseResult(parsingContext, wordLength, Colours.Number)
+            return result, true
+        else
+            return "", false
+        end
+    end
+
+    return "", false
+end
+
 local function OptionalWordModifier(parsingContext)
     local hasModifier = IsModifierSeparator(parsingContext)
 
@@ -221,7 +239,7 @@ local function KnownModifier(parsingContext)
                     break
                 end
             end
-            if separator ~= "]" then
+            if separator ~= "]" and separator ~= "," then
                 spell = spell .. separator
             end
         end
@@ -260,7 +278,7 @@ local Conditionals = {
 	extrabar = NumberModifier,
 	flyable = NoModifier,
 	flying = NoModifier,
-	form = NumberModifier,
+	form = MultiNumberModifier,
 	group = GroupModifier,
 	harm = NoModifier,
 	help = NoModifier,
@@ -278,7 +296,7 @@ local Conditionals = {
 	pvptalent = TalentModifier,
 	raid = NoModifier,
 	spec = NumberModifier,
-	stance = NumberModifier,
+	stance = MultiNumberModifier,
 	stealth = NoModifier,
 	swimming = NoModifier,
 	talent = TalentModifier,
