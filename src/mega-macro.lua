@@ -32,7 +32,7 @@ end
 
 MegaMacro = {}
 
-function MegaMacro.Create(displayName, scope, staticTexture, isStaticTextureFallback)
+function MegaMacro.Create(displayName, scope, staticTexture, isStaticTextureFallback, code, macroIndex)
     local result = {}
 
     local id
@@ -125,11 +125,11 @@ function MegaMacro.Create(displayName, scope, staticTexture, isStaticTextureFall
     result.Scope = scope
     result.ScopedIndex = scopedIndex
     result.DisplayName = displayName
-    result.Code = ""
+    result.Code = code or ""
     result.StaticTexture = staticTexture
     result.IsStaticTextureFallback = isStaticTextureFallback
 
-    MegaMacroEngine.OnMacroCreated(result)
+    MegaMacroEngine.OnMacroCreated(result, macroIndex)
 
     return result
 end
