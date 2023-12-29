@@ -210,7 +210,7 @@ local function SetMacroItems()
 	table.sort(
 		MacroItems,
 		function(left, right)
-			return left.DisplayName < right.DisplayName
+			return (left.DisplayName or "") < (right.DisplayName or "")
 		end)
 
 	local newMacroButtonCreated = false
