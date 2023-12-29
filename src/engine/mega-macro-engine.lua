@@ -225,7 +225,9 @@ function MegaMacroEngine.FindAvailableCharacterMacro()
         -- If there is a free slot, use that first. Otherwise, return the first one that isn't indexed.
         local hasFreeSlot = characterCount < MacroLimits.MaxCharacterMacros
         if hasFreeSlot then
-            return CreateMacro(" ", MegaMacroTexture, " ", true)
+            local index = CreateMacro(" ", MegaMacroTexture, " ", true)
+            -- print("Mega Macro: Created new character macro at index " .. index .. ".")
+            return index
         end
         
         for i=startIndex, endIndex do
@@ -327,10 +329,94 @@ function MegaMacroEngine.SafeInitialize()
 
     BindMacros() 
 
+    MegaMacroEngine.VerifyMacros() -- DEBUGGING. This is potentially useful even in live verison, since it would hopefully do nothing.
+
     local originalPickupMacro = PickupMacro
     PickupMacro = function(macroIndex) PickupMacroWrapper(originalPickupMacro, macroIndex) end
 
     return true
+end
+
+function MegaMacroEngine.VerifyMacros()
+    -- Verify all is well. Check for macros in wrong space, or duplicate macros.
+    local numberOfGlobalMacros, numberOfCharacterMacros = GetNumMacros()
+
+    for i=1, numberOfGlobalMacros do
+        local name, _, body, _ = GetMacroInfo(i)
+        local macroId = GetIdFromMacroCode(body)
+        
+        if macroId then
+            if macroId > MacroLimits.MaxGlobalMacros and macroId < MacroIndexOffsets.Inactive then
+                print("Mega Macro: Found character macro in global space! " .. i .. " " .. name .. " #" .. macroId)
+                DeleteMacro(i)
+            end
+        end
+    end
+
+    for i=numberOfGlobalMacros + 1,  MacroLimits.MaxGlobalMacros do
+        local name, _, body, _ = GetMacroInfo(i)
+        local macroId = GetIdFromMacroCode(body)
+        
+        if macroId then
+            print("Mega Macro: Found extra global macro! " .. i .. " " .. name .. " #" .. macroId)
+        end
+    end
+
+    for i=1 + MacroIndexOffsets.NativeCharacterMacros, numberOfCharacterMacros + MacroIndexOffsets.NativeCharacterMacros do
+        local name, _, body, _ = GetMacroInfo(i)
+        local macroId = GetIdFromMacroCode(body)
+        
+        if macroId then
+            if macroId < MacroIndexOffsets.NativeCharacterMacros then
+                print("Mega Macro: Found global macro in character space! " .. i .. " " .. name .. " #" .. macroId)
+                DeleteMacro(i)
+            end
+        end
+    end
+
+    -- Verify that every macro in the addon is in the macro index cache. If not, we need to make a new macro. Also check duplicates
+    local macroIds = {}
+    local function VerifyMacro(macro, i)
+        local macroId = macro.Id
+        local macroIndex = MacroIndexCache[macro.Id]
+        -- Check for duplicate macroIds
+        if macroIds[macroId] then
+            print("Mega Macro: Duplicate macroId " .. macroId)
+            DeleteMacro(macroIndex)
+        else
+            macroIds[macroId] = true
+        end
+        -- Check for missing macroIndex
+        if not macroIndex then
+            print("Mega Macro: Missing macro " .. macro.Id .. " " .. macro.DisplayName)
+            BindNewMacro(macro)
+        end
+
+        return true
+    end
+
+    for i=1, #MegaMacroGlobalData.Macros do
+        VerifyMacro(MegaMacroGlobalData.Macros[i], i)
+    end
+
+    for i=1, #MegaMacroCharacterData.Macros do
+        VerifyMacro(MegaMacroCharacterData.Macros[i], i)
+    end
+
+    if MegaMacroGlobalData.Classes[MegaMacroCachedClass] then
+        for i=1, #MegaMacroGlobalData.Classes[MegaMacroCachedClass].Macros do
+            VerifyMacro(MegaMacroGlobalData.Classes[MegaMacroCachedClass].Macros[i], i)
+        end
+
+        if MegaMacroGlobalData.Classes[MegaMacroCachedClass].Specializations[MegaMacroCachedSpecialization] then
+            for i=1, #MegaMacroGlobalData.Classes[MegaMacroCachedClass].Specializations[MegaMacroCachedSpecialization].Macros do
+                VerifyMacro(MegaMacroGlobalData.Classes[MegaMacroCachedClass].Specializations[MegaMacroCachedSpecialization].Macros[i], i)
+            end
+        end
+    end
+
+    InitializeMacroIndexCache()
+    
 end
 
 function MegaMacroEngine.ImportMacros()
