@@ -41,7 +41,7 @@ end
 
 local function GetMacroButtonUI(index)
 	local buttonName = "MegaMacro_MacroButton" .. index
-	return _G[buttonName], _G[buttonName .. "Name"], _G[buttonName].Icon
+	return _G[buttonName], _G[buttonName].Name, _G[buttonName].Icon
 end
 
 -- Creates the button frames for the macro slots
@@ -225,6 +225,7 @@ local function SetMacroItems()
 			buttonFrame.IsNewButton = false
 			-- buttonFrame:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
 			buttonName:SetText(macro.DisplayName)
+			MegaMacroIconEvaluator.UpdateMacro(macro)
 			local data = MegaMacroIconEvaluator.GetCachedData(macro.Id)
 			buttonIcon:SetTexture(data and data.Icon or MegaMacroTexture)
 			buttonIcon:SetDesaturated(false)
@@ -481,13 +482,15 @@ function MegaMacro_FrameTab_OnClick(self)
 	if not HandleReceiveDrag(scope) then
 		PanelTemplates_SetTab(MegaMacro_Frame, tabIndex);
 		MegaMacro_ButtonScrollFrame:SetVerticalScroll(0)
+		MegaMacro_MoveHintText:Hide()
+		MegaMacro_ConfigContainer:Hide()
 		
 		if tabIndex == 6 then
 			SelectedScope = 'config'
 			MegaMacro_FrameTab_ShowConfig()
 			return
-		else
-			MegaMacro_ConfigContainer:Hide()
+		elseif tabIndex == 5 then
+			MegaMacro_MoveHintText:Show()
 		end
 		
 		SelectedScope = scope

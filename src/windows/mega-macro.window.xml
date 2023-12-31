@@ -11,14 +11,16 @@
 		</Scripts>
 		<Layers>
 			<Layer level="ARTWORK">
-				<FontString name="$parentName" inherits="GameFontHighlightSmall" text="">
-					<Size x="36" y="36"/>
+				<FontString parentKey="Name" inherits="GameFontHighlightSmall" text="">
+					<Size x="36" y="10"/>
 					<Anchors>
-						<Anchor point="CENTER" relativeTo="$parent" x="0" y="-10"/>
+						<Anchor point="BOTTOM" relativeTo="$parent" x="0" y="2"/>
 					</Anchors>
 				</FontString>
 			</Layer>
 		</Layers>
+		<HighlightTexture alphaMode="ADD" file="Interface\Buttons\ButtonHilight-Square"/>
+		<CheckedTexture alphaMode="ADD" file="Interface\Buttons\CheckButtonHilight"/>
 	</CheckButton>
 	<CheckButton name="MegaMacro_PopupButtonTemplate" inherits="SimplePopupButtonTemplate" virtual="true">
 		<Scripts>
@@ -74,8 +76,6 @@
 				end
             </OnHide>
 		</Scripts>
-		<Scripts>
-		</Scripts>
 		<Layers>
 			<Layer level="OVERLAY" textureSubLevel="-1">
 				<Texture name="MegaMacro_FramePortrait" file="Interface\MacroFrame\MacroFrame-Icon">
@@ -122,6 +122,12 @@
 				<FontString name="MegaMacro_FrameEnterMacroText" inherits="GameFontHighlightSmall" text="ENTER_MACRO_LABEL">
 					<Anchors>
 						<Anchor point="TOPLEFT" relativeTo="MegaMacro_FrameSelectedMacroBackground" relativePoint="BOTTOMLEFT" x="8" y="3"/>
+					</Anchors>
+				</FontString>
+				<FontString name="MegaMacro_MoveHintText" inherits="GameFontHighlightSmall" text="Move macros by dragging them to another tab." hidden="true">
+					<Size x="0" y="10"/>
+					<Anchors>
+						<Anchor point="CENTER" x="10" y="10"/>
 					</Anchors>
 				</FontString>
 				<FontString name="MegaMacro_FrameCharLimitText" inherits="GameFontHighlightSmall">

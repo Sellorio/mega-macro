@@ -95,15 +95,15 @@ local function TryImportGlobalMacros()
     local numberOfGlobalMacros = GetNumMacros()
 
     for i=1, numberOfGlobalMacros do
-        local name, _, body, _ = GetMacroInfo(i)
+        local name, iconTexture, body, _ = GetMacroInfo(i)
         -- First, is it already a Mega Macro?
         local macroId = GetIdFromMacroCode(body)
         
         if not macroId then
-            local macro = MegaMacro.Create(name, MegaMacroScopes.Global, MegaMacroTexture, nil, body, i)
+            local macro = MegaMacro.Create(name, MegaMacroScopes.Global, iconTexture or MegaMacroTexture, true, body, i)
 
             if macro == nil then
-                macro = MegaMacro.Create(name, MegaMacroScopes.Inactive, MegaMacroTexture, nil, body, i)
+                macro = MegaMacro.Create(name, MegaMacroScopes.Inactive, iconTexture or MegaMacroTexture, true, body, i)
                 if macro == nil then
                     return false, "Failed to import at macro " .. i .. "(" .. name .. "). Please delete the macro and reload your UI."
                 end
@@ -123,15 +123,15 @@ local function TryImportCharacterMacros()
     local _, numberOfCharacterMacros = GetNumMacros()
 
     for i=1 + MacroIndexOffsets.NativeCharacterMacros, numberOfCharacterMacros + MacroIndexOffsets.NativeCharacterMacros do
-        local name, _, body, _ = GetMacroInfo(i)
+        local name, iconTexture, body, _ = GetMacroInfo(i)
         -- First, is it already a Mega Macro?
         local macroId = GetIdFromMacroCode(body)
 
         if not macroId then
-            local macro = MegaMacro.Create(name, MegaMacroScopes.Character, MegaMacroTexture, nil, body, i)
+            local macro = MegaMacro.Create(name, MegaMacroScopes.Character, iconTexture or MegaMacroTexture, true, body, i)
 
             if macro == nil then
-                macro = MegaMacro.Create(name, MegaMacroScopes.Inactive, MegaMacroTexture, nil, body, i)
+                macro = MegaMacro.Create(name, MegaMacroScopes.Inactive, iconTexture or MegaMacroTexture, true, body, i)
                 if macro == nil then
                     return false, "Failed to import at macro " .. i .. "(" .. name .. "). Please delete the macro and reload your UI."
                 end
@@ -374,6 +374,7 @@ function MegaMacroEngine.VerifyMacros()
         end
     end
 
+    InitializeMacroIndexCache()
     -- Verify that every macro in the addon is in the macro index cache. If not, we need to make a new macro. Also check duplicates
     local macroIds = {}
     local function VerifyMacro(macro, i)
