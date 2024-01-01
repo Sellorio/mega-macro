@@ -250,6 +250,10 @@
         "UnitName",
         "ceil",
         "GetSpellBookItemName",
-        "IsPassiveSpell"
+        "IsPassiveSpell",
+        "SCROLL_FRAME_SCROLL_BAR_TEMPLATE",
+        "SCROLL_FRAME_SCROLL_BAR_OFFSET_LEFT",
+        "SCROLL_FRAME_SCROLL_BAR_OFFSET_TOP",
+        "SCROLL_FRAME_SCROLL_BAR_OFFSET_BOTTOM"
     ]
 }
