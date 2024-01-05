@@ -259,7 +259,7 @@ local function UnbindMacro(macro)
 
         if macroIndex then
             MegaMacroEngine.GetOrCreateClicky(macro.Id):SetAttribute("macrotext", "")
-            EditMacro(macroIndex, " ", nil, nil, true, macroIndex > MacroLimits.MaxGlobalMacros)
+            EditMacro(macroIndex, " ", nil, GenerateIdPrefix(macro.Id), true, macroIndex > MacroLimits.MaxGlobalMacros)
             InitializeMacroIndexCache()
         end
     end
