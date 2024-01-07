@@ -18,6 +18,7 @@ local PopupMode = nil
 local IconListInitialized = false
 local SelectedIcon = nil
 local IconList = {}
+local SelectedTabIndex = 1
 
 NUM_ICONS_PER_ROW = 10
 NUM_ICON_ROWS = 9
@@ -305,6 +306,13 @@ end
 
 local function PickupMegaMacro(macro)
 	local macroIndex = MegaMacroEngine.GetMacroIndexFromId(macro.Id)
+	-- highlight all tabs to indicate it can be moved to a tab
+	for i=1, 5 do
+		if i ~= SelectedTabIndex then
+			local tab = _G["MegaMacro_FrameTab"..i]
+			tab:LockHighlight()
+		end
+	end
 
 	if macroIndex then
 		PickupMacro(macroIndex)
@@ -486,18 +494,16 @@ function MegaMacro_FrameTab_OnClick(self)
 	if not HandleReceiveDrag(scope) then
 		PanelTemplates_SetTab(MegaMacro_Frame, tabIndex);
 		MegaMacro_ButtonScrollFrame:SetVerticalScroll(0)
-		MegaMacro_MoveHintText:Hide()
 		MegaMacro_ConfigContainer:Hide()
 		
 		if tabIndex == 6 then
 			SelectedScope = 'config'
 			MegaMacro_FrameTab_ShowConfig()
 			return
-		elseif tabIndex == 5 then
-			MegaMacro_MoveHintText:Show()
 		end
 		
 		SelectedScope = scope
+		SelectedTabIndex = tabIndex
 
 		InitializeMacroSlots()
 		SetMacroItems()
@@ -564,6 +570,13 @@ end
 function MegaMacro_MacroButton_OnDragStart(self)
 	if self.Macro then
 		PickupMegaMacro(self.Macro)
+	end
+end
+
+function MegaMacro_MacroButton_OnDragStop(self)
+	for i=1, 5 do
+		local tab = _G["MegaMacro_FrameTab"..i]
+		tab:UnlockHighlight()
 	end
 end
 

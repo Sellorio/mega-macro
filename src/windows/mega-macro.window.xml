@@ -7,6 +7,7 @@
 			<OnEnter>MegaMacro_MacroButton_OnEnter(self);</OnEnter>
 			<OnLeave>MegaMacro_MacroButton_OnLeave(self);</OnLeave>
 			<OnDragStart>MegaMacro_MacroButton_OnDragStart(self);</OnDragStart>
+			<OnDragStop>MegaMacro_MacroButton_OnDragStop(self);</OnDragStop>
 			<OnReceiveDrag>MegaMacro_MacroButton_OnReceiveDrag(self);</OnReceiveDrag>
 		</Scripts>
 		<Layers>
@@ -122,12 +123,6 @@
 				<FontString name="MegaMacro_FrameEnterMacroText" inherits="GameFontHighlightSmall" text="ENTER_MACRO_LABEL">
 					<Anchors>
 						<Anchor point="TOPLEFT" relativeTo="MegaMacro_FrameSelectedMacroBackground" relativePoint="BOTTOMLEFT" x="8" y="3"/>
-					</Anchors>
-				</FontString>
-				<FontString name="MegaMacro_MoveHintText" inherits="GameFontHighlightSmall" text="Move macros by dragging them to another tab." hidden="true">
-					<Size x="0" y="10"/>
-					<Anchors>
-						<Anchor point="CENTER" x="10" y="10"/>
 					</Anchors>
 				</FontString>
 				<FontString name="MegaMacro_FrameCharLimitText" inherits="GameFontHighlightSmall">
