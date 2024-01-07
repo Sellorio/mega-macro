@@ -231,6 +231,10 @@ local function SetMacroItems()
 			buttonIcon:SetDesaturated(false)
 			buttonIcon:SetTexCoord(0, 1, 0, 1)
 			buttonIcon:SetAlpha(1)
+			if not MegaMacroEngine.GetMacroIndexFromId(macro.Id) then
+				buttonIcon:SetAlpha(0.5)
+				buttonIcon:SetDesaturated(true)
+			end
 		elseif not newMacroButtonCreated then
 			buttonFrame.Macro = nil
 			buttonFrame.IsNewButton = true

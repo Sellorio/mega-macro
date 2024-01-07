@@ -204,6 +204,12 @@ function MegaMacroEngine.FindAvailableGlobalMacro()
                 return i
             end
         end
+        -- Didn't find a free slot. Try to find an inactive one.
+        for i=startIndex, endIndex do
+            if usedMacroIndexes[i] and MegaMacroEngine.GetMacroIdFromIndex(i) > MacroIndexOffsets.Inactive then
+                return i
+            end
+        end
         print("Mega Macro: Failed to find available global macro slot.")
         return nil
     end
