@@ -23,30 +23,26 @@ end
 local function InitializeMacroIndexCache()
     MacroIndexCache = {}
 
-    if MegaMacroGlobalData.Activated then
-        for i=1, MacroLimits.MaxGlobalMacros do
-            local macroCode = GetMacroBody(i)
+    for i=1, MacroLimits.MaxGlobalMacros do
+        local macroCode = GetMacroBody(i)
 
-            if macroCode then
-                local macroId = GetIdFromMacroCode(macroCode)
+        if macroCode then
+            local macroId = GetIdFromMacroCode(macroCode)
 
-                if macroId then
-                    MacroIndexCache[macroId] = i
-                end
+            if macroId then
+                MacroIndexCache[macroId] = i
             end
         end
     end
 
-    if MegaMacroCharacterData.Activated then
-        for i=1 + MacroLimits.MaxGlobalMacros, MacroLimits.MaxGlobalMacros + MacroLimits.MaxCharacterMacros do
-            local macroCode = GetMacroBody(i)
+    for i=1 + MacroLimits.MaxGlobalMacros, MacroLimits.MaxGlobalMacros + MacroLimits.MaxCharacterMacros do
+        local macroCode = GetMacroBody(i)
 
-            if macroCode then
-                local macroId = GetIdFromMacroCode(macroCode)
+        if macroCode then
+            local macroId = GetIdFromMacroCode(macroCode)
 
-                if macroId then
-                    MacroIndexCache[macroId] = i
-                end
+            if macroId then
+                MacroIndexCache[macroId] = i
             end
         end
     end
