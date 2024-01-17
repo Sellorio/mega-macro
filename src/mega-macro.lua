@@ -31,6 +31,7 @@ local function GetNextAvailableMacroId(startOffset, count, existingMacros)
 end
 
 MegaMacro = {}
+MegaMacro.GetNextAvailableMacroId = GetNextAvailableMacroId
 
 function MegaMacro.Create(displayName, scope, staticTexture, isStaticTextureFallback, code, macroIndex)
     local result = {}

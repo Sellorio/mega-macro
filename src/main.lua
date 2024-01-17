@@ -44,6 +44,7 @@ local function Initialize()
         MegaMacroActionBarEngine.Initialize()
         MegaMacroEngine.SafeInitialize()
         MegaMacroEngine.ImportMacros()
+        MegaMacroEngine.VerifyMacros()
         MegaMacroFullyActive = MegaMacroGlobalData.Activated and MegaMacroCharacterData.Activated
         f:SetScript("OnUpdate", OnUpdate)
     end

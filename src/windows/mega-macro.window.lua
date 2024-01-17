@@ -236,7 +236,7 @@ local function SetMacroItems()
 				buttonIcon:SetAlpha(0.5)
 				buttonIcon:SetDesaturated(true)
 			end
-		elseif not newMacroButtonCreated then
+		elseif not newMacroButtonCreated and SelectedScope ~= MegaMacroScopes.Inactive then
 			buttonFrame.Macro = nil
 			buttonFrame.IsNewButton = true
 			-- buttonFrame:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")

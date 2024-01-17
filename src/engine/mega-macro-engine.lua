@@ -147,15 +147,20 @@ local function MergeCharacterSpecializationMacros()
     -- Remove the character specialization macros and add them to character macros.
     local characterSpecializationMacros = MegaMacroCharacterData.Specializations[MegaMacroCachedSpecialization].Macros
     local characterMacros = MegaMacroCharacterData.Macros
+    if not characterSpecializationMacros or #characterSpecializationMacros == 0 then
+        return
+    end
     for i=1, #characterSpecializationMacros do
         -- if we don't have room, move to inactive
         if #characterMacros >= MacroLimits.MaxCharacterMacros then
             local macro = characterSpecializationMacros[i]
             macro.Scope = MegaMacroScopes.Inactive
+            macro.Id = MegaMacro.GetNextAvailableMacroId(MacroIndexOffsets.Inactive, MacroLimits.InactiveCount, MegaMacroGlobalData.InactiveMacros)
             table.insert(MegaMacroGlobalData.InactiveMacros, macro)
         else 
             local macro = characterSpecializationMacros[i]
             macro.Scope = MegaMacroScopes.Character
+            macro.Id = MegaMacro.GetNextAvailableMacroId(MacroIndexOffsets.NativeCharacterMacros, MacroLimits.MaxCharacterMacros, MegaMacroCharacterData.Macros)
             table.insert(characterMacros, macro)
         end
     end
@@ -326,12 +331,12 @@ function MegaMacroEngine.SafeInitialize()
         return false
     end
 
+    MergeCharacterSpecializationMacros()
+
     InitializeMacroIndexCache()
     Initialized = true
 
     BindMacros() 
-
-    MegaMacroEngine.VerifyMacros() -- DEBUGGING. This is potentially useful even in live verison, since it would hopefully do nothing.
 
     local originalPickupMacro = PickupMacro
     PickupMacro = function(macroIndex) PickupMacroWrapper(originalPickupMacro, macroIndex) end
@@ -355,14 +360,6 @@ function MegaMacroEngine.VerifyMacros()
         end
     end
 
-    for i=numberOfGlobalMacros + 1,  MacroLimits.MaxGlobalMacros do
-        local name, _, body, _ = GetMacroInfo(i)
-        local macroId = GetIdFromMacroCode(body)
-        
-        if macroId then
-            print("Mega Macro: Found extra global macro! " .. i .. " " .. name .. " #" .. macroId)
-        end
-    end
 
     for i=1 + MacroIndexOffsets.NativeCharacterMacros, numberOfCharacterMacros + MacroIndexOffsets.NativeCharacterMacros do
         local name, _, body, _ = GetMacroInfo(i)
@@ -384,14 +381,13 @@ function MegaMacroEngine.VerifyMacros()
         local macroIndex = MacroIndexCache[macro.Id]
         -- Check for duplicate macroIds
         if macroIds[macroId] then
-            print("Mega Macro: Duplicate macroId " .. macroId)
-            DeleteMacro(macroIndex)
+            -- print("Mega Macro: Found duplicate macroId " .. macroId .. " " .. macro.DisplayName)
         else
             macroIds[macroId] = true
         end
         -- Check for missing macroIndex
         if not macroIndex then
-            print("Mega Macro: Missing macro " .. macro.Id .. " " .. macro.DisplayName)
+            print("Mega Macro: Fixing missing macro " .. macro.Id .. " " .. macro.DisplayName)
             BindNewMacro(macro)
         end
 
@@ -441,7 +437,7 @@ function MegaMacroEngine.ImportMacros()
         message(errorMessage)
     end
 
-    MergeCharacterSpecializationMacros()
+    InitializeMacroIndexCache()
 end
 
 function MegaMacroEngine.GetMacroIdFromIndex(macroIndex)
