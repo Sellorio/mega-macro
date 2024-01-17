@@ -60,16 +60,26 @@ local function GenerateNativeMacroCode(macro)
     return code
 end
 
+local function getTexture(macro, macroIndex)
+    local macroIndex = macroIndex or MacroIndexCache[macro.Id]
+    local iconTexture = macro.StaticTexture
+    if macroIndex and not iconTexture then
+        local _, iconTexture = GetMacroInfo(macroIndex)
+    end
+    return iconTexture
+end
+
 local function BindMacro(macro, macroIndex)
     local macroIndex = macroIndex or MacroIndexCache[macro.Id]
 
     -- Bind code to macro
     if macroIndex then
+        local iconTexture = getTexture(macro, macroIndex)
         if #macro.Code <= MegaMacroCodeMaxLengthForNative then
-            EditMacro(macroIndex, FormatMacroDisplayName(macro.DisplayName), nil, GenerateNativeMacroCode(macro), true, macroIndex > MacroLimits.MaxGlobalMacros)
+            EditMacro(macroIndex, FormatMacroDisplayName(macro.DisplayName), iconTexture, GenerateNativeMacroCode(macro), true, macroIndex > MacroLimits.MaxGlobalMacros)
         else
             MegaMacroEngine.GetOrCreateClicky(macro.Id):SetAttribute("macrotext", macro.Code)
-            EditMacro(macroIndex, FormatMacroDisplayName(macro.DisplayName), nil, MegaMacroEngine.GetMacroStubCode(macro.Id), true, macroIndex > MacroLimits.MaxGlobalMacros)
+            EditMacro(macroIndex, FormatMacroDisplayName(macro.DisplayName), iconTexture, MegaMacroEngine.GetMacroStubCode(macro.Id), true, macroIndex > MacroLimits.MaxGlobalMacros)
         end
         InitializeMacroIndexCache()
     end
@@ -308,6 +318,10 @@ local function PickupMacroWrapper(original, macroIndex)
     if InCombatLockdown() then
         return
     end
+    if MegaMacroConfig['UseNativeActionBar'] then
+        original(macroIndex)
+        return
+    end
 
     local macroId = macroIndex and MegaMacroEngine.GetMacroIdFromIndex(macroIndex)
 
@@ -526,7 +540,8 @@ function MegaMacroEngine.Uninstall()
                 cleanCode = macro.Code
             end
 
-            EditMacro(i, macroName, nil, cleanCode, true, i > MacroLimits.MaxGlobalMacros)
+            local iconTexture = getTexture(macro, i)
+            EditMacro(i, macroName, iconTexture, cleanCode, true, i > MacroLimits.MaxGlobalMacros)
         end
     end
     -- Now clear MegaMacro Global, Character, and Spec data
