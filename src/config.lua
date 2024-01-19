@@ -3,6 +3,7 @@ function MegaMacro_InitialiseConfig()
         MegaMacroGlobalData = {
             Activated = false,
             Macros = {},
+            InactiveMacros = {},
             Classes = {}
         }
     end
@@ -12,6 +13,12 @@ function MegaMacro_InitialiseConfig()
             Activated = false,
             Macros = {},
             Specializations = {}
+        }
+    end
+
+    if MegaMacroConfig == nil then
+        MegaMacroConfig = {
+            UseNativeActionBar = true,
         }
     end
 end
@@ -25,3 +32,4 @@ function MegaMacroConfig_GetWindowPosition()
         return MegaMacroGlobalData.WindowInfo.RelativePoint, MegaMacroGlobalData.WindowInfo.X, MegaMacroGlobalData.WindowInfo.Y
     end
 end
+

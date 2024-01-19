@@ -236,6 +236,10 @@ local function UpdateMacro(macro)
         end
     end
 
+    if MegaMacroConfig['UseNativeActionBar'] then
+		return
+	end
+
     local macroIndex = MegaMacroEngine.GetMacroIndexFromId(macro.Id)
     if macroIndex and not InCombatLockdown() then
         if effectType == "spell" then

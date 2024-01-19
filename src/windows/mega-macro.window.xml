@@ -7,18 +7,21 @@
 			<OnEnter>MegaMacro_MacroButton_OnEnter(self);</OnEnter>
 			<OnLeave>MegaMacro_MacroButton_OnLeave(self);</OnLeave>
 			<OnDragStart>MegaMacro_MacroButton_OnDragStart(self);</OnDragStart>
+			<OnDragStop>MegaMacro_MacroButton_OnDragStop(self);</OnDragStop>
 			<OnReceiveDrag>MegaMacro_MacroButton_OnReceiveDrag(self);</OnReceiveDrag>
 		</Scripts>
 		<Layers>
 			<Layer level="ARTWORK">
-				<FontString name="$parentName" inherits="GameFontHighlightSmall" text="">
-					<Size x="36" y="36"/>
+				<FontString parentKey="Name" inherits="GameFontHighlightSmall" text="">
+					<Size x="36" y="10"/>
 					<Anchors>
-						<Anchor point="CENTER" relativeTo="$parent" x="0" y="-10"/>
+						<Anchor point="BOTTOM" relativeTo="$parent" x="0" y="2"/>
 					</Anchors>
 				</FontString>
 			</Layer>
 		</Layers>
+		<HighlightTexture alphaMode="ADD" file="Interface\Buttons\ButtonHilight-Square"/>
+		<CheckedTexture alphaMode="ADD" file="Interface\Buttons\CheckButtonHilight"/>
 	</CheckButton>
 	<CheckButton name="MegaMacro_PopupButtonTemplate" inherits="SimplePopupButtonTemplate" virtual="true">
 		<Scripts>
@@ -73,8 +76,6 @@
                 	MegaMacro_Window_OnHide();
 				end
             </OnHide>
-		</Scripts>
-		<Scripts>
 		</Scripts>
 		<Layers>
 			<Layer level="OVERLAY" textureSubLevel="-1">
@@ -212,6 +213,14 @@
 							<OnShow>MegaMacro_ButtonContainer_OnShow();</OnShow>
 							<OnReceiveDrag>MegaMacro_ButtonContainer_OnReceiveDrag();</OnReceiveDrag>
 						</Scripts>
+						<Frames>
+							<Frame name="MegaMacro_ConfigContainer" hidden="true">
+								<Size x="439" y="10"/>
+								<Anchors>
+									<Anchor point="TOPLEFT"/>
+								</Anchors>
+							</Frame>
+						</Frames>
 					</Frame>
 				</ScrollChild>
 			</ScrollFrame>
@@ -355,7 +364,6 @@
 				<Scripts>
 					<OnLoad>
 						PanelTemplates_TabResize(self, 35);
-<!--						_G[self:GetName().."HighlightTexture"]:SetWidth(103);-->
 					</OnLoad>
 					<OnClick>
 						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
@@ -370,8 +378,7 @@
 				</Anchors>
 				<Scripts>
 					<OnLoad>
-						PanelTemplates_TabResize(self, 20);
-<!--						_G[self:GetName().."HighlightTexture"]:SetWidth(82);-->
+						PanelTemplates_TabResize(self, 30);
 					</OnLoad>
 					<OnClick>
 						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
@@ -386,8 +393,7 @@
 				</Anchors>
 				<Scripts>
 					<OnLoad>
-						PanelTemplates_TabResize(self, 20);
-<!--						_G[self:GetName().."HighlightTexture"]:SetWidth(112);-->
+						PanelTemplates_TabResize(self, 30);
 					</OnLoad>
 					<OnClick>
 						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
@@ -396,20 +402,33 @@
 					<OnReceiveDrag>MegaMacro_FrameTab_OnReceiveDrag(self);</OnReceiveDrag>
 				</Scripts>
 			</Button>
-			<Button name="MegaMacro_FrameTab5" inherits="PanelTabButtonTemplate" text="{Character Spec}" id="5">
+			<Button name="MegaMacro_FrameTab5" inherits="PanelTabButtonTemplate" text="Inactive" id="5">
 				<Anchors>
 					<Anchor point="LEFT" relativeTo="MegaMacro_FrameTab4" relativePoint="RIGHT" x="0" y="0"/>
 				</Anchors>
 				<Scripts>
 					<OnLoad>
-						PanelTemplates_TabResize(self, 60);
-<!--						_G[self:GetName().."HighlightTexture"]:SetWidth(190);-->
+						PanelTemplates_TabResize(self, 40);
 					</OnLoad>
 					<OnClick>
 						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
 						MegaMacro_FrameTab_OnClick(self);
 					</OnClick>
 					<OnReceiveDrag>MegaMacro_FrameTab_OnReceiveDrag(self);</OnReceiveDrag>
+				</Scripts>
+			</Button>
+			<Button name="MegaMacro_FrameTab6" inherits="PanelTabButtonTemplate" text="Config" id="6">
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="MegaMacro_FrameTab5" relativePoint="RIGHT" x="0" y="0"/>
+				</Anchors>
+				<Scripts>
+					<OnLoad>
+						PanelTemplates_TabResize(self, 40);
+					</OnLoad>
+					<OnClick>
+						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
+						MegaMacro_FrameTab_OnClick(self);
+					</OnClick>
 				</Scripts>
 			</Button>
 			<Button name="MegaMacro_DeleteButton" inherits="UIPanelButtonTemplate" text="DELETE">

@@ -4,8 +4,9 @@ MacroLimits = {
 	PerClassCount = 30,
 	PerSpecializationCount = 30,
 	-- limit: 18 character specific macro slots
-	PerCharacterCount = 8,
-	PerCharacterSpecializationCount = 10,
+	PerCharacterCount = 18,
+	PerCharacterSpecializationCount = 0,
+	InactiveCount = 160,
 	MaxGlobalMacros = 120,
 	MaxCharacterMacros = 18
 }
@@ -16,6 +17,7 @@ MacroIndexOffsets = {
 	PerSpecialization = MacroLimits.GlobalCount + MacroLimits.PerClassCount,
 	PerCharacter = MacroLimits.GlobalCount + MacroLimits.PerClassCount + MacroLimits.PerSpecializationCount,
 	PerCharacterSpecialization = MacroLimits.GlobalCount + MacroLimits.PerClassCount + MacroLimits.PerSpecializationCount + MacroLimits.PerCharacterCount,
+	Inactive = MacroLimits.GlobalCount + MacroLimits.PerClassCount + MacroLimits.PerSpecializationCount + MacroLimits.PerCharacterCount + MacroLimits.PerCharacterSpecializationCount,
 	NativeCharacterMacros = 120
 }
 
@@ -41,6 +43,7 @@ PetActionTextures = {
 MegaMacroTexture = 134400
 MegaMacroActiveStanceTexture = 136116
 MegaMacroCodeMaxLength = 1023
+MegaMacroCodeMaxLengthForNative = 250
 HighestMaxMacroCount = math.max(MacroLimits.GlobalCount, MacroLimits.PerClassCount, MacroLimits.PerSpecializationCount, MacroLimits.PerCharacterCount, MacroLimits.PerCharacterSpecializationCount)
 
 MegaMacroInfoFunctions = {

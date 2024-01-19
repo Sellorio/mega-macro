@@ -1,3 +1,4 @@
+MegaMacroEngine = {}
 local ClickyFrameName = "MegaMacroClicky"
 local MacroIndexCache = {} -- caches native macro indexes - these change based on macro name so they are not the id we'll use in the addon
 local Initialized = false
@@ -22,63 +23,103 @@ end
 local function InitializeMacroIndexCache()
     MacroIndexCache = {}
 
-    if MegaMacroGlobalData.Activated then
-        for i=1, MacroLimits.MaxGlobalMacros do
-            local macroCode = GetMacroBody(i)
+    for i=1, MacroLimits.MaxGlobalMacros do
+        local macroCode = GetMacroBody(i)
 
-            if macroCode then
-                local macroId = GetIdFromMacroCode(macroCode)
+        if macroCode then
+            local macroId = GetIdFromMacroCode(macroCode)
 
-                if macroId then
-                    MacroIndexCache[macroId] = i
-                end
+            if macroId then
+                MacroIndexCache[macroId] = i
             end
         end
     end
 
-    if MegaMacroCharacterData.Activated then
-        for i=1 + MacroLimits.MaxGlobalMacros, MacroLimits.MaxGlobalMacros + MacroLimits.MaxCharacterMacros do
-            local macroCode = GetMacroBody(i)
+    for i=1 + MacroLimits.MaxGlobalMacros, MacroLimits.MaxGlobalMacros + MacroLimits.MaxCharacterMacros do
+        local macroCode = GetMacroBody(i)
 
-            if macroCode then
-                local macroId = GetIdFromMacroCode(macroCode)
+        if macroCode then
+            local macroId = GetIdFromMacroCode(macroCode)
 
-                if macroId then
-                    MacroIndexCache[macroId] = i
-                end
+            if macroId then
+                MacroIndexCache[macroId] = i
             end
         end
     end
 end
 
+local function GenerateNativeMacroCode(macro)
+    -- Check if there is #showtooltip already. If not, add it to the start.
+    local code = macro.Code
+    if #code <= MegaMacroCodeMaxLengthForNative - 14 then
+        if not string.find(code, "#showtooltip") then
+            code = "#showtooltip\n" .. code
+        end
+    end
+    code = GenerateIdPrefix(macro.Id) .. "\n" .. code
+    return code
+end
+
+local function getTexture(macro, macroIndex)
+    local macroIndex = macroIndex or MacroIndexCache[macro.Id]
+    local iconTexture = macro.StaticTexture
+    if macroIndex and not iconTexture then
+        local _, iconTexture = GetMacroInfo(macroIndex)
+    end
+    return iconTexture
+end
+
+local function BindMacro(macro, macroIndex)
+    local macroIndex = macroIndex or MacroIndexCache[macro.Id]
+
+    -- Bind code to macro
+    if macroIndex then
+        local iconTexture = getTexture(macro, macroIndex)
+        if #macro.Code <= MegaMacroCodeMaxLengthForNative then
+            EditMacro(macroIndex, FormatMacroDisplayName(macro.DisplayName), iconTexture, GenerateNativeMacroCode(macro), true, macroIndex > MacroLimits.MaxGlobalMacros)
+        else
+            MegaMacroEngine.GetOrCreateClicky(macro.Id):SetAttribute("macrotext", macro.Code)
+            EditMacro(macroIndex, FormatMacroDisplayName(macro.DisplayName), iconTexture, MegaMacroEngine.GetMacroStubCode(macro.Id), true, macroIndex > MacroLimits.MaxGlobalMacros)
+        end
+        InitializeMacroIndexCache()
+    end
+end
+
+local function BindNewMacro(macro, macroIndex)
+    local macroIndex = macroIndex or MacroIndexCache[macro.Id]
+
+    if not macroIndex then
+        -- Find a free slot. Need to know if global or character
+        local isGlobal = macro.Scope == MegaMacroScopes.Global or macro.Scope == MegaMacroScopes.Class or macro.Scope == MegaMacroScopes.Specialization
+        macroIndex = isGlobal and MegaMacroEngine.FindAvailableGlobalMacro() or MegaMacroEngine.FindAvailableCharacterMacro()
+    end
+    -- Bind code to macro
+    BindMacro(macro, macroIndex)
+end
+
 local function TryImportGlobalMacros()
     local numberOfGlobalMacros = GetNumMacros()
-    local globalMegaMacros = MegaMacro.GetMacrosInScope(MegaMacroScopes.Global)
-
-    if numberOfGlobalMacros + #globalMegaMacros > MacroLimits.GlobalCount then
-        return
-            false,
-            "Mega Macro: There isn't enough space to import your existing global macros. The limit "..
-            "for global macros when using Mega Macro is "..MacroLimits.GlobalCount.." to make room for per-class and per-spec macro slots. "..
-            "Please use /reload once you have manually copied over/sorted the macros."
-    end
-
-    for i=1, #globalMegaMacros do
-        globalMegaMacros[i].Id = i + numberOfGlobalMacros + MacroIndexOffsets.Global
-    end
 
     for i=1, numberOfGlobalMacros do
-        local name, _, body, _ = GetMacroInfo(i)
-        local macro = MegaMacro.Create(name, MegaMacroScopes.Global, MegaMacroTexture)
+        local name, iconTexture, body, _ = GetMacroInfo(i)
+        -- First, is it already a Mega Macro?
+        local macroId = GetIdFromMacroCode(body)
+        
+        if not macroId then
+            local macro = MegaMacro.Create(name, MegaMacroScopes.Global, iconTexture or MegaMacroTexture, true, body, i)
 
-        if macro == nil then
-            return
-                false,
-                "Mega Macro: Failed to import all global macros. This is likely due to not having enough macro slots available. "..
-                "Please use /reload once you have manually copied over/sorted the macros."
+            if macro == nil then
+                macro = MegaMacro.Create(name, MegaMacroScopes.Inactive, iconTexture or MegaMacroTexture, true, body, i)
+                if macro == nil then
+                    return false, "Failed to import at macro " .. i .. "(" .. name .. "). Please delete the macro and reload your UI."
+                end
+                -- print("Importing Inactive Global macro " .. i  .. " ".. name .. " to " ..  " #" .. macro.Id)
+            end
         end
-
-        MegaMacro.UpdateCode(macro, body)
+    end
+    local newNumberOfGlobalMacros = GetNumMacros()
+    if newNumberOfGlobalMacros > numberOfGlobalMacros then
+        print("Mega Macro: Global import created " .. newNumberOfGlobalMacros - numberOfGlobalMacros .. " macros.")
     end
 
     return true
@@ -86,38 +127,58 @@ end
 
 local function TryImportCharacterMacros()
     local _, numberOfCharacterMacros = GetNumMacros()
-    local characterMegaMacros = MegaMacro.GetMacrosInScope(MegaMacroScopes.Character)
 
-    if numberOfCharacterMacros + #characterMegaMacros > MacroLimits.PerCharacterCount then
-        return
-            false,
-            "Mega Macro: There isn't enough space to import your existing character-specific macros. The limit "..
-            "for character macros when using Mega Macro is "..MacroLimits.PerCharacterCount.." to make room for per-character per-spec macro slots. "..
-            "Please use /reload once you have manually copied over/sorted the macros."
-    end
+    for i=1 + MacroIndexOffsets.NativeCharacterMacros, numberOfCharacterMacros + MacroIndexOffsets.NativeCharacterMacros do
+        local name, iconTexture, body, _ = GetMacroInfo(i)
+        -- First, is it already a Mega Macro?
+        local macroId = GetIdFromMacroCode(body)
 
-    for i=1, #characterMegaMacros do
-        characterMegaMacros[i].Id = i + numberOfCharacterMacros + MacroIndexOffsets.NativeCharacterMacros
-    end
+        if not macroId then
+            local macro = MegaMacro.Create(name, MegaMacroScopes.Character, iconTexture or MegaMacroTexture, true, body, i)
 
-    for i=1, numberOfCharacterMacros do
-        local name, _, body, _ = GetMacroInfo(i + MacroIndexOffsets.NativeCharacterMacros)
-        local macro = MegaMacro.Create(name, MegaMacroScopes.Character, MegaMacroTexture)
-
-        if macro == nil then
-            return
-                false,
-                "Mega Macro: Failed to import all character macros. This is likely due to not having enough macro slots available. "..
-                "Please use /reload once you have manually copied over/sorted the macros."
+            if macro == nil then
+                macro = MegaMacro.Create(name, MegaMacroScopes.Inactive, iconTexture or MegaMacroTexture, true, body, i)
+                if macro == nil then
+                    return false, "Failed to import at macro " .. i .. "(" .. name .. "). Please delete the macro and reload your UI."
+                end
+                -- print("Importing Inactive Char macro " .. i  .. " ".. name .. " to " ..  " #" .. macro.Id)
+            end
         end
-
-        MegaMacro.UpdateCode(macro, body)
+    end
+    local _, newNumberOfCharacterMacros = GetNumMacros()
+    if newNumberOfCharacterMacros > numberOfCharacterMacros then
+        print("Mega Macro: Character import created " .. newNumberOfCharacterMacros - numberOfCharacterMacros .. " macros.")
     end
 
     return true
 end
 
-local function GetMacroStubCode(macroId)
+local function MergeCharacterSpecializationMacros()
+    -- Remove the character specialization macros and add them to character macros.
+    local characterSpecializationMacros = MegaMacroCharacterData.Specializations[MegaMacroCachedSpecialization].Macros
+    local characterMacros = MegaMacroCharacterData.Macros
+    if not characterSpecializationMacros or #characterSpecializationMacros == 0 then
+        return
+    end
+    for i=1, #characterSpecializationMacros do
+        -- if we don't have room, move to inactive
+        if #characterMacros >= MacroLimits.MaxCharacterMacros then
+            local macro = characterSpecializationMacros[i]
+            macro.Scope = MegaMacroScopes.Inactive
+            macro.Id = MegaMacro.GetNextAvailableMacroId(MacroIndexOffsets.Inactive, MacroLimits.InactiveCount, MegaMacroGlobalData.InactiveMacros)
+            table.insert(MegaMacroGlobalData.InactiveMacros, macro)
+        else 
+            local macro = characterSpecializationMacros[i]
+            macro.Scope = MegaMacroScopes.Character
+            macro.Id = MegaMacro.GetNextAvailableMacroId(MacroIndexOffsets.NativeCharacterMacros, MacroLimits.MaxCharacterMacros, MegaMacroCharacterData.Macros)
+            table.insert(characterMacros, macro)
+        end
+    end
+    MegaMacroCharacterData.Specializations[MegaMacroCachedSpecialization].Macros = {}
+end
+
+
+function MegaMacroEngine.GetMacroStubCode(macroId)
     -- Fix a bug that causes click events not to register only when CVar ActionButtonUseKeyDown is set to 1. 
     local keyDownOrUp = GetCVar("ActionButtonUseKeyDown")
     local primaryMacroButtonClickValue = keyDownOrUp == "1" and " LeftButton" or ""
@@ -130,80 +191,73 @@ local function GetMacroStubCode(macroId)
         "/click [btn:5] "..ClickyFrameName..macroId.." Button5 "..keyDownOrUp.."\n"
 end
 
-local function SetupGlobalMacros()
-    local globalCount = GetNumMacros()
-
-    for i=1, globalCount do
-        EditMacro(i, nil, nil, GenerateIdPrefix(i).."\n", true, false)
-    end
-end
-
-local function SetupCharacterMacros()
-    local _, characterCount = GetNumMacros()
-
-    for i=1, characterCount do
-        local id = MacroLimits.MaxGlobalMacros + i
-        EditMacro(id, nil, nil, GenerateIdPrefix(id).."\n", true, true)
-    end
-end
-
-local function SetupOrUpdateMacros()
+function MegaMacroEngine.FindAvailableGlobalMacro()
     if not InCombatLockdown() then
         local globalCount, characterCount = GetNumMacros()
 
-        if MegaMacroGlobalData.Activated and globalCount < MacroLimits.MaxGlobalMacros then
-            for _=1, MacroLimits.MaxGlobalMacros - globalCount do
-                CreateMacro(" ", MegaMacroTexture, "", false)
-            end
+        -- Find used indexes from MacroIndexCache
+        local usedMacroIndexes = {}
+        for _, index in pairs(MacroIndexCache) do
+            usedMacroIndexes[index] = true
         end
 
-        if MegaMacroCharacterData.Activated and characterCount < MacroLimits.MaxCharacterMacros then
-            for _=1, MacroLimits.MaxCharacterMacros - characterCount do
-                CreateMacro(" ", MegaMacroTexture, "", true)
-            end
+        local startIndex = 1
+        local endIndex = MacroLimits.MaxGlobalMacros
+
+        -- If there is a free slot, use that first.
+        local hasFreeSlot = globalCount < MacroLimits.MaxGlobalMacros
+        if hasFreeSlot then
+            return CreateMacro(" ", MegaMacroTexture, " ", false)
         end
-
-        local assignedMacroIds = {}
-        local unassignedMacros = {}
-
-        -- skip global macros if they are not activated
-        local startIndex = MegaMacroGlobalData.Activated and 1 or MacroLimits.MaxGlobalMacros + 1
-        -- stop before character macros if they are not activated
-        local endIndex = MegaMacroCharacterData.Activated and MacroLimits.MaxGlobalMacros + MacroLimits.MaxCharacterMacros or MacroLimits.MaxGlobalMacros
 
         for i=startIndex, endIndex do
-            local code = GetMacroBody(i)
-            local macroId = GetIdFromMacroCode(code)
-
-            if macroId then
-                local isCharacterSpecificMacroId = macroId > MacroLimits.MaxGlobalMacros
-                local isCharacterSpecificMacroIndex = i > MacroLimits.MaxGlobalMacros
-
-                if assignedMacroIds[macroId] or isCharacterSpecificMacroId ~= isCharacterSpecificMacroIndex then
-                    table.insert(unassignedMacros, i)
-                else
-                    assignedMacroIds[macroId] = i
-                    EditMacro(i, nil, MegaMacroTexture, GetMacroStubCode(macroId), true, isCharacterSpecificMacroIndex)
-                end
-            else
-                table.insert(unassignedMacros, i)
+            if not usedMacroIndexes[i] then
+                return i
             end
         end
-
-        local lastCheckedMacroId = startIndex - 1
-        for _, macroIndex in ipairs(unassignedMacros) do
-            while lastCheckedMacroId < endIndex do
-                lastCheckedMacroId = lastCheckedMacroId + 1
-                if not assignedMacroIds[lastCheckedMacroId] then
-                    EditMacro(macroIndex, nil, nil, GetMacroStubCode(lastCheckedMacroId), true, macroIndex > MacroLimits.MaxGlobalMacros)
-                    break
-                end
+        -- Didn't find a free slot. Try to find an inactive one.
+        for i=startIndex, endIndex do
+            if usedMacroIndexes[i] and MegaMacroEngine.GetMacroIdFromIndex(i) > MacroIndexOffsets.Inactive then
+                return i
             end
         end
+        print("Mega Macro: Failed to find available global macro slot.")
+        return nil
     end
 end
 
-local function GetOrCreateClicky(macroId)
+function MegaMacroEngine.FindAvailableCharacterMacro()
+    if not InCombatLockdown() then
+        local globalCount, characterCount = GetNumMacros()
+
+        -- Find used indexes from MacroIndexCache
+        local usedMacroIndexes = {}
+        for _, index in pairs(MacroIndexCache) do
+            usedMacroIndexes[index] = true
+        end
+
+        local startIndex = 1 + MacroIndexOffsets.NativeCharacterMacros
+        local endIndex = MacroLimits.MaxGlobalMacros + MacroLimits.MaxCharacterMacros
+
+        -- If there is a free slot, use that first. Otherwise, return the first one that isn't indexed.
+        local hasFreeSlot = characterCount < MacroLimits.MaxCharacterMacros
+        if hasFreeSlot then
+            local index = CreateMacro(" ", MegaMacroTexture, " ", true)
+            -- print("Mega Macro: Created new character macro at index " .. index .. ".")
+            return index
+        end
+        
+        for i=startIndex, endIndex do
+            if not usedMacroIndexes[i] then
+                return i
+            end
+        end
+
+        return nil
+    end
+end
+
+function MegaMacroEngine.GetOrCreateClicky(macroId)
     local name = ClickyFrameName..macroId
     local clicky = _G[name]
 
@@ -216,25 +270,13 @@ local function GetOrCreateClicky(macroId)
     return clicky
 end
 
-local function BindMacro(macro)
-    if Initialized then
-        local macroIndex = MacroIndexCache[macro.Id]
-
-        if macroIndex then
-            GetOrCreateClicky(macro.Id):SetAttribute("macrotext", macro.Code)
-            EditMacro(macroIndex, FormatMacroDisplayName(macro.DisplayName), nil, nil, true, macroIndex > MacroLimits.MaxGlobalMacros)
-            InitializeMacroIndexCache()
-        end
-    end
-end
-
 local function UnbindMacro(macro)
     if Initialized then
         local macroIndex = MacroIndexCache[macro.Id]
 
         if macroIndex then
-            GetOrCreateClicky(macro.Id):SetAttribute("macrotext", "")
-            EditMacro(macroIndex, " ", nil, nil, true, macroIndex > MacroLimits.MaxGlobalMacros)
+            MegaMacroEngine.GetOrCreateClicky(macro.Id):SetAttribute("macrotext", "")
+            EditMacro(macroIndex, " ", nil, GenerateIdPrefix(macro.Id), true, macroIndex > MacroLimits.MaxGlobalMacros)
             InitializeMacroIndexCache()
         end
     end
@@ -276,6 +318,10 @@ local function PickupMacroWrapper(original, macroIndex)
     if InCombatLockdown() then
         return
     end
+    if MegaMacroConfig['UseNativeActionBar'] then
+        original(macroIndex)
+        return
+    end
 
     local macroId = macroIndex and MegaMacroEngine.GetMacroIdFromIndex(macroIndex)
 
@@ -292,47 +338,19 @@ local function PickupMacroWrapper(original, macroIndex)
     end
 end
 
-MegaMacroEngine = {}
+
 
 function MegaMacroEngine.SafeInitialize()
-    local inCombat = InCombatLockdown()
-
-    if not MegaMacroGlobalData.Activated then
-        if inCombat then
-            return false
-        end
-
-        local importSuccessful, errorMessage = TryImportGlobalMacros()
-
-        if importSuccessful then
-            SetupGlobalMacros()
-            MegaMacroGlobalData.Activated = true
-        else
-            message(errorMessage)
-        end
+    if InCombatLockdown() then
+        return false
     end
 
-    if not MegaMacroCharacterData.Activated then
-        if inCombat then
-            return false
-        end
+    MergeCharacterSpecializationMacros()
 
-        local importSuccessful, errorMessage = TryImportCharacterMacros()
-
-        if importSuccessful then
-            SetupCharacterMacros()
-            MegaMacroCharacterData.Activated = true
-        else
-            message(errorMessage)
-        end
-    end
-
-    -- Ensures the macro code is the latest version. it was required to change macro stub code in 1.2. this will also allow for future changes.
-    SetupOrUpdateMacros()
     InitializeMacroIndexCache()
     Initialized = true
 
-    BindMacros()
+    BindMacros() 
 
     local originalPickupMacro = PickupMacro
     PickupMacro = function(macroIndex) PickupMacroWrapper(originalPickupMacro, macroIndex) end
@@ -340,8 +358,100 @@ function MegaMacroEngine.SafeInitialize()
     return true
 end
 
-function MegaMacroEngine.Reinitialize()
+function MegaMacroEngine.VerifyMacros()
+    -- Verify all is well. Check for macros in wrong space, or duplicate macros.
+    local numberOfGlobalMacros, numberOfCharacterMacros = GetNumMacros()
 
+    for i=1, numberOfGlobalMacros do
+        local name, _, body, _ = GetMacroInfo(i)
+        local macroId = GetIdFromMacroCode(body)
+        
+        if macroId then
+            if macroId > MacroLimits.MaxGlobalMacros and macroId < MacroIndexOffsets.Inactive then
+                print("Mega Macro: Found character macro in global space! " .. i .. " " .. name .. " #" .. macroId)
+                DeleteMacro(i)
+            end
+        end
+    end
+
+
+    for i=1 + MacroIndexOffsets.NativeCharacterMacros, numberOfCharacterMacros + MacroIndexOffsets.NativeCharacterMacros do
+        local name, _, body, _ = GetMacroInfo(i)
+        local macroId = GetIdFromMacroCode(body)
+        
+        if macroId then
+            if macroId < MacroIndexOffsets.NativeCharacterMacros then
+                print("Mega Macro: Found global macro in character space! " .. i .. " " .. name .. " #" .. macroId)
+                DeleteMacro(i)
+            end
+        end
+    end
+
+    InitializeMacroIndexCache()
+    -- Verify that every macro in the addon is in the macro index cache. If not, we need to make a new macro. Also check duplicates
+    local macroIds = {}
+    local function VerifyMacro(macro, i)
+        local macroId = macro.Id
+        local macroIndex = MacroIndexCache[macro.Id]
+        -- Check for duplicate macroIds
+        if macroIds[macroId] then
+            -- print("Mega Macro: Found duplicate macroId " .. macroId .. " " .. macro.DisplayName)
+        else
+            macroIds[macroId] = true
+        end
+        -- Check for missing macroIndex
+        if not macroIndex then
+            print("Mega Macro: Fixing missing macro " .. macro.Id .. " " .. macro.DisplayName)
+            BindNewMacro(macro)
+        end
+
+        return true
+    end
+
+    for i=1, #MegaMacroGlobalData.Macros do
+        VerifyMacro(MegaMacroGlobalData.Macros[i], i)
+    end
+
+    for i=1, #MegaMacroCharacterData.Macros do
+        VerifyMacro(MegaMacroCharacterData.Macros[i], i)
+    end
+
+    if MegaMacroGlobalData.Classes[MegaMacroCachedClass] then
+        for i=1, #MegaMacroGlobalData.Classes[MegaMacroCachedClass].Macros do
+            VerifyMacro(MegaMacroGlobalData.Classes[MegaMacroCachedClass].Macros[i], i)
+        end
+
+        if MegaMacroGlobalData.Classes[MegaMacroCachedClass].Specializations[MegaMacroCachedSpecialization] then
+            for i=1, #MegaMacroGlobalData.Classes[MegaMacroCachedClass].Specializations[MegaMacroCachedSpecialization].Macros do
+                VerifyMacro(MegaMacroGlobalData.Classes[MegaMacroCachedClass].Specializations[MegaMacroCachedSpecialization].Macros[i], i)
+            end
+        end
+    end
+
+    InitializeMacroIndexCache()
+    
+end
+
+function MegaMacroEngine.ImportMacros()
+    if InCombatLockdown() then
+        return false
+    end
+
+    local importSuccessful, errorMessage = TryImportGlobalMacros()
+    if importSuccessful then
+        MegaMacroGlobalData.Activated = true
+    else
+        message(errorMessage)
+    end
+
+    local importSuccessful, errorMessage = TryImportCharacterMacros()
+    if importSuccessful then
+        MegaMacroCharacterData.Activated = true
+    else
+        message(errorMessage)
+    end
+
+    InitializeMacroIndexCache()
 end
 
 function MegaMacroEngine.GetMacroIdFromIndex(macroIndex)
@@ -358,8 +468,8 @@ function MegaMacroEngine.GetMacroIndexFromId(macroId)
     return MacroIndexCache[macroId]
 end
 
-function MegaMacroEngine.OnMacroCreated(macro)
-    BindMacro(macro)
+function MegaMacroEngine.OnMacroCreated(macro, macroIndex)
+    BindNewMacro(macro, macroIndex)
 end
 
 function MegaMacroEngine.OnMacroRenamed(macro)
@@ -405,4 +515,43 @@ function MegaMacroEngine.OnSpecializationChanged(oldValue, newValue)
 
     BindMacrosList(MegaMacroGlobalData.Classes[MegaMacroCachedClass].Specializations[newValue].Macros)
     BindMacrosList(MegaMacroCharacterData.Specializations[newValue].Macros)
+end
+
+function MegaMacroEngine.Uninstall()
+    if InCombatLockdown() then
+        return false
+    end
+
+    MegaMacroGlobalData.Activated = false
+    MegaMacroCharacterData.Activated = false
+    
+    -- Loop every macro and remove the prefix
+    for i=1, MacroLimits.MaxGlobalMacros + MacroLimits.MaxCharacterMacros do
+        local code = GetMacroBody(i)
+        local macroId = GetIdFromMacroCode(code)
+        local macroName = GetMacroInfo(i)
+        
+        
+        if macroId then
+            local cleanCode = string.sub(code, 5)
+            --If it is stubcode, replace with what we can.
+            local macro = MegaMacro.GetById(macroId)
+            if macro and #macro.Code > MegaMacroCodeMaxLengthForNative then
+                cleanCode = macro.Code
+            end
+
+            local iconTexture = getTexture(macro, i)
+            EditMacro(i, macroName, iconTexture, cleanCode, true, i > MacroLimits.MaxGlobalMacros)
+        end
+    end
+    -- Now clear MegaMacro Global, Character, and Spec data
+    MegaMacroGlobalData.Macros = {}
+    MegaMacroCharacterData.Macros = {}
+    MegaMacroGlobalData.Classes[MegaMacroCachedClass].Macros = {}
+    MegaMacroGlobalData.Classes[MegaMacroCachedClass].Specializations[MegaMacroCachedSpecialization].Macros = {}
+    MegaMacroGlobalData.InactiveMacros = {}
+
+    InitializeMacroIndexCache()
+    message("Mega Macro: Uninstalled. Disabled MegaMacro and reload your UI.")
+    return true
 end

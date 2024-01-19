@@ -31,8 +31,9 @@ local function GetNextAvailableMacroId(startOffset, count, existingMacros)
 end
 
 MegaMacro = {}
+MegaMacro.GetNextAvailableMacroId = GetNextAvailableMacroId
 
-function MegaMacro.Create(displayName, scope, staticTexture, isStaticTextureFallback)
+function MegaMacro.Create(displayName, scope, staticTexture, isStaticTextureFallback, code, macroIndex)
     local result = {}
 
     local id
@@ -102,6 +103,15 @@ function MegaMacro.Create(displayName, scope, staticTexture, isStaticTextureFall
         id = GetNextAvailableMacroId(MacroIndexOffsets.PerCharacterSpecialization, MacroLimits.PerCharacterSpecializationCount, macroList)
         result.Class = MegaMacroCachedClass
         result.Specialization = MegaMacroCachedSpecialization
+    elseif scope == MegaMacroScopes.Inactive then
+        macroList = MegaMacroGlobalData.InactiveMacros
+        scopedIndex = #macroList + 1
+
+        if scopedIndex > MacroLimits.InactiveCount then
+            return nil
+        end
+
+        id = GetNextAvailableMacroId(MacroIndexOffsets.Inactive, MacroLimits.InactiveCount, macroList)
     else
         return nil
     end
@@ -116,11 +126,11 @@ function MegaMacro.Create(displayName, scope, staticTexture, isStaticTextureFall
     result.Scope = scope
     result.ScopedIndex = scopedIndex
     result.DisplayName = displayName
-    result.Code = ""
+    result.Code = code or ""
     result.StaticTexture = staticTexture
     result.IsStaticTextureFallback = isStaticTextureFallback
 
-    MegaMacroEngine.OnMacroCreated(result)
+    MegaMacroEngine.OnMacroCreated(result, macroIndex)
 
     return result
 end
@@ -136,6 +146,8 @@ function MegaMacro.GetSlotCount(scope)
         return MacroLimits.PerCharacterCount
     elseif scope == MegaMacroScopes.CharacterSpecialization then
         return MacroLimits.PerCharacterSpecializationCount
+    elseif scope == MegaMacroScopes.Inactive then
+        return MacroLimits.InactiveCount
     end
 
     return 0
@@ -154,8 +166,10 @@ function MegaMacro.GetById(macroId)
         scope = MegaMacroScopes.Specialization
     elseif macroId <= MacroIndexOffsets.PerCharacterSpecialization then
         scope = MegaMacroScopes.Character
-    else
+    elseif macroId <= MacroIndexOffsets.Inactive then
         scope = MegaMacroScopes.CharacterSpecialization
+    else
+        scope = MegaMacroScopes.Inactive
     end
 
     local macros = MegaMacro.GetMacrosInScope(scope)
@@ -196,6 +210,8 @@ function MegaMacro.Delete(self)
         RemoveItemFromArray(MegaMacroCharacterData.Macros, self)
     elseif self.Scope == MegaMacroScopes.CharacterSpecialization then
         RemoveItemFromArray(MegaMacroCharacterData.Specializations[self.Specialization].Macros, self)
+    elseif self.Scope == MegaMacroScopes.Inactive then
+        RemoveItemFromArray(MegaMacroGlobalData.InactiveMacros, self)
     end
 
     MegaMacroEngine.OnMacroDeleted(self)
@@ -240,5 +256,7 @@ function MegaMacro.GetMacrosInScope(scope)
             MegaMacroCharacterData.Specializations[MegaMacroCachedSpecialization] = { Macros = {} }
         end
 		return MegaMacroCharacterData.Specializations[MegaMacroCachedSpecialization].Macros
+    elseif scope == MegaMacroScopes.Inactive then
+        return MegaMacroGlobalData.InactiveMacros
     end
 end

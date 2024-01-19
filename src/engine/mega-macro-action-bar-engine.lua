@@ -278,6 +278,10 @@ local function UpdateRange(button, functions, abilityId, target)
 end
 
 local function UpdateActionBar(button, macroId)
+	if MegaMacroConfig['UseNativeActionBar'] then
+		return
+	end
+
     local data = MegaMacroIconEvaluator.GetCachedData(macroId)
     local functions = MegaMacroInfoFunctions.Unknown
 
@@ -312,6 +316,9 @@ local function UpdateActionBar(button, macroId)
 end
 
 local function ResetActionBar(button)
+	if MegaMacroConfig['UseNativeActionBar'] then
+		return
+	end
 	button:SetChecked(false)
 	button.Count:SetText("")
 	button.Border:Hide() -- reset eqipped border

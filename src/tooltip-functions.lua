@@ -14,7 +14,7 @@ function ShowToolTipForMegaMacro(macroId)
 			GameTooltip:SetEquipmentSet(data.Name)
 		else
 			local megaMacro = MegaMacro.GetById(macroId)
-			GameTooltip:SetText(megaMacro.DisplayName, 1, 1, 1)
+			GameTooltip:SetText(megaMacro.DisplayName or "", 1, 1, 1)
 		end
 
 		GameTooltip:Show()

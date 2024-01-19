@@ -12,9 +12,12 @@ f:RegisterEvent("PLAYER_TARGET_CHANGED")
 local function OnUpdate(_, elapsed)
     MegaMacroSystemTime = GetTime()
     local elapsedMs = elapsed * 1000
+    MegaMacroIconNavigator.OnUpdate()
+    if MegaMacroConfig['UseNativeActionBar'] and not MegaMacro_Frame:IsVisible() then
+		return
+	end
     MegaMacroIconEvaluator.Update(elapsedMs)
     MegaMacroActionBarEngine.OnUpdate(elapsed)
-    MegaMacroIconNavigator.OnUpdate()
 end
 
 local function Initialize()
@@ -40,6 +43,8 @@ local function Initialize()
         MegaMacroIconEvaluator.Initialize()
         MegaMacroActionBarEngine.Initialize()
         MegaMacroEngine.SafeInitialize()
+        MegaMacroEngine.ImportMacros()
+        MegaMacroEngine.VerifyMacros()
         MegaMacroFullyActive = MegaMacroGlobalData.Activated and MegaMacroCharacterData.Activated
         f:SetScript("OnUpdate", OnUpdate)
     end

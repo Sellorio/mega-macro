@@ -8,7 +8,7 @@ local function GetWord(parsingContext, offset)
     local index = parsingContext.Index + (offset or 0)
     local text = ""
     local character = GetCharacter({ Code = parsingContext.Code, Index = index })
-    while character and (string.match(character, "[a-z]") or string.match(character, "[A-Z]") or string.match(character, "[0-9]") or character == "_") do
+    while character and (string.match(character, "[a-z]") or string.match(character, "[A-Z]") or string.match(character, "[0-9]") or character == "_" or character == "/") do
         text = text..character
         index = index + 1
         character = GetCharacter({ Code = parsingContext.Code, Index = index })

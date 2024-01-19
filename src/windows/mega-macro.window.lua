@@ -18,6 +18,7 @@ local PopupMode = nil
 local IconListInitialized = false
 local SelectedIcon = nil
 local IconList = {}
+local SelectedTabIndex = 1
 
 NUM_ICONS_PER_ROW = 10
 NUM_ICON_ROWS = 9
@@ -35,13 +36,13 @@ local function GetScopeFromTabIndex(tabIndex)
 	elseif tabIndex == 4 then
 		return MegaMacroScopes.Character
 	elseif tabIndex == 5 then
-		return MegaMacroScopes.CharacterSpecialization
+		return MegaMacroScopes.Inactive
 	end
 end
 
 local function GetMacroButtonUI(index)
 	local buttonName = "MegaMacro_MacroButton" .. index
-	return _G[buttonName], _G[buttonName .. "Name"], _G[buttonName].Icon
+	return _G[buttonName], _G[buttonName].Name, _G[buttonName].Icon
 end
 
 -- Creates the button frames for the macro slots
@@ -89,17 +90,15 @@ local function InitializeTabs()
 	local playerName = UnitName("player")
 	MegaMacro_FrameTab2:SetText(MegaMacroCachedClass)
 	MegaMacro_FrameTab4:SetText(playerName)
-
+	MegaMacro_FrameTab5:SetText("Inactive")
+	MegaMacro_FrameTab6:SetText("Config")
+	
 	if MegaMacroCachedSpecialization == '' then
 		MegaMacro_FrameTab3:SetText("Locked")
-		MegaMacro_FrameTab5:SetText("Locked")
 		MegaMacro_FrameTab3:Disable()
-		MegaMacro_FrameTab5:Disable()
 	else
 		MegaMacro_FrameTab3:SetText(MegaMacroCachedSpecialization)
-		MegaMacro_FrameTab5:SetText(playerName.." "..MegaMacroCachedSpecialization)
 		MegaMacro_FrameTab3:Enable()
-		MegaMacro_FrameTab5:Enable()
 	end
 end
 
@@ -212,7 +211,7 @@ local function SetMacroItems()
 	table.sort(
 		MacroItems,
 		function(left, right)
-			return left.DisplayName < right.DisplayName
+			return (left.DisplayName or "") < (right.DisplayName or "")
 		end)
 
 	local newMacroButtonCreated = false
@@ -227,12 +226,17 @@ local function SetMacroItems()
 			buttonFrame.IsNewButton = false
 			-- buttonFrame:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
 			buttonName:SetText(macro.DisplayName)
+			MegaMacroIconEvaluator.UpdateMacro(macro)
 			local data = MegaMacroIconEvaluator.GetCachedData(macro.Id)
-			buttonIcon:SetTexture(data and data.Icon)
+			buttonIcon:SetTexture(data and data.Icon or MegaMacroTexture)
 			buttonIcon:SetDesaturated(false)
 			buttonIcon:SetTexCoord(0, 1, 0, 1)
 			buttonIcon:SetAlpha(1)
-		elseif not newMacroButtonCreated then
+			if not MegaMacroEngine.GetMacroIndexFromId(macro.Id) then
+				buttonIcon:SetAlpha(0.5)
+				buttonIcon:SetDesaturated(true)
+			end
+		elseif not newMacroButtonCreated and SelectedScope ~= MegaMacroScopes.Inactive then
 			buttonFrame.Macro = nil
 			buttonFrame.IsNewButton = true
 			-- buttonFrame:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
@@ -302,6 +306,13 @@ end
 
 local function PickupMegaMacro(macro)
 	local macroIndex = MegaMacroEngine.GetMacroIndexFromId(macro.Id)
+	-- highlight all tabs to indicate it can be moved to a tab
+	for i=1, 5 do
+		if i ~= SelectedTabIndex then
+			local tab = _G["MegaMacro_FrameTab"..i]
+			tab:LockHighlight()
+		end
+	end
 
 	if macroIndex then
 		PickupMacro(macroIndex)
@@ -448,7 +459,7 @@ end
 
 function MegaMacro_Window_OnLoad()
     -- Global, Class, ClassSpec, Character, CharacterSpec
-	PanelTemplates_SetNumTabs(MegaMacro_Frame, 5)
+	PanelTemplates_SetNumTabs(MegaMacro_Frame, 6)
 	PanelTemplates_SetTab(MegaMacro_Frame, 1)
 	MegaMacroIconEvaluator.OnIconUpdated(function(macroId, texture)
 		MegaMacro_OnIconUpdated(macroId, texture)
@@ -483,13 +494,36 @@ function MegaMacro_FrameTab_OnClick(self)
 	if not HandleReceiveDrag(scope) then
 		PanelTemplates_SetTab(MegaMacro_Frame, tabIndex);
 		MegaMacro_ButtonScrollFrame:SetVerticalScroll(0)
-
+		MegaMacro_ConfigContainer:Hide()
+		
+		if tabIndex == 6 then
+			SelectedScope = 'config'
+			MegaMacro_FrameTab_ShowConfig()
+			return
+		end
+		
 		SelectedScope = scope
+		SelectedTabIndex = tabIndex
 
 		InitializeMacroSlots()
 		SetMacroItems()
 		InitializeTabs()
+
 	end
+end
+
+function MegaMacro_FrameTab_ShowConfig()
+	-- Initialize Config Options
+	if not MegaMacro_ConfigContainer.initialized then
+		MecaMacro_GenerateConfig()
+		MegaMacro_ConfigContainer.initialized = true
+	end
+
+	--Clear macro area
+	InitializeMacroSlots()
+	SelectMacro(nil)
+
+	MegaMacro_ConfigContainer:Show()
 end
 
 function MegaMacro_FrameTab_OnReceiveDrag(self)
@@ -536,6 +570,13 @@ end
 function MegaMacro_MacroButton_OnDragStart(self)
 	if self.Macro then
 		PickupMegaMacro(self.Macro)
+	end
+end
+
+function MegaMacro_MacroButton_OnDragStop(self)
+	for i=1, 5 do
+		local tab = _G["MegaMacro_FrameTab"..i]
+		tab:UnlockHighlight()
 	end
 end
 
@@ -588,6 +629,22 @@ function MegaMacro_TextBox_TextChanged(self)
 		rendering.CharLimitMessageFormat,
 		MegaMacro_FrameText:GetNumLetters(),
 		MegaMacroCodeMaxLength)
+	-- Set color of text based on length
+	if MegaMacro_FrameText:GetNumLetters() > MegaMacroCodeMaxLengthForNative then
+		MegaMacro_FrameCharLimitText:SetTextColor(1, 0.85, 0)
+	else
+		MegaMacro_FrameCharLimitText:SetTextColor(1,1,1) --0.2, 0.867, 1.0
+	end
+	-- Limit. Custom hover tooltip
+	MegaMacro_FrameCharLimitText:SetScript("OnEnter", function(self)
+		GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT")
+		GameTooltip:AddLine("MegaMacro: Character Limit", 1, 1, 1)
+		GameTooltip:AddLine("\nMacros over 250 characters rely on custom macro logic. They will not have a dynamic icon if you are not using MegaMacros icon rendering. This option can be set in the config tab.", 1, 1, 1, true)
+		GameTooltip:Show()
+	end)
+	MegaMacro_FrameCharLimitText:SetScript("OnLeave", function(self)
+		GameTooltip:Hide()
+	end)
 
 	ScrollingEdit_OnTextChanged(self, self:GetParent())
 	ScrollingEdit_OnTextChanged(MegaMacro_FormattedFrameText, MegaMacro_FormattedFrameText:GetParent())
@@ -618,10 +675,24 @@ function MegaMacro_EditButton_OnClick()
 		MegaMacro_PopupEditBox:SetText(SelectedMacro.DisplayName)
 		MegaMacro_FallbackTextureCheckBox:SetChecked(SelectedMacro.IsStaticTextureFallback)
 		MegaMacro_IconSearchBox:SetText("")
+		MegaMacro_DisplayNameLabel:SetText("(#"..SelectedMacro.Id .. ") Display Name")
 		MegaMacro_PopupFrame:Show()
 		PopupMode = PopupModes.Edit
 	end
 end
+
+function MegaMacro_BlizMacro_Toggle()
+	-- re-initialize macros
+	MegaMacroEngine.SafeInitialize()
+	-- update macro char length limit
+	MegaMacro_InitialiseConfig()
+	MegaMacro_FrameCharLimitText:SetFormattedText(
+		rendering.CharLimitMessageFormat,
+		MegaMacro_FrameText:GetNumLetters(),
+		MegaMacroCodeMaxLength)
+end
+
+
 
 function MegaMacro_EditOkButton_OnClick()
 	local enteredText = MegaMacro_PopupEditBox:GetText()
@@ -765,3 +836,65 @@ function MegaMacro_RegisterShiftClicks()
 	end
 end
 
+-- Create the Config options
+function MecaMacro_GenerateConfig()
+    -- Blizzard Action Bar Icons
+    MecaMacroConfig_GenerateCheckbox('UseBlizzardActionIcons', 'Blizzard Action Bar Icons', 'Disable Mega Macro Action Bar Engine. \nMacro Icons will be decided by blizzard instead of Mega Macro.', 0, -5, MegaMacroConfig.UseNativeActionBar, function(value) 
+        MegaMacroConfig.UseNativeActionBar = value
+    end)
+	-- Make button "Uninstall"
+	MecaMacroConfig_GenerateButton('Uninstall', 'Uninstall', 'Removes MegaMacro information from Macros. Disable MegaMacro before reload to avoid re-importing them. \n\nNote: Current Class and Spec macros will become global. \nMacros for other Classes and Specs will be lost since Blizzard Macros do not have room for them.', 0, -30, function()
+		-- Warn and get confirmation
+		StaticPopupDialogs["MEGAMACRO_UNINSTALL_WARNING"] = {
+			text = "Are you sure you want to uninstall MegaMacro?",
+			button1 = "Yes",
+			button2 = "No",
+			OnAccept = function()
+				MegaMacroEngine.Uninstall()
+				print("MegaMacro uninstalled.")
+			end,
+			OnCancel = function()
+				print("Uninstallation cancelled.")
+			end,
+			timeout = 0,
+			whileDead = true,
+			hideOnEscape = true,
+			preferredIndex = 3, -- to avoid UI taint
+		}
+
+		StaticPopup_Show("MEGAMACRO_UNINSTALL_WARNING")
+	end)
+end
+
+function MecaMacroConfig_GenerateCheckbox(name, text, tooltip, x, y, checked, onClick)
+    local checkbox = CreateFrame("CheckButton", "MegaMacro_ConfigContainer_" .. name, MegaMacro_ConfigContainer, "ChatConfigCheckButtonTemplate")
+    checkbox:SetPoint("TOPLEFT", x, y)
+    checkbox:SetChecked(checked)
+    checkbox:SetScript("OnClick", function(self)
+        onClick(checkbox:GetChecked())
+    end)
+    checkbox.tooltip = tooltip
+    
+    local textFrame = _G[checkbox:GetName() .. "Text"]
+    textFrame:SetFontObject("GameFontNormalSmall")
+    textFrame:SetText(text)
+
+    return checkbox
+end
+
+function MecaMacroConfig_GenerateButton(name, text, tooltip, x, y, onClick)
+	local button = CreateFrame("Button", "MegaMacro_ConfigContainer_" .. name, MegaMacro_ConfigContainer, "UIPanelButtonTemplate")
+	button:SetPoint("TOPLEFT", x, y)
+	-- set width
+	button:SetWidth(100)
+	button:SetScript("OnClick", function(self)
+		onClick()
+	end)
+	button.tooltipText = tooltip
+	
+	local textFrame = _G[button:GetName() .. "Text"]
+	textFrame:SetFontObject("GameFontNormalSmall")
+	textFrame:SetText(text)
+
+	return button
+end
