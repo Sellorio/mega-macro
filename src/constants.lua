@@ -76,7 +76,13 @@ MegaMacroInfoFunctions = {
 		GetCount = function(itemId) return GetItemCount(itemId, false, true) end,
 		GetCharges = function(_) return 0, 0, -1, 0, 1 end, -- charges, maxCharges, chargeStart, chargeDuration, chargeModRate
 		IsUsable = function(itemId) return IsUsableItem(itemId), false end,
-		IsInRange = IsItemInRange,
+		IsInRange = function(itemId)
+			if GetItemInfo(itemId) then
+				return function(unit)
+					return IsItemInRange(itemId, unit)
+				end
+			end
+		end,
 		IsCurrent = IsCurrentItem,
 		IsEquipped = function(itemId) return IsEquippedItem(itemId) end,
 		IsAutoRepeat = function(_) return false end,
