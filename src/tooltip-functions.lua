@@ -9,7 +9,8 @@ function ShowToolTipForMegaMacro(macroId)
 			GameTooltip:SetSpellByID(data.Id)
 			-- GameTooltip:SetToyByItemID(itemId)
 		elseif data.Type == "item" then
-			GameTooltip:SetItemByID(data.Id)
+			GameTooltip:SetInventoryItemByID(data.Id)
+			-- GameTooltip:SetItemByID(data.Id)
 		elseif data.Type == "equipment set" then
 			GameTooltip:SetEquipmentSet(data.Name)
 		else
