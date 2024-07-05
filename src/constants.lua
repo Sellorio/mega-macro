@@ -6,7 +6,7 @@ MacroLimits = {
 	-- limit: 18 character specific macro slots
 	PerCharacterCount = 30,
 	PerCharacterSpecializationCount = 0,
-	InactiveCount = 160,
+	InactiveCount = 150,
 	MaxGlobalMacros = 120,
 	MaxCharacterMacros = 30
 }
