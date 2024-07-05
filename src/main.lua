@@ -74,3 +74,6 @@ f:SetScript("OnEvent", function(self, event)
 end)
 
 MegaMacro_RegisterShiftClicks()
+
+tinsert(UISpecialFrames, "MegaMacro_Frame")
+UIPanelWindows["MegaMacro_Frame"] = nil
