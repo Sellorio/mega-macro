@@ -92,7 +92,7 @@ local function InitializeTabs()
 	MegaMacro_FrameTab4:SetText(playerName)
 	MegaMacro_FrameTab5:SetText("Inactive")
 	MegaMacro_FrameTab6:SetText("Config")
-	
+
 	if MegaMacroCachedSpecialization == '' then
 		MegaMacro_FrameTab3:SetText("Locked")
 		MegaMacro_FrameTab3:Disable()
@@ -285,7 +285,7 @@ local function DeleteMegaMacro()
 end
 
 local function UpdateTooltipIfButtonIsHovered(updatedMacroId)
-	local mouseFocus = GetMouseFocus()
+	local mouseFocus = GetMouseFoci()[1]
 
 	if mouseFocus then
 		local focusFrame = mouseFocus:GetName()
@@ -501,7 +501,7 @@ function MegaMacro_FrameTab_OnClick(self)
 			MegaMacro_FrameTab_ShowConfig()
 			return
 		end
-		
+
 		SelectedScope = scope
 		SelectedTabIndex = tabIndex
 
