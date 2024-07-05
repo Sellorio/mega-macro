@@ -20,7 +20,7 @@ For developer refererence, these are the features of an action bar button:
 
 local LibActionButton = nil
 local ActionBarSystem = nil -- Blizzard or LAB or Dominos
-local BlizzardActionBars = { "Action", "MultiBarBottomLeft", "MultiBarBottomRight", "MultiBarRight", "MultiBarLeft" }
+local BlizzardActionBars = { "Action", "MultiBarBottomLeft", "MultiBarBottomRight", "MultiBarRight", "MultiBarLeft", "MultiBar5", "MultiBar6", "MultiBar7" }
 
 local rangeTimer = 5
 local updateRange = false
