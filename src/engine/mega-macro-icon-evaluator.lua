@@ -80,10 +80,10 @@ local function GetAbilityData(ability)
         end
 
         local itemId
-        itemId, _, _, _, texture = GetItemInfoInstant(ability)
+        itemId, _, _, _, texture = C_Item.GetItemInfoInstant(ability)
         if texture then
             if C_ToyBox.GetToyInfo(itemId) then
-                spellName, spellId = GetItemSpell(itemId)
+                spellName, spellId = C_Item.GetItemSpell(itemId)
                 if spellId then
                     return "spell", spellId, spellName, texture
                 end

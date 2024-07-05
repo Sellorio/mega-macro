@@ -64,9 +64,9 @@ MegaMacroInfoFunctions = {
 				end
             end
 		end,
-		IsCurrent = IsCurrentSpell,
+		IsCurrent = C_Spell.IsCurrentSpell,
 		IsEquipped = function(_) return false end,
-		IsAutoRepeat = IsAutoRepeatSpell,
+		IsAutoRepeat = C_Spell.IsAutoRepeatSpell,
 		IsLocked = C_LevelLink.IsSpellLocked,
 		GetLossOfControlCooldown = GetSpellLossOfControlCooldown,
 		IsOverlayed = IsSpellOverlayed
