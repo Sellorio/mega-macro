@@ -66,13 +66,13 @@ local function GetAbilityData(ability)
     if slotId then
         local itemId = GetInventoryItemID("player", slotId)
         if itemId then
-            local itemName, _, _, _, _, _, _, _, _, itemTexture = GetItemInfo(itemId)
+            local itemName, _, _, _, _, _, _, _, _, itemTexture = C_Item.GetItemInfo(itemId)
             return "item", itemId, itemName, itemTexture
         else
             return "unknown", nil, nil, MegaMacroTexture
         end
     else
-        local spellName, _, texture, _, _, _, spellId = GetSpellInfo(ability)
+        local spellName, _, texture, _, _, _, spellId = C_Spell.GetSpellInfo(ability)
         if spellId then
             local shapeshiftFormIndex = GetShapeshiftForm()
             local isActiveStance = shapeshiftFormIndex and shapeshiftFormIndex > 0 and spellId == select(4, GetShapeshiftFormInfo(shapeshiftFormIndex))
