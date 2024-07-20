@@ -91,6 +91,9 @@ function MegaMacroIconNavigator.OnUpdate()
         for _=1, FetchesPerFrame do
             CurrentSpellId = CurrentSpellId + 1
             local spellInfo = C_Spell.GetSpellInfo(CurrentSpellId)
+            if (spellInfo == nil) then
+                return
+            end
             local name, _, icon, _, _, _, spellId = spellInfo.name, nil, spellInfo.iconID, spellInfo.castTime, spellInfo.minRange, spellInfo.maxRange, spellInfo.spellID
 
             if icon == 136243 then
