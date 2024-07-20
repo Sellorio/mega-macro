@@ -90,7 +90,8 @@ function MegaMacroIconNavigator.OnUpdate()
     if IconLoadingStarted and not IconLoadingFinished then
         for _=1, FetchesPerFrame do
             CurrentSpellId = CurrentSpellId + 1
-            local name, _, icon, _, _, _, spellId = C_Spell.GetSpellInfo(CurrentSpellId)
+            local spellInfo = C_Spell.GetSpellInfo(CurrentSpellId)
+            local name, _, icon, _, _, _, spellId = spellInfo.name, nil, spellInfo.iconID, spellInfo.castTime, spellInfo.minRange, spellInfo.maxRange, spellInfo.spellID
 
             if icon == 136243 then
                 -- 136243 is the a gear icon, we can ignore those spells (courtesy of WeakAuras)
