@@ -73,6 +73,9 @@ local function GetAbilityData(ability)
         end
     else
         local spellInfo = C_Spell.GetSpellInfo(ability)
+        if (spellInfo == nil) then
+            return
+        end
         local spellName, _, texture, _, _, _, spellId = spellInfo.name, nil, spellInfo.iconID, spellInfo.castTime, spellInfo.minRange, spellInfo.maxRange, spellInfo.spellID
         if spellId then
             local shapeshiftFormIndex = GetShapeshiftForm()
