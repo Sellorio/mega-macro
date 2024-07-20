@@ -72,7 +72,8 @@ local function GetAbilityData(ability)
             return "unknown", nil, nil, MegaMacroTexture
         end
     else
-        local spellName, _, texture, _, _, _, spellId = C_Spell.GetSpellInfo(ability)
+        local spellInfo = C_Spell.GetSpellInfo(ability)
+        local spellName, _, texture, _, _, _, spellId = spellInfo.name, nil, spellInfo.iconID, spellInfo.castTime, spellInfo.minRange, spellInfo.maxRange, spellInfo.spellID
         if spellId then
             local shapeshiftFormIndex = GetShapeshiftForm()
             local isActiveStance = shapeshiftFormIndex and shapeshiftFormIndex > 0 and spellId == select(4, GetShapeshiftFormInfo(shapeshiftFormIndex))
