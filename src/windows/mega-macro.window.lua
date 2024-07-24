@@ -92,7 +92,7 @@ local function InitializeTabs()
 	MegaMacro_FrameTab4:SetText(playerName)
 	MegaMacro_FrameTab5:SetText("Inactive")
 	MegaMacro_FrameTab6:SetText("Config")
-	
+
 	if MegaMacroCachedSpecialization == '' then
 		MegaMacro_FrameTab3:SetText("Locked")
 		MegaMacro_FrameTab3:Disable()
@@ -285,7 +285,7 @@ local function DeleteMegaMacro()
 end
 
 local function UpdateTooltipIfButtonIsHovered(updatedMacroId)
-	local mouseFocus = GetMouseFocus()
+	local mouseFocus = GetMouseFoci()[1]
 
 	if mouseFocus then
 		local focusFrame = mouseFocus:GetName()
@@ -501,7 +501,7 @@ function MegaMacro_FrameTab_OnClick(self)
 			MegaMacro_FrameTab_ShowConfig()
 			return
 		end
-		
+
 		SelectedScope = scope
 		SelectedTabIndex = tabIndex
 
@@ -630,7 +630,9 @@ function MegaMacro_TextBox_TextChanged(self)
 		MegaMacro_FrameText:GetNumLetters(),
 		MegaMacroCodeMaxLength)
 	-- Set color of text based on length
-	if MegaMacro_FrameText:GetNumLetters() > MegaMacroCodeMaxLengthForNative then
+	if MegaMacro_FrameText:GetNumLetters() > MegaMacroCodeMaxLength then
+		MegaMacro_FrameCharLimitText:SetTextColor(1, 0.267, 0.267)
+	elseif MegaMacro_FrameText:GetNumLetters() > MegaMacroCodeMaxLengthForNative then
 		MegaMacro_FrameCharLimitText:SetTextColor(1, 0.85, 0)
 	else
 		MegaMacro_FrameCharLimitText:SetTextColor(1,1,1) --0.2, 0.867, 1.0

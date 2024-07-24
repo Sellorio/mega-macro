@@ -66,13 +66,17 @@ local function GetAbilityData(ability)
     if slotId then
         local itemId = GetInventoryItemID("player", slotId)
         if itemId then
-            local itemName, _, _, _, _, _, _, _, _, itemTexture = GetItemInfo(itemId)
+            local itemName, _, _, _, _, _, _, _, _, itemTexture = C_Item.GetItemInfo(itemId)
             return "item", itemId, itemName, itemTexture
         else
             return "unknown", nil, nil, MegaMacroTexture
         end
     else
-        local spellName, _, texture, _, _, _, spellId = GetSpellInfo(ability)
+        local spellInfo = C_Spell.GetSpellInfo(ability)
+        if (spellInfo == nil) then
+            return
+        end
+        local spellName, _, texture, _, _, _, spellId = spellInfo.name, nil, spellInfo.iconID, spellInfo.castTime, spellInfo.minRange, spellInfo.maxRange, spellInfo.spellID
         if spellId then
             local shapeshiftFormIndex = GetShapeshiftForm()
             local isActiveStance = shapeshiftFormIndex and shapeshiftFormIndex > 0 and spellId == select(4, GetShapeshiftFormInfo(shapeshiftFormIndex))
@@ -80,10 +84,10 @@ local function GetAbilityData(ability)
         end
 
         local itemId
-        itemId, _, _, _, texture = GetItemInfoInstant(ability)
+        itemId, _, _, _, texture = C_Item.GetItemInfoInstant(ability)
         if texture then
             if C_ToyBox.GetToyInfo(itemId) then
-                spellName, spellId = GetItemSpell(itemId)
+                spellName, spellId = C_Item.GetItemSpell(itemId)
                 if spellId then
                     return "spell", spellId, spellName, texture
                 end

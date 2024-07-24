@@ -22,15 +22,19 @@ local function GetDefaultIconList()
 	-- We need to avoid adding duplicate spellIDs from the spellbook tabs for your other specs.
 	local activeIcons = {};
 
-	for i = 1, GetNumSpellTabs() do
-		local tab, tabTex, offset, numSpells, _ = GetSpellTabInfo(i);
+	for i = 1, C_SpellBook.GetNumSpellBookSkillLines() do
+        local skillLine = C_SpellBook.GetSpellBookSkillLineInfo(i)
+        local tab = skillLine.name
+        local tabTex = skillLine.iconID
+        local offset = skillLine.itemIndexOffset
+        local numSpells = skillLine.numSpellBookItems
 		offset = offset + 1;
 		local tabEnd = offset + numSpells;
 		for j = offset, tabEnd - 1 do
 			--to get spell info by slot, you have to pass in a pet argument
-			local spellType, ID = GetSpellBookItemInfo(j, "player");
+			local spellType, ID = C_SpellBook.GetSpellBookItemType(j, Enum.SpellBookSpellBank.Player);
 			if (spellType ~= "FUTURESPELL") then
-				local fileID = GetSpellBookItemTexture(j, "player");
+				local fileID = C_SpellBook.GetSpellBookItemTexture(j, Enum.SpellBookSpellBank.Player);
 				if (fileID) then
 					activeIcons[fileID] = true;
 				end
@@ -86,7 +90,11 @@ function MegaMacroIconNavigator.OnUpdate()
     if IconLoadingStarted and not IconLoadingFinished then
         for _=1, FetchesPerFrame do
             CurrentSpellId = CurrentSpellId + 1
-            local name, _, icon, _, _, _, spellId = GetSpellInfo(CurrentSpellId)
+            local spellInfo = C_Spell.GetSpellInfo(CurrentSpellId)
+            if (spellInfo == nil) then
+                return
+            end
+            local name, _, icon, _, _, _, spellId = spellInfo.name, nil, spellInfo.iconID, spellInfo.castTime, spellInfo.minRange, spellInfo.maxRange, spellInfo.spellID
 
             if icon == 136243 then
                 -- 136243 is the a gear icon, we can ignore those spells (courtesy of WeakAuras)

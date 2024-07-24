@@ -4,11 +4,11 @@ MacroLimits = {
 	PerClassCount = 30,
 	PerSpecializationCount = 30,
 	-- limit: 18 character specific macro slots
-	PerCharacterCount = 18,
+	PerCharacterCount = 30,
 	PerCharacterSpecializationCount = 0,
 	InactiveCount = 160,
 	MaxGlobalMacros = 120,
-	MaxCharacterMacros = 18
+	MaxCharacterMacros = 30
 }
 
 MacroIndexOffsets = {
@@ -42,20 +42,25 @@ PetActionTextures = {
 
 MegaMacroTexture = 134400
 MegaMacroActiveStanceTexture = 136116
-MegaMacroCodeMaxLength = 1023
+MegaMacroCodeMaxLength = 255
 MegaMacroCodeMaxLengthForNative = 250
 HighestMaxMacroCount = math.max(MacroLimits.GlobalCount, MacroLimits.PerClassCount, MacroLimits.PerSpecializationCount, MacroLimits.PerCharacterCount, MacroLimits.PerCharacterSpecializationCount)
 
 MegaMacroInfoFunctions = {
 	Spell = {
-		GetCooldown = GetSpellCooldown,
-		GetCount = GetSpellCount,
-		GetCharges = function(spellId) return GetSpellCharges(spellId) end,
-		IsUsable = IsUsableSpell,
+		GetCooldown = function(abilityId)
+			local spellCooldownInfo = C_Spell.GetSpellCooldown(abilityId);
+			if spellCooldownInfo then
+				return spellCooldownInfo.startTime, spellCooldownInfo.duration, spellCooldownInfo.isEnabled, spellCooldownInfo.modRate;
+			end
+		end,
+		GetCount = C_Spell.GetSpellCastCount,
+		GetCharges = function(spellId) return C_Spell.GetSpellCharges(spellId) end,
+		IsUsable = C_Spell.IsSpellUsable,
 		IsInRange = function(spellId, target)
 			local spellIndex = FindSpellBookSlotBySpellID(spellId)
 			if spellIndex then
-				local result = IsSpellInRange(spellIndex, "spell", target)
+				local result = C_Spell.IsSpellInRange(spellIndex, "spell", target)
 
 				if result == nil then
 					return nil
@@ -64,27 +69,27 @@ MegaMacroInfoFunctions = {
 				end
             end
 		end,
-		IsCurrent = IsCurrentSpell,
+		IsCurrent = C_Spell.IsCurrentSpell,
 		IsEquipped = function(_) return false end,
-		IsAutoRepeat = IsAutoRepeatSpell,
+		IsAutoRepeat = C_Spell.IsAutoRepeatSpell,
 		IsLocked = C_LevelLink.IsSpellLocked,
-		GetLossOfControlCooldown = GetSpellLossOfControlCooldown,
+		GetLossOfControlCooldown = C_Spell.GetSpellLossOfControlCooldown,
 		IsOverlayed = IsSpellOverlayed
 	},
  	Item = {
-		GetCooldown = GetItemCooldown,
-		GetCount = function(itemId) return GetItemCount(itemId, false, true) end,
+		GetCooldown = C_Item.GetItemCooldown,
+		GetCount = function(itemId) return C_Item.GetItemCount(itemId, false, true) end,
 		GetCharges = function(_) return 0, 0, -1, 0, 1 end, -- charges, maxCharges, chargeStart, chargeDuration, chargeModRate
-		IsUsable = function(itemId) return IsUsableItem(itemId), false end,
+		IsUsable = function(itemId) return C_Item.IsUsableItem(itemId), false end,
 		IsInRange = function(itemId)
-			if GetItemInfo(itemId) then
+			if C_Item.GetItemInfo(itemId) then
 				return function(unit)
-					return IsItemInRange(itemId, unit)
+					return C_Item.IsItemInRange(itemId, unit)
 				end
 			end
 		end,
-		IsCurrent = IsCurrentItem,
-		IsEquipped = function(itemId) return IsEquippedItem(itemId) end,
+		IsCurrent = C_Item.IsCurrentItem,
+		IsEquipped = function(itemId) return C_Item.IsEquippedItem(itemId) end,
 		IsAutoRepeat = function(_) return false end,
 		IsLocked = function(_) return false end,
 		GetLossOfControlCooldown = function(_) return -1, 0 end,

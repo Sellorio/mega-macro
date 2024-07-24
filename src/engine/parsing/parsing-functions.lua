@@ -22,7 +22,14 @@ local function ParseResult(parsingContext, length, colour)
     end
     local text = string.sub(parsingContext.Code, parsingContext.Index, parsingContext.Index + length - 1)
     parsingContext.Index = parsingContext.Index + length
-    return colour and "|c"..colour..text.."|r" or text
+
+    if parsingContext.Index > 256 then
+        local validText = #text - (parsingContext.Index - 256) >= 1 and text:sub(1, #text - (parsingContext.Index - 256)) or ""
+        local overflowText = #validText > 0 and text:sub(#text - (parsingContext.Index - 257)) or text
+        return validText .. "|c"..GetMegaMacroParsingColourData().Error..overflowText.."|r"
+    else
+        return colour and "|c"..colour..text.."|r" or text
+    end
 end
 
 function GetMegaMacroParsingFunctions()

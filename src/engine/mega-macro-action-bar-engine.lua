@@ -20,7 +20,7 @@ For developer refererence, these are the features of an action bar button:
 
 local LibActionButton = nil
 local ActionBarSystem = nil -- Blizzard or LAB or Dominos
-local BlizzardActionBars = { "Action", "MultiBarBottomLeft", "MultiBarBottomRight", "MultiBarRight", "MultiBarLeft" }
+local BlizzardActionBars = { "Action", "MultiBarBottomLeft", "MultiBarBottomRight", "MultiBarRight", "MultiBarLeft", "MultiBar5", "MultiBar6", "MultiBar7" }
 
 local rangeTimer = 5
 local updateRange = false
@@ -190,7 +190,7 @@ local function UpdateCount(button, functions, abilityId)
     local countLabel = button.Count
     local count = functions.GetCount(abilityId)
 
-    local isNonEquippableItem = functions == MegaMacroInfoFunctions.Item and not IsEquippableItem(abilityId)
+    local isNonEquippableItem = functions == MegaMacroInfoFunctions.Item and not C_Item.IsEquippableItem(abilityId)
     local isNonItemWithCount = functions ~= MegaMacroInfoFunctions.Item and count and count > 0
 
     if isNonEquippableItem or isNonItemWithCount then
@@ -235,6 +235,8 @@ end
 
 local function UpdateRange(button, functions, abilityId, target)
     local valid = functions.IsInRange(abilityId, target)
+    -- local valid = IsSpellInRange(spellName, target) or IsItemInRange(abilityId, target)
+	-- local valid = true
     local checksRange = (valid ~= nil);
     local inRange = checksRange and valid;
 	rangeTimer = 1;
@@ -278,10 +280,6 @@ local function UpdateRange(button, functions, abilityId, target)
 end
 
 local function UpdateActionBar(button, macroId)
-	if MegaMacroConfig['UseNativeActionBar'] then
-		return
-	end
-
     local data = MegaMacroIconEvaluator.GetCachedData(macroId)
     local functions = MegaMacroInfoFunctions.Unknown
 
@@ -316,9 +314,6 @@ local function UpdateActionBar(button, macroId)
 end
 
 local function ResetActionBar(button)
-	if MegaMacroConfig['UseNativeActionBar'] then
-		return
-	end
 	button:SetChecked(false)
 	button.Count:SetText("")
 	button.Border:Hide() -- reset eqipped border
@@ -397,7 +392,7 @@ end
 function MegaMacroActionBarEngine.OnUpdate(elapsed)
     UpdateRangeTimer(elapsed)
 
-    local focus = GetMouseFocus()
+    local focus = GetMouseFoci()[1]
 	local iterator = ForEachBlizzardActionButton
 	
 	if ActionBarSystem == "LAB" then

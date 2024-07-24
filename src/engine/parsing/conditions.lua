@@ -263,6 +263,7 @@ end
 
 local Conditionals = {
 	actionbar = NoModifier,
+	advflyable = NoModifier,
 	bar = NumberModifier,
 	bonusbar = NumberModifier,
 	btn = MouseButtonModifier,
