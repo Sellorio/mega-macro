@@ -630,7 +630,9 @@ function MegaMacro_TextBox_TextChanged(self)
 		MegaMacro_FrameText:GetNumLetters(),
 		MegaMacroCodeMaxLength)
 	-- Set color of text based on length
-	if MegaMacro_FrameText:GetNumLetters() > MegaMacroCodeMaxLengthForNative then
+	if MegaMacro_FrameText:GetNumLetters() > MegaMacroCodeMaxLength then
+		MegaMacro_FrameCharLimitText:SetTextColor(1, 0.267, 0.267)
+	elseif MegaMacro_FrameText:GetNumLetters() > MegaMacroCodeMaxLengthForNative then
 		MegaMacro_FrameCharLimitText:SetTextColor(1, 0.85, 0)
 	else
 		MegaMacro_FrameCharLimitText:SetTextColor(1,1,1) --0.2, 0.867, 1.0

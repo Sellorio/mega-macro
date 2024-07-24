@@ -266,7 +266,7 @@
 					<Anchor point="TOPLEFT" relativeTo="MegaMacro_FrameSelectedMacroBackground" relativePoint="BOTTOMLEFT" x="11" y="-13"/>
 				</Anchors>
 				<ScrollChild>
-					<EditBox name="MegaMacro_FrameText" multiLine="true" letters="255" autoFocus="false" countInvisibleLetters="true">
+					<EditBox name="MegaMacro_FrameText" multiLine="true" letters="1023" autoFocus="false" countInvisibleLetters="true">
 						<Size x="589" y="185"/>
 						<Scripts>
 							<OnLoad>
