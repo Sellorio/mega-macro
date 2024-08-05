@@ -42,7 +42,7 @@ PetActionTextures = {
 
 MegaMacroTexture = 134400
 MegaMacroActiveStanceTexture = 136116
-MegaMacroCodeMaxLength = 255
+MegaMacroCodeMaxLength = 250
 MegaMacroCodeMaxLengthForNative = 250
 HighestMaxMacroCount = math.max(MacroLimits.GlobalCount, MacroLimits.PerClassCount, MacroLimits.PerSpecializationCount, MacroLimits.PerCharacterCount, MacroLimits.PerCharacterSpecializationCount)
 
