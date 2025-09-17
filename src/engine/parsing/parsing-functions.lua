@@ -17,16 +17,25 @@ local function GetWord(parsingContext, offset)
 end
 
 local function ParseResult(parsingContext, length, colour)
-    if length == 0 then
-        return ""
-    end
-    local text = string.sub(parsingContext.Code, parsingContext.Index, parsingContext.Index + length - 1)
+    if length == 0 then return "" end
+
+    local text = string.sub(parsingContext.Code,
+                            parsingContext.Index,
+                            parsingContext.Index + length - 1)
     parsingContext.Index = parsingContext.Index + length
 
+    -- 11.2: colour may be a Color object (from HexToColor) or a raw hex string.
+    if type(colour) == "table" and colour.GetRGB then
+        -- Convert the Color object back to a hex string for legacy text output.
+        local r,g,b = colour:GetRGB()
+        colour = string.format("%02x%02x%02x", r*255, g*255, b*255)
+    end
+
     if parsingContext.Index > (MegaMacroCodeMaxLengthForNative + 1) then
-        local validText = #text - (parsingContext.Index - (MegaMacroCodeMaxLengthForNative + 1)) >= 1 and text:sub(1, #text - (parsingContext.Index - (MegaMacroCodeMaxLengthForNative + 1))) or ""
-        local overflowText = #validText > 0 and text:sub(#text - (parsingContext.Index - (MegaMacroCodeMaxLengthForNative + 2))) or text
-        return validText .. "|c"..GetMegaMacroParsingColourData().Error..overflowText.."|r"
+        local overflow = parsingContext.Index - (MegaMacroCodeMaxLengthForNative + 1)
+        local valid   = text:sub(1, #text - overflow)
+        local excess  = text:sub(#valid + 1)
+        return valid .. "|c"..GetMegaMacroParsingColourData().Error..excess.."|r"
     else
         return colour and "|c"..colour..text.."|r" or text
     end

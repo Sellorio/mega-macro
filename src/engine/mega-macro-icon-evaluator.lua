@@ -126,7 +126,7 @@ local function ComputeMacroIcon(macro, staticTexture, isStaticTextureFallback)
         local codeInfo = MegaMacroCodeInfo.Get(macro)
         local codeInfoLength = #codeInfo
 
-        for i=1, codeInfoLength do
+        for i = 1, codeInfoLength do
             local command = codeInfo[i]
 
             if command.Type == "showtooltip" or command.Type == "use" or command.Type == "cast" then
@@ -233,20 +233,20 @@ local function UpdateMacro(macro)
         or currentData.Icon ~= icon
         or currentData.Target ~= target then
 
-        currentData.Type = effectType
-        currentData.Id = effectId
-        currentData.Name = effectName
-        currentData.Icon = icon
+        currentData.Type   = effectType
+        currentData.Id     = effectId
+        currentData.Name   = effectName
+        currentData.Icon   = icon
         currentData.Target = target
 
-        for i=1, #IconUpdatedCallbacks do
+        for i = 1, #IconUpdatedCallbacks do
             IconUpdatedCallbacks[i](macro.Id, icon)
         end
     end
 
     if MegaMacroConfig['UseNativeActionBar'] then
-		return
-	end
+        return
+    end
 
     local macroIndex = MegaMacroEngine.GetMacroIndexFromId(macro.Id)
     if macroIndex and not InCombatLockdown() then
@@ -288,10 +288,10 @@ local function UpdateAllMacros()
     LastMacroList = MegaMacroGlobalData.Macros
     LastMacroIndex = 0
 
-    for _=1, (MacroLimits.MaxGlobalMacros + MacroLimits.MaxCharacterMacros) do
-        local previousLastMacroScope = LastMacroScope
-        local previousLastMacroList = LastMacroList
-        local previousLastMacroIndex = LastMacroIndex
+    for _ = 1, (MacroLimits.MaxGlobalMacros + MacroLimits.MaxCharacterMacros) do
+        local previousLastMacroScope  = LastMacroScope
+        local previousLastMacroList   = LastMacroList
+        local previousLastMacroIndex  = LastMacroIndex
 
         if not IterateNextMacro() then
             break
@@ -299,7 +299,7 @@ local function UpdateAllMacros()
 
         if MacroEffectData[LastMacroList[LastMacroIndex].Id] then
             LastMacroScope = previousLastMacroScope
-            LastMacroList = previousLastMacroList
+            LastMacroList  = previousLastMacroList
             LastMacroIndex = previousLastMacroIndex
             break
         end
@@ -323,7 +323,7 @@ end
 function MegaMacroIconEvaluator.Update(elapsedMs)
     local macrosToScan = elapsedMs * MacrosToUpdatePerMs
 
-    for _=1, macrosToScan do
+    for _ = 1, macrosToScan do
         if not UpdateNextMacro() then
             break
         end

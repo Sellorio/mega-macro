@@ -24,7 +24,7 @@ local function InitializeMacroIndexCache()
     MacroIndexCache = {}
 
     for i=1, MacroLimits.MaxGlobalMacros do
-        local macroCode = GetMacroBody(i)
+        local _, _, macroCode, _ = GetMacroInfo(i)
 
         if macroCode then
             local macroId = GetIdFromMacroCode(macroCode)
@@ -36,7 +36,7 @@ local function InitializeMacroIndexCache()
     end
 
     for i=1 + MacroLimits.MaxGlobalMacros, MacroLimits.MaxGlobalMacros + MacroLimits.MaxCharacterMacros do
-        local macroCode = GetMacroBody(i)
+        local _, _, macroCode, _ = GetMacroInfo(i)
 
         if macroCode then
             local macroId = GetIdFromMacroCode(macroCode)
@@ -64,7 +64,7 @@ local function getTexture(macro, macroIndex)
     local macroIndex = macroIndex or MacroIndexCache[macro.Id]
     local iconTexture = macro.StaticTexture
     if macroIndex and not iconTexture then
-        local _, iconTexture = GetMacroInfo(macroIndex)
+        local _, iconTexture, _, _ = GetMacroInfo(macroIndex)
     end
     return iconTexture
 end
@@ -262,7 +262,7 @@ function MegaMacroEngine.GetOrCreateClicky(macroId)
     local clicky = _G[name]
 
     if not clicky then
-        clicky = CreateFrame("Button", name, nil, "SecureActionButtonTemplate")
+        clicky = CreateFrame("Button", name, UIParent, "SecureActionButtonTemplate")
         clicky:SetAttribute("type", "macro")
         clicky:SetAttribute("macrotext", "")
     end
@@ -527,9 +527,9 @@ function MegaMacroEngine.Uninstall()
     
     -- Loop every macro and remove the prefix
     for i=1, MacroLimits.MaxGlobalMacros + MacroLimits.MaxCharacterMacros do
-        local code = GetMacroBody(i)
+        local _, _, code, _ = GetMacroInfo(i)
         local macroId = GetIdFromMacroCode(code)
-        local macroName = GetMacroInfo(i)
+        local macroName, _, _, _ = GetMacroInfo(i)
         
         
         if macroId then

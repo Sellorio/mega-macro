@@ -1,19 +1,25 @@
+-- Existing command collection -------------------------------------------------
 local Commands = {
     "1",
     "2",
     "3"
 }
+
+-- 1️⃣  Pull in all slash commands that actually start with '/'.
 for globalName, command in pairs(_G) do
-    if string.sub(globalName, 1, 6) == "SLASH_" then
-        table.insert(Commands, string.sub(command, 2))
+    if type(command) == "string" and command:sub(1,1) == "/" then
+        -- Old style: SLASH_<NAME>1 = "/cast"
+        table.insert(Commands, command:sub(2))
     end
 end
-for i=1, 999 do
-    local emote = _G["EMOTE"..i.."_TOKEN"]
-    if not emote then
-        break
-    end
-    table.insert(Commands, string.lower(emote))
+
+-- 2️⃣  Gather emotes – support both the legacy and the new naming scheme.
+for i = 1, 999 do
+    local legacy   = _G["EMOTE"..i.."_TOKEN"]
+    local modern   = _G["EMOTE_TOKEN_"..i]   -- new pattern in 11.2
+    local emoteTok = legacy or modern
+    if not emoteTok then break end
+    table.insert(Commands, string.lower(emoteTok))
 end
 
 local Colours = GetMegaMacroParsingColourData()
