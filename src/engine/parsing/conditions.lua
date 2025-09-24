@@ -305,7 +305,10 @@ local Conditionals = {
 	vehicleui = NoModifier,
 	worn = RequiredWordModifier,
     known = KnownModifier,
-    noknown = KnownModifier
+    noknown = KnownModifier,
+	hasbuff   = KnownModifier,   -- re‑use KnownModifier parsing (spell name or ID)
+    hastalent = TalentModifier,  -- same parsing as old talent
+    facing    = NoModifier      -- no extra argument, just a boolean check
 }
 
 function GetMegaMacroParsingConditionsData()
