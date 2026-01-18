@@ -1,3 +1,62 @@
+-------------------------------------------------------------------
+-- MEGAMACRO COMPATIBILITY SHIM (WoW 11.x / 12.x)
+-------------------------------------------------------------------
+-- This fixes "nil value" errors caused by Blizzard's API refactor.
+-- We inject these into the Global (_G) and C_Spell tables.
+
+local function ModernIsOverlayed(spellID)
+    if not spellID then return false end
+    -- 11.0+ uses the specialized C_SpellActivationOverlay namespace
+    if C_SpellActivationOverlay and C_SpellActivationOverlay.IsSpellOverlayed then
+        return C_SpellActivationOverlay.IsSpellOverlayed(spellID)
+    end
+    return false
+end
+
+local function ModernHideGlow(self)
+    if not self then return end
+    if self.SpellHighlightTexture then self.SpellHighlightTexture:Hide() end
+    if SharedActionButton_RefreshSpellHighlight then
+        SharedActionButton_RefreshSpellHighlight(self, false)
+    end
+end
+
+local function ModernShowGlow(self)
+    if not self then return end
+    if self.SpellHighlightTexture then self.SpellHighlightTexture:Show() end
+    if SharedActionButton_RefreshSpellHighlight then
+        SharedActionButton_RefreshSpellHighlight(self, true)
+    end
+end
+
+local function ModernClearCharges(self)
+    if not self then return end
+    if self.chargeCooldown then self.chargeCooldown:Clear() end
+    if self.cooldown then self.cooldown:Clear() end
+end
+
+-- 1. Apply to Global Namespace
+_G.IsOverlayed = ModernIsOverlayed
+_G.ActionButton_HideOverlayGlow = ModernHideGlow
+_G.ActionButton_ShowOverlayGlow = ModernShowGlow
+_G.ClearChargeCooldown = ModernClearCharges
+
+-- 2. Apply to C_Spell Namespace (Fixes "field" errors in engine.lua)
+if _G.C_Spell then
+    _G.C_Spell.IsOverlayed = ModernIsOverlayed
+    _G.C_Spell.GetSpellConfirmationOverlay = ModernIsOverlayed
+end
+
+-- 3. Apply to C_SpellActivationOverlay (Fallback injection)
+if not _G.C_SpellActivationOverlay then _G.C_SpellActivationOverlay = {} end
+if not _G.C_SpellActivationOverlay.GetOverlayInfo then
+    _G.C_SpellActivationOverlay.GetOverlayInfo = ModernIsOverlayed
+end
+
+-------------------------------------------------------------------
+-- END SHIM
+-------------------------------------------------------------------
+
 MegaMacroCachedClass = nil
 MegaMacroCachedSpecialization = nil
 MegaMacroFullyActive = false
