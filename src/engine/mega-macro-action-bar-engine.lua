@@ -31,13 +31,88 @@ local buttonCache = {}   -- [button] = { macroId = number|nil, mods = "SCA"|"" }
 -- Global snapshot of the modifier signature from the previous OnUpdate tick.
 local previousGlobalMods = ""
 
+-- [[ 12.0 COMPATIBILITY HELPERS ]] --
+
+-- Helper: Safe GetActionInfo
+local function GetActionInfo(slot)
+    if C_ActionBar and C_ActionBar.GetActionInfo then
+        return C_ActionBar.GetActionInfo(slot)
+    end
+    return _G.GetActionInfo(slot)
+end
+
+-- Helper: Safe GetMacroInfo
+local function GetMacroInfo(index)
+    if C_Macro and C_Macro.GetMacroInfo then
+        local info = C_Macro.GetMacroInfo(index)
+        if info then
+            return info.name, info.icon, info.body, info.isLocal
+        end
+    end
+    if _G.GetMacroInfo then
+        return _G.GetMacroInfo(index)
+    end
+end
+
+-- Helper: Polyfill for ActionButton_ShowOverlayGlow (Removed in 12.0)
+local function Safe_ShowOverlayGlow(button)
+    if ActionButton_ShowOverlayGlow then
+        ActionButton_ShowOverlayGlow(button)
+    elseif button.ShowOverlayGlow then
+        button:ShowOverlayGlow()
+    elseif LCG then -- LibButtonGlow fallback
+        LCG.ShowOverlayGlow(button)
+    end
+end
+
+-- Helper: Polyfill for ActionButton_HideOverlayGlow (Removed in 12.0)
+local function Safe_HideOverlayGlow(button)
+    if ActionButton_HideOverlayGlow then
+        ActionButton_HideOverlayGlow(button)
+    elseif button.HideOverlayGlow then
+        button:HideOverlayGlow()
+    elseif LCG then -- LibButtonGlow fallback
+        LCG.HideOverlayGlow(button)
+    end
+end
+
+-- Helper: Polyfill for CooldownFrame_Set (Removed in 11.0/12.0)
+local function Safe_CooldownFrame_Set(self, start, duration, enable, forceShowDrawEdge, modRate)
+    if _G.CooldownFrame_Set then
+        _G.CooldownFrame_Set(self, start, duration, enable, forceShowDrawEdge, modRate)
+    elseif self.SetCooldown then
+        if enable then
+            self:SetCooldown(start, duration, modRate)
+            if forceShowDrawEdge and self.SetDrawEdge then
+                self:SetDrawEdge(true)
+            end
+        else
+            self:Hide()
+        end
+    end
+end
+
+-- [[ END HELPERS ]] --
+
 local function UpdateCurrentActionState(button, functions, abilityId)
     local isChecked = functions.IsCurrent(abilityId) or functions.IsAutoRepeat(abilityId)
 
     if not isChecked and functions == MegaMacroInfoFunctions.Spell then
         local shapeshiftFormIndex = GetShapeshiftForm()
-        if shapeshiftFormIndex and shapeshiftFormIndex > 0 and abilityId == select(4, GetShapeshiftFormInfo(shapeshiftFormIndex)) then
-            isChecked = true
+        if shapeshiftFormIndex and shapeshiftFormIndex > 0 then
+            -- 12.0 Compatibility for Shapeshift info
+            local stanceSpellID
+            if C_ShapeshiftForm then
+                local _, _, _, id = C_ShapeshiftForm.GetShapeshiftFormInfo(shapeshiftFormIndex)
+                stanceSpellID = id
+            else
+                local _, _, _, id = GetShapeshiftFormInfo(shapeshiftFormIndex)
+                stanceSpellID = id
+            end
+            
+            if abilityId == stanceSpellID then
+                isChecked = true
+            end
         end
     end
 
@@ -119,7 +194,7 @@ local function LibActionButton_StartChargeCooldown(parent, chargeStart, chargeDu
     end
 
     parent.chargeCooldown:SetDrawBling(parent.chargeCooldown:GetEffectiveAlpha() > 0.5)
-    CooldownFrame_Set(parent.chargeCooldown, chargeStart, chargeDuration, true, true, chargeModRate)
+    Safe_CooldownFrame_Set(parent.chargeCooldown, chargeStart, chargeDuration, true, true, chargeModRate)
 
     if Masque and Masque.UpdateCharge then
         Masque:UpdateCharge(parent)
@@ -144,7 +219,7 @@ local function UpdateCooldownLibActionButton(button, functions, abilityId)
             button.cooldown:SetHideCountdownNumbers(true)
             button.cooldown.currentCooldownType = COOLDOWN_TYPE_LOSS_OF_CONTROL
         end
-        CooldownFrame_Set(button.cooldown, locStart, locDuration, true, true, modRate)
+        Safe_CooldownFrame_Set(button.cooldown, locStart, locDuration, true, true, modRate)
     else
         if button.cooldown.currentCooldownType ~= COOLDOWN_TYPE_NORMAL then
             button.cooldown:SetEdgeTexture("Interface\\Cooldown\\edge")
@@ -160,7 +235,7 @@ local function UpdateCooldownLibActionButton(button, functions, abilityId)
 
         local hasCharges = charges and maxCharges and maxCharges > 1
         if hasCharges and charges > 0 and charges < maxCharges then
-            CooldownFrame_Set(button.cooldown, chargeStart, chargeDuration, true, false, chargeModRate)
+            Safe_CooldownFrame_Set(button.cooldown, chargeStart, chargeDuration, true, false, chargeModRate)
             button.cooldown:SetEdgeTexture("Interface\\Cooldown\\edge")
             button.cooldown:SetSwipeColor(0, 0, 0)
             button.cooldown:SetHideCountdownNumbers(false)
@@ -168,7 +243,7 @@ local function UpdateCooldownLibActionButton(button, functions, abilityId)
             button.cooldown:SetCooldown(0, 0)
         end
 
-        CooldownFrame_Set(button.cooldown, start, duration, enable, false, modRate)
+        Safe_CooldownFrame_Set(button.cooldown, start, duration, enable, false, modRate)
     end
 end
 
@@ -185,7 +260,7 @@ local function UpdateCooldownBlizzard(button, functions, abilityId)
             button.cooldown.currentCooldownType = COOLDOWN_TYPE_LOSS_OF_CONTROL
         end
 
-        CooldownFrame_Set(button.cooldown, locStart, locDuration, true, true, modRate)
+        Safe_CooldownFrame_Set(button.cooldown, locStart, locDuration, true, true, modRate)
         if ClearChargeCooldown then ClearChargeCooldown(button) end
     else
         if ( button.cooldown.currentCooldownType ~= COOLDOWN_TYPE_NORMAL ) then
@@ -196,7 +271,10 @@ local function UpdateCooldownBlizzard(button, functions, abilityId)
         end
 
         if( locStart > 0 ) then
-            button.cooldown:SetScript("OnCooldownDone", ActionButton_OnCooldownDone)
+            -- 12.0 Safety: Check if handler exists
+            if ActionButton_OnCooldownDone then
+                button.cooldown:SetScript("OnCooldownDone", ActionButton_OnCooldownDone)
+            end
         end
 
         if ( charges and maxCharges and maxCharges > 1 and charges < maxCharges ) then
@@ -207,7 +285,7 @@ local function UpdateCooldownBlizzard(button, functions, abilityId)
             if ClearChargeCooldown then ClearChargeCooldown(button) end
         end
 
-        CooldownFrame_Set(button.cooldown, start, duration, enable, false, modRate)
+        Safe_CooldownFrame_Set(button.cooldown, start, duration, enable, false, modRate)
     end
 end
 
@@ -241,9 +319,9 @@ end
 
 local function UpdateOverlayGlow(button, functions, abilityId)
     if functions.IsOverlayed(abilityId) then
-        ActionButton_ShowOverlayGlow(button)
+        Safe_ShowOverlayGlow(button)
     else
-        ActionButton_HideOverlayGlow(button)
+        Safe_HideOverlayGlow(button)
     end
 end
 
@@ -339,7 +417,7 @@ local function ResetActionBar(button)
     button:SetChecked(false)
     button.Count:SetText("")
     button.Border:Hide() 
-    ActionButton_HideOverlayGlow(button)
+    Safe_HideOverlayGlow(button)
     if ClearChargeCooldown then ClearChargeCooldown(button) end
     UpdateRange(button, MegaMacroInfoFunctions.Unknown)
     button.icon:SetVertexColor(1.0, 1.0, 1.0) 
@@ -444,18 +522,17 @@ function MegaMacroActionBarEngine.OnUpdate(elapsed)
 
     iterator(function(button)
         local action = button:GetAttribute("action") or button.action
-        -- 12.0: C_Macro namespace usage
-        local macroName = GetActionText(action)
-        local macroCode = nil
+        if not action then return end
+
+        local type, id = GetActionInfo(action)
         
-        -- 12.0 Safety: Only fetch macro body if we have a name, to avoid errors
-        if macroName then
-             macroCode = C_Macro.GetMacroBody(macroName)
+        -- 12.0 Fix: C_Macro.GetMacroBody is removed. Use GetMacroInfo(id) to get body.
+        local macroCode = nil
+        if type == "macro" and id then
+            local _, _, body = GetMacroInfo(id)
+            macroCode = body
         end
 
-        local type, arg1 = GetActionInfo(action)
-
-        -- 12.0 Safety: Ensure macroCode is a string before parsing to avoid Taint errors
         local macroId = nil
         if type == "macro" and macroCode and _G.type(macroCode) == "string" and #macroCode >= 4 then
             macroId = tonumber(string.sub(macroCode, 2, 4))
@@ -492,9 +569,8 @@ function MegaMacroActionBarEngine.OnUpdate(elapsed)
             end
         elseif ActionsBoundToMegaMacros[button] then
             ActionsBoundToMegaMacros[button] = nil
-            if not arg1 then
-                ResetActionBar(button)
-            end
+            -- arg1 is legacy, checking type/id is enough usually
+            ResetActionBar(button)
         end
     end)
 end

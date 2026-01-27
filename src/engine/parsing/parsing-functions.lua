@@ -37,13 +37,23 @@ local function ParseResult(parsingContext, length, colour)
         local r, g, b = colour:GetRGB()
         -- FIX: WoW expects |cAARRGGBB. We must prepend 'ff' for full opacity.
         colour = string.format("ff%02x%02x%02x", r*255, g*255, b*255)
+    elseif type(colour) == "table" and colour.r and colour.g and colour.b then
+        -- Handle raw table {r=1, g=1, b=1}
+        colour = string.format("ff%02x%02x%02x", colour.r*255, colour.g*255, colour.b*255)
     end
 
     -- Visualizing the 255 character limit for Native Macros
     if parsingContext.Index > (MegaMacroCodeMaxLengthForNative + 1) then
         -- Cache the error color once to improve parser performance
         if not ErrorHex and GetMegaMacroParsingColourData then
-            ErrorHex = GetMegaMacroParsingColourData().Error
+            local errData = GetMegaMacroParsingColourData().Error
+            -- Ensure ErrorHex is a string
+            if type(errData) == "table" and errData.GetRGB then
+                 local r,g,b = errData:GetRGB()
+                 ErrorHex = string.format("ff%02x%02x%02x", r*255, g*255, b*255)
+            else
+                 ErrorHex = errData
+            end
         end
 
         local overflow = parsingContext.Index - (MegaMacroCodeMaxLengthForNative + 1)
@@ -66,7 +76,10 @@ local function ParseResult(parsingContext, length, colour)
         end
 
         local errorColor = ErrorHex or "ffff0000" -- Fallback red
-        return valid .. "|c"..errorColor..excess.."|r"
+        
+        -- If valid part has a color, apply it
+        local validPart = colour and ("|c"..colour..valid.."|r") or valid
+        return validPart .. "|c"..errorColor..excess.."|r"
     else
         return colour and "|c"..colour..text.."|r" or text
     end

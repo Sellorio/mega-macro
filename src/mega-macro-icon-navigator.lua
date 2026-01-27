@@ -21,34 +21,36 @@ local function GetDefaultIconList()
     local activeIcons = {};
 
     -- 12.0 uses C_SpellBook for all spellbook-related queries
-    local numSkillLines = C_SpellBook.GetNumSpellBookSkillLines()
-    for i = 1, numSkillLines do
-        local skillLine = C_SpellBook.GetSpellBookSkillLineInfo(i)
-        if skillLine then
-            local offset = skillLine.itemIndexOffset + 1
-            local numSpells = skillLine.numSpellBookItems
-            local tabEnd = offset + numSpells
+    -- Safety check for C_SpellBook existence
+    if C_SpellBook then
+        local numSkillLines = C_SpellBook.GetNumSpellBookSkillLines()
+        for i = 1, numSkillLines do
+            local skillLine = C_SpellBook.GetSpellBookSkillLineInfo(i)
+            if skillLine then
+                local offset = skillLine.itemIndexOffset + 1
+                local numSpells = skillLine.numSpellBookItems
+                local tabEnd = offset + numSpells
 
-            for j = offset, tabEnd - 1 do
-                local spellType, ID = C_SpellBook.GetSpellBookItemType(j, Enum.SpellBookSpellBank.Player)
-                if (spellType ~= "FUTURESPELL") then
-                    local fileID = C_SpellBook.GetSpellBookItemTexture(j, Enum.SpellBookSpellBank.Player)
-                    if (fileID) then
-                        activeIcons[fileID] = true
+                for j = offset, tabEnd - 1 do
+                    local spellType, ID = C_SpellBook.GetSpellBookItemType(j, Enum.SpellBookSpellBank.Player)
+                    if (spellType ~= "FUTURESPELL") then
+                        local fileID = C_SpellBook.GetSpellBookItemTexture(j, Enum.SpellBookSpellBank.Player)
+                        if (fileID) then
+                            activeIcons[fileID] = true
+                        end
                     end
-                end
 
-                if (spellType == "FLYOUT") then
-                    -- 12.0 Migration: Flyout info moved to C_Spell
-                    local _, _, numSlots, isKnown = C_Spell.GetFlyoutInfo(ID)
-                    if (isKnown and numSlots > 0) then
-                        for k = 1, numSlots do
-                            local spellID, _
-                            spellID, _, isKnown = C_Spell.GetFlyoutSlotInfo(ID, k)
-                            if (isKnown) then
-                                local fileID = C_Spell.GetSpellTexture(spellID)
-                                if (fileID) then
-                                    activeIcons[fileID] = true
+                    if (spellType == "FLYOUT") then
+                        local _, _, numSlots, isKnown = C_Spell.GetFlyoutInfo(ID)
+                        if (isKnown and numSlots > 0) then
+                            for k = 1, numSlots do
+                                local spellID, _
+                                spellID, _, isKnown = C_Spell.GetFlyoutSlotInfo(ID, k)
+                                if (isKnown) then
+                                    local fileID = C_Spell.GetSpellTexture(spellID)
+                                    if (fileID) then
+                                        activeIcons[fileID] = true
+                                    end
                                 end
                             end
                         end
@@ -62,11 +64,22 @@ local function GetDefaultIconList()
         icons[#icons + 1] = fileDataID
     end
 
-    -- 12.0 Migration: All Macro Icon functions moved to C_Macro namespace
-    C_Macro.GetLooseMacroIcons(icons)
-    C_Macro.GetLooseMacroItemIcons(icons)
-    C_Macro.GetMacroIcons(icons)
-    C_Macro.GetMacroItemIcons(icons)
+    -- 12.0 Fix: GetLooseMacroIcons and GetLooseMacroItemIcons are removed.
+    -- We only need to call GetMacroIcons and GetMacroItemIcons from C_Macro.
+    if C_Macro then
+        if C_Macro.GetMacroIcons then
+            local macroIcons = C_Macro.GetMacroIcons()
+            if macroIcons then
+                AddRange(icons, macroIcons)
+            end
+        end
+        if C_Macro.GetMacroItemIcons then
+            local itemIcons = C_Macro.GetMacroItemIcons()
+            if itemIcons then
+                AddRange(icons, itemIcons)
+            end
+        end
+    end
 
     -- 12.0 Clean up: Blizzard prefers FileDataIDs (numbers)
     for i=1, #icons do
@@ -135,7 +148,6 @@ function MegaMacroIconNavigator.OnUpdate()
             end
 
             -- 12.0: Spell IDs now exceed 500,000. 
-            -- We increase the MissCount threshold to ensure we don't stop too early.
             if MissCount > 2000 then
                 table.sort(IconCacheKeys)
                 IconLoadingFinished = true

@@ -1,19 +1,24 @@
 -- Existing command collection -------------------------------------------------
 local Commands = {
-    "1",
-    "2",
-    "3"
+    "cast",
+    "use",
+    "castsequence",
+    "stopmacro",
+    "cancelaura",
+    "equip",
+    "equipset",
+    "userandom",
+    "run"
 }
 
 -- 1️⃣  Pull in all slash commands that actually start with '/'.
 -- 12.0 Optimization: Only check keys starting with "SLASH_" to avoid iterating the whole environment unnecessarily
--- and to prevent false positives from other string globals.
 for globalName, command in pairs(_G) do
-    if type(globalName) == "string" and string.find(globalName, "^SLASH_") then
+    if type(globalName) == "string" and string.sub(globalName, 1, 6) == "SLASH_" then
         if type(command) == "string" and string.sub(command, 1, 1) == "/" then
             table.insert(Commands, string.sub(command, 2))
         elseif type(command) == "function" then
-            -- Some newer addons map directly to functions, ignore for text parsing
+            -- Some newer addons map directly to functions; ignore for text parsing
         end
     end
 end
@@ -126,6 +131,10 @@ local function IsValidUnitId(unitId)
         unitId == "mouseover" or
         unitId == "cursor" or
         unitId == "none" or
+        -- 12.0: Added modern Soft Target units
+        unitId == "softenemy" or
+        unitId == "softfriend" or
+        unitId == "softinteract" or
         IsIndexedUnitId(unitId, "party", 4) or
         IsIndexedUnitId(unitId, "partypet", 4) or
         unitId == "pet" or

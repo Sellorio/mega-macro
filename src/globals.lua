@@ -3,9 +3,6 @@
 -- This file is here to define WoW and UI globals that are not declared in code
 -- so that syntax analysers can react favourably to it.
 
--- the `<value> and <variable>` syntax is used to allow the syntax analyser to
--- determine the data-type of the variable
-
 UIPanelWindows = {}
 StaticPopupDialogs = {}
 PANEL_DEFAULT_WIDTH = 1 and PANEL_DEFAULT_WIDTH
@@ -41,70 +38,90 @@ GetSpecialization = function() end
 GetSpecializationInfo = function(index) index._ = nil end
 UnitClass = function(unit) unit._ = nil end
 SecureCmdOptionParse = function(options) options._ = nil end
-GetSpellInfo = function(spellIdOrName) spellIdOrName._ = nil end -- returns: name, rank, icon, castTime, minRange, maxRange, spellId
-GetSpellTexture = function(spellIdOrName, bookType) spellIdOrName._ = bookType end
-GetItemInfoInstant = function(itemIdOrName) itemIdOrName._ = nil end -- returns: itemId, itemType, itemSubType, itemEquipLoc, icon, itemClassID, itemSubClassID
-GetItemInfo = function(itemIdOrName) itemIdOrName._ = nil end -- returns: itemName, itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture, itemSellPrice
-QueryCastSequence = function(sequence) sequence._ = nil end
-GameTooltip_SetDefaultAnchor = function(tooltip, parent) tooltip._ = parent end
 GetMouseFocus = function() end
 message = function(text) text._ = nil end
 InCombatLockdown = function() end
-GetNumMacros = function() end -- returns: numglobal, numperchar
-GetMacroBody = function(macroIndexOrName) macroIndexOrName._ = nil end
-GetMacroInfo = function(macroIndexOrName) macroIndexOrName._ = nil end -- returns: name, iconTexture, body, isLocal
-EditMacro = function(macroIndexOrName, name, icon, body, isLocal, perCharacter) end -- isLocal should always be passed in as true
-DeleteMacro = function(macroIndexOrName) macroIndexOrName._ = nil end
-CreateMacro = function(name, iconFileName, body, perCharacter) return 0 end
 ActionButton_UpdateAction = function(self, force) self._ = force end
 ActionButton_SetTooltip = function(self) self._ = nil end
-GetActionInfo = function(actionId) actionId._ = nil end -- returns: spellType, id, subType
+GetActionInfo = function(actionId) actionId._ = nil end
 ActionButton_CalculateAction = function(self) self._ = nil end
 PickupMacro = function(macroIndexOrName) macroIndexOrName._ = nil end
-GetSpellCooldown = function(spellID) spellID._ = nil end -- returns: startTime, duration, enabled
-GetItemCooldown = function(itemID) itemID._ = nil end -- returns: startTime, duration, enabled
-GetSpellCharges = function(spellID) spellID._ = nil end -- returns: charges, maxCharges, chargeStart, chargeDuration, chargeModRate
-GetItemCount = function(itemID, includeBank, includeCharges) itemID._ = nil end -- returns: count
-GetSpellCount = function(spellID) spellID._ = nil end -- returns: count
-IsCurrentSpell = function(spellID) spellID._ = nil end
-IsCurrentItem = function(itemID) itemID._ = nil end
 IsCurrentAction = function(action) action._ = nil end
 GetShapeshiftForm = function(flag) flag._ = nil end
-GetShapeshiftFormInfo = function(index) index._ = nil end -- returns: icon, active, castable, spellID
-UnitBuff = function(unit, buffIndexOrName, filter) unit[buffIndexOrName] = filter end -- returns: name, rank, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, shouldConsolidate, spellId
-IsUsableSpell = function(spellID) spellID._ = nil end -- returns: usable, noMana
-IsUsableAction = function(action) action._ = nil end -- returns: usable, noMana
-IsUsableItem = function(itemID) itemID._ = nil end -- returns: usable
-IsActionInRange = function(action) action._ = nil end -- returns: inRange (boolean)
-IsSpellInRange = function(index, bookType, target) bookType[index] = target end -- returns: inRange (boolean)
-IsItemInRange = function(itemID, target) itemID._ = target end -- returns: inRange (boolean)
-FindSpellBookSlotBySpellID = function(spellID) spellID._ = nil end -- returns: index
-GetItemSpell = function(itemIdOrName) itemIdOrName._ = nil end -- returns: spellName, spellID
+GetShapeshiftFormInfo = function(index) index._ = nil end
+UnitBuff = function(unit, buffIndexOrName, filter) unit[buffIndexOrName] = filter end
+IsUsableAction = function(action) action._ = nil end
+IsActionInRange = function(action) action._ = nil end
 ShowMacroFrame = function() end
 GetInventoryItemID = function(unit, slotId) unit._ = slotId end
-GetMacroSpell = function(macroNameOrIndex) macroNameOrIndex._ = nil end -- returns: spellID
-GetMacroIndexByName = function(macroName) macroName._ = nil end -- returns: macroIndex
-GetActionCooldown = function(action) action._ = nil end -- returns: start, duration, enable
-GetActionCount = function(action) action._ = nil end -- returns: count
-GetActionTexture = function(action) action._ = nil end -- returns: texture
-GetActionCharges = function(action) action._ = nil end -- returns: charges, maxCharges, chargeStart, chargeDuration, chargeModRate
-IsEquippedAction = function(action) action._ = nil end -- returns: isEquipped
-IsEquippedItem = function(itemID) itemID._ = nil end -- returns: isEquipped
-IsEquippableItem = function(itemID) itemID._ = nil end -- returns: isEquippable
+GetActionCooldown = function(action) action._ = nil end
+GetActionCount = function(action) action._ = nil end
+GetActionTexture = function(action) action._ = nil end
+GetActionCharges = function(action) action._ = nil end
+IsEquippedAction = function(action) action._ = nil end
 PutItemInBackpack = function() end
 ClearCursor = function() end
-GetCursorInfo = function() end -- returns: type, action1, action2, spellID
+GetCursorInfo = function() end
 IsControlKeyDown = function() end
 IsAltKeyDown = function() end
 IsShiftKeyDown = function() end
 PlaceAction = function(slot) slot._ = nil end
-IsAutoRepeatAction = function(action) action._ = nil end -- returns: isRepeating
-IsAutoRepeatSpell = function(spellId) spellId._ = nil end -- returns: isRepeating
-GetSpellLossOfControlCooldown = function(spellID) spellID._ = nil end -- returns: start, duration
-IsConsumableItem = function(itemID) itemID._ = nil end -- returns: isConsumable
-IsConsumableSpell = function(itemID) itemID._ = nil end -- returns: isConsumable
+IsAutoRepeatAction = function(action) action._ = nil end
+tContains = function(table, value) return true end
+
+-- 12.0 NAMESPACE UPDATES
+
+C_Spell = {
+    GetSpellInfo = function(spellIdOrName) spellIdOrName._ = nil end,
+    GetSpellTexture = function(spellIdOrName) spellIdOrName._ = nil end,
+    GetSpellCooldown = function(spellID) spellID._ = nil end,
+    GetSpellCharges = function(spellID) spellID._ = nil end,
+    GetSpellCastCount = function(spellID) spellID._ = nil end,
+    IsSpellUsable = function(spellID) spellID._ = nil end,
+    IsCurrentSpell = function(spellID) spellID._ = nil end,
+    IsAutoRepeatSpell = function(spellId) spellId._ = nil end,
+    GetSpellLossOfControlCooldown = function(spellID) spellID._ = nil end,
+    IsSpellInRange = function(spellId, target) spellId._ = target end,
+    GetFlyoutInfo = function(flyoutID) flyoutID._ = nil end,
+    GetFlyoutSlotInfo = function(flyoutID, slot) flyoutID._ = slot end,
+}
+
+C_Item = {
+    GetItemInfo = function(itemIdOrName) itemIdOrName._ = nil end,
+    GetItemInfoInstant = function(itemIdOrName) itemIdOrName._ = nil end,
+    GetItemCooldown = function(itemID) itemID._ = nil end,
+    GetItemCount = function(itemID, includeBank, includeCharges) itemID._ = nil end,
+    IsCurrentItem = function(itemID) itemID._ = nil end,
+    IsUsableItem = function(itemID) itemID._ = nil end,
+    IsItemInRange = function(itemID, target) itemID._ = target end,
+    GetItemSpell = function(itemIdOrName) itemIdOrName._ = nil end,
+    IsEquippedItem = function(itemID) itemID._ = nil end,
+    IsEquippableItem = function(itemID) itemID._ = nil end,
+    IsConsumableItem = function(itemID) itemID._ = nil end,
+}
+
+C_Macro = {
+    GetNumMacros = function() end,
+    GetMacroBody = function(macroIndexOrName) macroIndexOrName._ = nil end,
+    GetMacroInfo = function(macroIndexOrName) macroIndexOrName._ = nil end,
+    EditMacro = function(macroIndexOrName, name, icon, body, isLocal, perCharacter) end,
+    DeleteMacro = function(macroIndexOrName) macroIndexOrName._ = nil end,
+    CreateMacro = function(name, iconFileName, body, perCharacter) return 0 end,
+    GetMacroIcons = function(icons) icons._ = nil end,
+    GetMacroItemIcons = function(icons) icons._ = nil end,
+    GetLooseMacroIcons = function(icons) icons._ = nil end,
+    GetLooseMacroItemIcons = function(icons) icons._ = nil end,
+}
+
 C_LevelLink = {
-    IsSpellLocked = function(spellID) spellID._ = nil end -- returns: isLocked
+    IsSpellLocked = function(spellID) spellID._ = nil end
+}
+
+C_SpellBook = {
+    GetNumSpellBookSkillLines = function() end,
+    GetSpellBookSkillLineInfo = function(index) index._ = nil end,
+    GetSpellBookItemType = function(index, bank) index._ = bank end,
+    GetSpellBookItemTexture = function(index, bank) index._ = bank end,
 }
 
 MegaMacro_Frame = {}

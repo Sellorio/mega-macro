@@ -415,6 +415,26 @@ StaticPopupDialogs["CONFIRM_DELETE_SELECTED_MEGA_MACRO"] = {
     showAlert = 1
 }
 
+-- [[ 12.0 VISUAL FIX: The Nuclear Option ]]
+local function FixScrollBarBackgrounds()
+    -- The UIPanelScrollFrameTemplate forces old "Paper Doll" artwork (Top/Middle/Bottom)
+    -- which clashes with the modern 12.0 UI. We must manually hide these textures.
+    local framesToFix = {
+        "MegaMacro_ButtonScrollFrame",
+        "MegaMacro_PopupScrollFrame"
+    }
+
+    for _, frameName in ipairs(framesToFix) do
+        local top = _G[frameName.."Top"]
+        local middle = _G[frameName.."Middle"]
+        local bottom = _G[frameName.."Bottom"]
+        
+        if top then top:Hide() top:SetAlpha(0) end
+        if middle then middle:Hide() middle:SetAlpha(0) end
+        if bottom then bottom:Hide() bottom:SetAlpha(0) end
+    end
+end
+
 MegaMacroWindow = {
     Show = function()
         if MegaMacroConfig_IsWindowDialog() then
@@ -483,6 +503,9 @@ function MegaMacro_Window_OnShow()
     InitializeIconListPanel()
     UpdateSearchPlaceholder()
     MegaMacro_FallbackTextureDescription:SetAlpha(0.6)
+    
+    -- Apply the visual fix for double arrows
+    FixScrollBarBackgrounds()
 end
 
 function MegaMacro_Window_OnHide()

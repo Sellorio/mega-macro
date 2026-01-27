@@ -6,6 +6,23 @@ local LastMacroIndex = 0
 local IconUpdatedCallbacks = {}
 local MacroEffectData = {} -- { Type = "spell" or "item" or "equipment set" or other, Name = "", Icon = 0, Target = "" }
 
+-- Helper for 12.0 string trimming
+local function TrimString(str)
+    return str and str:match("^%s*(.-)%s*$") or ""
+end
+
+-- 12.0 Fix: QueryCastSequence is removed. We must manually parse the string.
+-- We can only reliably get the FIRST spell in the sequence, as internal state is hidden.
+local function GetFirstCastSequenceSpell(sequenceText)
+    if not sequenceText then return nil end
+    -- Strip reset conditions (e.g. reset=10/target)
+    -- This regex looks for "reset=" followed by non-space chars, then optional space
+    local clean = sequenceText:gsub("^reset=[^%s]+%s*", "")
+    -- Split by comma to get the list of spells
+    local firstItem = strsplit(",", clean)
+    return TrimString(firstItem)
+end
+
 local function GetTextureFromPetCommand(command)
     if command == "dismiss" then
         return PetActionTextures.Dismiss
@@ -90,7 +107,16 @@ local function GetAbilityData(ability)
             local shapeshiftFormIndex = GetShapeshiftForm()
             local isActiveStance = false
             if shapeshiftFormIndex and shapeshiftFormIndex > 0 then
-                local _, _, _, stanceSpellID = GetShapeshiftFormInfo(shapeshiftFormIndex)
+                local stanceSpellID
+                -- 12.0 Compatibility for Shapeshift info
+                if C_ShapeshiftForm then
+                    local _, _, _, id = C_ShapeshiftForm.GetShapeshiftFormInfo(shapeshiftFormIndex)
+                    stanceSpellID = id
+                else
+                    local _, _, _, id = GetShapeshiftFormInfo(shapeshiftFormIndex)
+                    stanceSpellID = id
+                end
+                
                 if stanceSpellID == spellId then
                     isActiveStance = true
                 end
@@ -161,10 +187,9 @@ local function ComputeMacroIcon(macro, staticTexture, isStaticTextureFallback)
                 local sequenceCode, tar = SecureCmdOptionParse(command.Body)
 
                 if sequenceCode ~= nil then
-                    -- 12.0: QueryCastSequence is still global but deprecated. 
-                    -- No C_ replacement yet, so we keep using it cautiously.
-                    local _, item, spell = QueryCastSequence(sequenceCode)
-                    local ability = item or spell
+                    -- 12.0 FIX: QueryCastSequence was REMOVED.
+                    -- We fallback to parsing the first spell in the sequence.
+                    local ability = GetFirstCastSequenceSpell(sequenceCode)
 
                     if ability ~= nil then
                         effectType, effectId, effectName, icon = GetAbilityData(ability)
@@ -219,7 +244,8 @@ local function ComputeMacroIcon(macro, staticTexture, isStaticTextureFallback)
                 local ability = lastCmd.Body
                 effectType, effectId, effectName, icon = GetAbilityData(ability)
             elseif lastCmd.Type == "fallbackSequence" then
-                local ability = QueryCastSequence(lastCmd.Body)
+                -- 12.0 Fix: Manual parse
+                local ability = GetFirstCastSequenceSpell(lastCmd.Body)
                 effectType, effectId, effectName, icon = GetAbilityData(ability)
             elseif lastCmd.Type == "fallbackPetCommand" then
                 icon = GetTextureFromPetCommand(lastCmd.Body)

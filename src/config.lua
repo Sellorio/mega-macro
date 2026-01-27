@@ -28,3 +28,21 @@ function MegaMacro_InitialiseConfig()
         }
     end
 end
+
+-- This was missing or deleted, causing the error:
+function MegaMacroConfig_IsWindowDialog()
+    -- If WindowInfo is nil, default to Dialog mode (true)
+    if not MegaMacroGlobalData or not MegaMacroGlobalData.WindowInfo then
+        return true
+    end
+    return MegaMacroGlobalData.WindowInfo.IsDialog
+end
+
+-- This is also needed for the window to remember its location:
+function MegaMacroConfig_GetWindowPosition()
+    if MegaMacroGlobalData and MegaMacroGlobalData.WindowInfo then
+        return MegaMacroGlobalData.WindowInfo.RelativePoint, MegaMacroGlobalData.WindowInfo.X, MegaMacroGlobalData.WindowInfo.Y
+    end
+    -- Return default center position if no data exists
+    return "CENTER", 0, 0
+end

@@ -171,37 +171,12 @@
 					</Layer>
 				</Layers>
 			</CheckButton>
+
 			<ScrollFrame name="MegaMacro_ButtonScrollFrame" inherits="UIPanelScrollFrameTemplate, BackdropTemplate">
 				<Size x="593" y="146"/>
 				<Anchors>
 					<Anchor point="TOPLEFT" x="12" y="-66"/>
 				</Anchors>
-				<Layers>
-					<Layer level="ARTWORK">
-						<Texture name="$parentTop" file="Interface\PaperDollInfoFrame\UI-Character-ScrollBar">
-							<Size x="31" y="102"/>
-							<Anchors>
-								<Anchor point="TOPLEFT" relativePoint="TOPRIGHT" x="-2" y="5"/>
-							</Anchors>
-							<TexCoords left="0" right="0.484375" top="0" bottom="0.4"/>
-						</Texture>
-						<Texture name="$parentBottom" file="Interface\PaperDollInfoFrame\UI-Character-ScrollBar">
-							<Size x="31" y="106"/>
-							<Anchors>
-								<Anchor point="BOTTOMLEFT" relativePoint="BOTTOMRIGHT" x="-2" y="-2"/>
-							</Anchors>
-							<TexCoords left="0.515625" right="1.0" top="0" bottom="0.4140625"/>
-						</Texture>
-						<Texture name="$parentMiddle" file="Interface\PaperDollInfoFrame\UI-Character-ScrollBar">
-							<Size x="31" y="1"/>
-							<Anchors>
-								<Anchor point="TOP" relativeTo="$parentTop" relativePoint="BOTTOM"/>
-								<Anchor point="BOTTOM" relativeTo="$parentBottom" relativePoint="TOP"/>
-							</Anchors>
-							<TexCoords left="0" right="0.484375" top=".75" bottom="1.0"/>
-						</Texture>
-					</Layer>
-				</Layers>
 				<Scripts>
 					<OnLoad function="ScrollFrame_OnLoad"/>
 				</Scripts>
@@ -227,6 +202,7 @@
 					</Frame>
 				</ScrollChild>
 			</ScrollFrame>
+
 			<Button name="MegaMacro_EditButton" frameStrata="HIGH" inherits="UIPanelButtonTemplate, BackdropTemplate" text="Edit">
 				<Size x="50" y="22"/>
 				<Anchors>
@@ -349,7 +325,9 @@
 					<Anchor point="TOPLEFT" x="51" y="-28"/>
 				</Anchors>
 				<Scripts>
-					<OnLoad>PanelTemplates_TabResize(self, -8);</OnLoad>
+					<OnLoad>
+						PanelTemplates_TabResize(self, -8);
+					</OnLoad>
 					<OnClick>
 						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
 						MegaMacro_FrameTab_OnClick(self);
@@ -362,7 +340,9 @@
 					<Anchor point="LEFT" relativeTo="MegaMacro_FrameTab1" relativePoint="RIGHT" x="0" y="0"/>
 				</Anchors>
 				<Scripts>
-					<OnLoad>PanelTemplates_TabResize(self, 35);</OnLoad>
+					<OnLoad>
+						PanelTemplates_TabResize(self, 35);
+					</OnLoad>
 					<OnClick>
 						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
 						MegaMacro_FrameTab_OnClick(self);
@@ -375,7 +355,9 @@
 					<Anchor point="LEFT" relativeTo="MegaMacro_FrameTab2" relativePoint="RIGHT" x="0" y="0"/>
 				</Anchors>
 				<Scripts>
-					<OnLoad>PanelTemplates_TabResize(self, 30);</OnLoad>
+					<OnLoad>
+						PanelTemplates_TabResize(self, 30);
+					</OnLoad>
 					<OnClick>
 						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
 						MegaMacro_FrameTab_OnClick(self);
@@ -388,7 +370,9 @@
 					<Anchor point="LEFT" relativeTo="MegaMacro_FrameTab3" relativePoint="RIGHT" x="0" y="0"/>
 				</Anchors>
 				<Scripts>
-					<OnLoad>PanelTemplates_TabResize(self, 30);</OnLoad>
+					<OnLoad>
+						PanelTemplates_TabResize(self, 30);
+					</OnLoad>
 					<OnClick>
 						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
 						MegaMacro_FrameTab_OnClick(self);
@@ -401,7 +385,9 @@
 					<Anchor point="LEFT" relativeTo="MegaMacro_FrameTab4" relativePoint="RIGHT" x="0" y="0"/>
 				</Anchors>
 				<Scripts>
-					<OnLoad>PanelTemplates_TabResize(self, 40);</OnLoad>
+					<OnLoad>
+						PanelTemplates_TabResize(self, 40);
+					</OnLoad>
 					<OnClick>
 						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
 						MegaMacro_FrameTab_OnClick(self);
@@ -414,7 +400,9 @@
 					<Anchor point="LEFT" relativeTo="MegaMacro_FrameTab5" relativePoint="RIGHT" x="0" y="0"/>
 				</Anchors>
 				<Scripts>
-					<OnLoad>PanelTemplates_TabResize(self, 40);</OnLoad>
+					<OnLoad>
+						PanelTemplates_TabResize(self, 40);
+					</OnLoad>
 					<OnClick>
 						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
 						MegaMacro_FrameTab_OnClick(self);
