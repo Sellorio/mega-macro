@@ -1,11 +1,12 @@
-local function StripAlpha(hexStr)
-    -- Remove the leading “ff” (full opacity) – the UI default is opaque.
-    return hexStr:gsub("^ff", "")
-end
-
 local function GetColorFromHex(hexStr)
-    -- 11.2 API: CreateColorFromHexString expects a 6‑digit hex string.
-    return CreateColorFromHexString(StripAlpha(hexStr))
+    -- 12.0 API: CreateColorFromHexString handles 8-digit (ARGB) or 6-digit (RGB) strings natively.
+    -- We no longer need to strip the alpha channel manually.
+    if CreateColorFromHexString then
+        return CreateColorFromHexString(hexStr)
+    end
+    
+    -- Fail-safe fallback if the global is missing
+    return CreateColor(1, 1, 1, 1)
 end
 
 function GetMegaMacroParsingColourData()

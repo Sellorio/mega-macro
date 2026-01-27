@@ -1,7 +1,8 @@
-## Interface: 110000
+## Interface: 120000
 ## Title: Mega Macro
 ## Author: Sellorio
-## Version: 1.0.0
+## Project Successor: Torchlite
+## Version: 1.6.5
 ## OptionalDeps: ElvUI
 
 ## SavedVariables: MegaMacroConfig, MegaMacroGlobalData

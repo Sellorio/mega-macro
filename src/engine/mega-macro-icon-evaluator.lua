@@ -6,6 +6,23 @@ local LastMacroIndex = 0
 local IconUpdatedCallbacks = {}
 local MacroEffectData = {} -- { Type = "spell" or "item" or "equipment set" or other, Name = "", Icon = 0, Target = "" }
 
+-- Helper for 12.0 string trimming
+local function TrimString(str)
+    return str and str:match("^%s*(.-)%s*$") or ""
+end
+
+-- 12.0 Fix: QueryCastSequence is removed. We must manually parse the string.
+-- We can only reliably get the FIRST spell in the sequence, as internal state is hidden.
+local function GetFirstCastSequenceSpell(sequenceText)
+    if not sequenceText then return nil end
+    -- Strip reset conditions (e.g. reset=10/target)
+    -- This regex looks for "reset=" followed by non-space chars, then optional space
+    local clean = sequenceText:gsub("^reset=[^%s]+%s*", "")
+    -- Split by comma to get the list of spells
+    local firstItem = strsplit(",", clean)
+    return TrimString(firstItem)
+end
+
 local function GetTextureFromPetCommand(command)
     if command == "dismiss" then
         return PetActionTextures.Dismiss
@@ -29,7 +46,7 @@ end
 local function IterateNextMacroInternal(nextScopeAttempts)
     LastMacroIndex = LastMacroIndex + 1
 
-    if LastMacroIndex > #LastMacroList then
+    if not LastMacroList or LastMacroIndex > #LastMacroList then
         -- limit the recursive iteration to going through each scope once
         if nextScopeAttempts > 5 then
             return false
@@ -49,6 +66,11 @@ local function IterateNextMacroInternal(nextScopeAttempts)
 
         LastMacroIndex = 0
         LastMacroList = MegaMacro.GetMacrosInScope(LastMacroScope)
+
+        -- 12.0 Safety: If GetMacrosInScope returns nil (e.g. data not ready), retry cleanly
+        if not LastMacroList then 
+            LastMacroList = {} 
+        end
 
         return IterateNextMacroInternal(nextScopeAttempts + 1)
     end
@@ -83,14 +105,31 @@ local function GetAbilityData(ability)
 
         if spellId then
             local shapeshiftFormIndex = GetShapeshiftForm()
-            local isActiveStance = shapeshiftFormIndex and shapeshiftFormIndex > 0 and spellId == select(4, GetShapeshiftFormInfo(shapeshiftFormIndex))
+            local isActiveStance = false
+            if shapeshiftFormIndex and shapeshiftFormIndex > 0 then
+                local stanceSpellID
+                -- 12.0 Compatibility for Shapeshift info
+                if C_ShapeshiftForm then
+                    local _, _, _, id = C_ShapeshiftForm.GetShapeshiftFormInfo(shapeshiftFormIndex)
+                    stanceSpellID = id
+                else
+                    local _, _, _, id = GetShapeshiftFormInfo(shapeshiftFormIndex)
+                    stanceSpellID = id
+                end
+                
+                if stanceSpellID == spellId then
+                    isActiveStance = true
+                end
+            end
             return "spell", spellId, spellName, isActiveStance and MegaMacroActiveStanceTexture or texture
         end
 
-        local itemId
+        local itemId, _, _, _, texture
+        -- 12.0: C_Item.GetItemInfoInstant returns a tuple
         itemId, _, _, _, texture = C_Item.GetItemInfoInstant(ability)
+        
         if texture then
-            if C_ToyBox.GetToyInfo(itemId) then
+            if C_ToyBox and C_ToyBox.GetToyInfo(itemId) then
                 spellName, spellId = C_Item.GetItemSpell(itemId)
                 if spellId then
                     return "spell", spellId, spellName, texture
@@ -124,6 +163,9 @@ local function ComputeMacroIcon(macro, staticTexture, isStaticTextureFallback)
 
     if icon == MegaMacroTexture then
         local codeInfo = MegaMacroCodeInfo.Get(macro)
+        -- 12.0 Safety: Handle missing code info
+        if not codeInfo then return nil, nil, nil, MegaMacroTexture, nil end
+
         local codeInfoLength = #codeInfo
 
         for i = 1, codeInfoLength do
@@ -145,8 +187,9 @@ local function ComputeMacroIcon(macro, staticTexture, isStaticTextureFallback)
                 local sequenceCode, tar = SecureCmdOptionParse(command.Body)
 
                 if sequenceCode ~= nil then
-                    local _, item, spell = QueryCastSequence(sequenceCode)
-                    local ability = item or spell
+                    -- 12.0 FIX: QueryCastSequence was REMOVED.
+                    -- We fallback to parsing the first spell in the sequence.
+                    local ability = GetFirstCastSequenceSpell(sequenceCode)
 
                     if ability ~= nil then
                         effectType, effectId, effectName, icon = GetAbilityData(ability)
@@ -178,7 +221,8 @@ local function ComputeMacroIcon(macro, staticTexture, isStaticTextureFallback)
                     effectType = "equipment set"
                     effectName = setName
                     if setId then
-                        _, icon = C_EquipmentSet.GetEquipmentSetInfo(setId)
+                        local _, setIcon = C_EquipmentSet.GetEquipmentSetInfo(setId)
+                        icon = setIcon
                     end
                 end
             elseif command.Type == "click" then
@@ -195,21 +239,27 @@ local function ComputeMacroIcon(macro, staticTexture, isStaticTextureFallback)
             effectType = "fallback"
             icon = staticTexture
         elseif effectType == nil and codeInfoLength > 0 then
-            if codeInfo[codeInfoLength].Type == "fallbackAbility" then
-                local ability = codeInfo[codeInfoLength].Body
+            local lastCmd = codeInfo[codeInfoLength]
+            if lastCmd.Type == "fallbackAbility" then
+                local ability = lastCmd.Body
                 effectType, effectId, effectName, icon = GetAbilityData(ability)
-            elseif codeInfo[codeInfoLength].Type == "fallbackSequence" then
-                local ability = QueryCastSequence(codeInfo[codeInfoLength].Body)
+            elseif lastCmd.Type == "fallbackSequence" then
+                -- 12.0 Fix: Manual parse
+                local ability = GetFirstCastSequenceSpell(lastCmd.Body)
                 effectType, effectId, effectName, icon = GetAbilityData(ability)
-            elseif codeInfo[codeInfoLength].Type == "fallbackPetCommand" then
-                icon = GetTextureFromPetCommand(codeInfo[codeInfoLength].Body)
-            elseif codeInfo[codeInfoLength].Type == "fallbackEquipmentSet" then
+            elseif lastCmd.Type == "fallbackPetCommand" then
+                icon = GetTextureFromPetCommand(lastCmd.Body)
+            elseif lastCmd.Type == "fallbackEquipmentSet" then
                 effectType = "equipment set"
-                effectName = codeInfo[codeInfoLength].Body
-                icon = GetEquipmentSetInfoByName(effectName)
-            elseif codeInfo[codeInfoLength].Type == "fallbackClick" then
+                effectName = lastCmd.Body
+                local setId = C_EquipmentSet.GetEquipmentSetID(effectName)
+                if setId then
+                    local _, setIcon = C_EquipmentSet.GetEquipmentSetInfo(setId)
+                    icon = setIcon
+                end
+            elseif lastCmd.Type == "fallbackClick" then
                 effectType = "other"
-                effectName = codeInfo[codeInfoLength].Body
+                effectName = lastCmd.Body
                 icon = GetIconForButton(effectName)
             end
         end
@@ -220,8 +270,8 @@ end
 
 local function UpdateMacro(macro)
     local effectType, effectId, effectName, icon, target = ComputeMacroIcon(macro, macro.StaticTexture, macro.IsStaticTextureFallback)
+    
     local currentData = MacroEffectData[macro.Id]
-
     if not currentData then
         currentData = {}
         MacroEffectData[macro.Id] = currentData
@@ -233,39 +283,32 @@ local function UpdateMacro(macro)
         or currentData.Icon ~= icon
         or currentData.Target ~= target then
 
-        currentData.Type   = effectType
-        currentData.Id     = effectId
-        currentData.Name   = effectName
-        currentData.Icon   = icon
-        currentData.Target = target
+        currentData.Type    = effectType
+        currentData.Id      = effectId
+        currentData.Name    = effectName
+        currentData.Icon    = icon
+        currentData.Target  = target
 
         for i = 1, #IconUpdatedCallbacks do
             IconUpdatedCallbacks[i](macro.Id, icon)
         end
     end
 
-    if MegaMacroConfig['UseNativeActionBar'] then
+    if MegaMacroConfig and MegaMacroConfig['UseNativeActionBar'] then
         return
     end
 
+    -- 12.0: Removed SetMacroSpell/SetMacroItem usage.
+    -- We now must check C_Macro info and EditMacro if needed.
     local macroIndex = MegaMacroEngine.GetMacroIndexFromId(macro.Id)
     if macroIndex and not InCombatLockdown() then
-        if effectType == "spell" then
-            if GetMacroSpell(macroIndex) ~= effectId then
-                if effectName then
-                    SetMacroSpell(macroIndex, effectName, target)
-                end
-            end
-        elseif effectType == "item" then
-            if GetMacroItem(macroIndex) ~= effectId then
-                if effectName then
-                    SetMacroItem(macroIndex, effectName, target)
-                end
-            end
-        else
-            if GetMacroSpell(macroIndex) or GetMacroItem(macroIndex) then
-                SetMacroSpell(macroIndex, "", nil)
-            end
+        local name, currentIcon, body = C_Macro.GetMacroInfo(macroIndex)
+        
+        -- If the icon calculated (effectIcon) is different from the macro's current icon, update it.
+        -- Note: effectName implies #showtooltip logic, but for native action bars 
+        -- we primarily care about the texture being correct on the button.
+        if icon and currentIcon ~= icon then
+            C_Macro.EditMacro(macroIndex, nil, icon, nil)
         end
     end
 end
@@ -288,7 +331,8 @@ local function UpdateAllMacros()
     LastMacroList = MegaMacroGlobalData.Macros
     LastMacroIndex = 0
 
-    for _ = 1, (MacroLimits.MaxGlobalMacros + MacroLimits.MaxCharacterMacros) do
+    local totalMacros = MacroLimits.MaxGlobalMacros + MacroLimits.MaxCharacterMacros
+    for _ = 1, totalMacros do
         local previousLastMacroScope  = LastMacroScope
         local previousLastMacroList   = LastMacroList
         local previousLastMacroIndex  = LastMacroIndex
@@ -297,6 +341,12 @@ local function UpdateAllMacros()
             break
         end
 
+        -- Check if we've looped or data is invalid
+        if not LastMacroList or not LastMacroList[LastMacroIndex] then
+            break
+        end
+
+        -- Cycle detection
         if MacroEffectData[LastMacroList[LastMacroIndex].Id] then
             LastMacroScope = previousLastMacroScope
             LastMacroList  = previousLastMacroList
@@ -307,7 +357,8 @@ local function UpdateAllMacros()
         local macro = LastMacroList[LastMacroIndex]
         UpdateMacro(macro)
 
-        if not UpdateNextMacro() then
+        -- Advance
+        if not IterateNextMacroInternal(0) then
             break
         end
     end

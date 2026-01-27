@@ -1,33 +1,64 @@
 -- Existing command collection -------------------------------------------------
 local Commands = {
-    "1",
-    "2",
-    "3"
+    "cast",
+    "use",
+    "castsequence",
+    "stopmacro",
+    "cancelaura",
+    "equip",
+    "equipset",
+    "userandom",
+    "run"
 }
 
 -- 1️⃣  Pull in all slash commands that actually start with '/'.
+-- 12.0 Optimization: Only check keys starting with "SLASH_" to avoid iterating the whole environment unnecessarily
 for globalName, command in pairs(_G) do
-    if type(command) == "string" and command:sub(1,1) == "/" then
-        -- Old style: SLASH_<NAME>1 = "/cast"
-        table.insert(Commands, command:sub(2))
+    if type(globalName) == "string" and string.sub(globalName, 1, 6) == "SLASH_" then
+        if type(command) == "string" and string.sub(command, 1, 1) == "/" then
+            table.insert(Commands, string.sub(command, 2))
+        elseif type(command) == "function" then
+            -- Some newer addons map directly to functions; ignore for text parsing
+        end
     end
 end
 
 -- 2️⃣  Gather emotes – support both the legacy and the new naming scheme.
 for i = 1, 999 do
     local legacy   = _G["EMOTE"..i.."_TOKEN"]
-    local modern   = _G["EMOTE_TOKEN_"..i]   -- new pattern in 11.2
+    local modern   = _G["EMOTE_TOKEN_"..i]   -- new pattern in 11.2/12.0
     local emoteTok = legacy or modern
     if not emoteTok then break end
     table.insert(Commands, string.lower(emoteTok))
 end
 
-local Colours = GetMegaMacroParsingColourData()
-local Conditions = GetMegaMacroParsingConditionsData()
-local GetCharacter, GetWord, ParseResult = GetMegaMacroParsingFunctions()
+-- Ensure we have the parsing data functions available
+local Colours = nil
+local Conditions = nil
+local GetCharacter, GetWord, ParseResult = nil, nil, nil
 
-local ConditionalEnclosed = "|c"..Colours.Syntax.."[|r"
-local ConditionalBroken = "|c"..Colours.Error.."[|r"
+-- 12.0 Safety: Lazy load these in case the load order changed
+local function InitializeParsingData()
+    if not Colours and GetMegaMacroParsingColourData then
+        Colours = GetMegaMacroParsingColourData()
+    end
+    if not Conditions and GetMegaMacroParsingConditionsData then
+        Conditions = GetMegaMacroParsingConditionsData()
+    end
+    if not GetCharacter and GetMegaMacroParsingFunctions then
+        GetCharacter, GetWord, ParseResult = GetMegaMacroParsingFunctions()
+    end
+end
+
+local ConditionalEnclosed = nil
+local ConditionalBroken = nil
+
+local function UpdateConstants()
+    if Colours then
+        ConditionalEnclosed = "|c"..Colours.Syntax.."[|r"
+        ConditionalBroken = "|c"..Colours.Error.."[|r"
+    end
+end
 
 local function IsEndOfLine(parsingContext, offset)
     local character = GetCharacter(parsingContext, offset)
@@ -95,11 +126,15 @@ end
 local function IsValidUnitId(unitId)
     return
         IsIndexedUnitId(unitId, "arena", 5) or
-        IsIndexedUnitId(unitId, "boss", 4) or
+        IsIndexedUnitId(unitId, "boss", 5) or -- Increased to 5 for modern raids
         unitId == "focus" or
         unitId == "mouseover" or
         unitId == "cursor" or
         unitId == "none" or
+        -- 12.0: Added modern Soft Target units
+        unitId == "softenemy" or
+        unitId == "softfriend" or
+        unitId == "softinteract" or
         IsIndexedUnitId(unitId, "party", 4) or
         IsIndexedUnitId(unitId, "partypet", 4) or
         unitId == "pet" or
@@ -241,6 +276,7 @@ local function ParseCommand(parsingContext)
     end
 
     local commandFound = false
+    -- Optimized: No change needed here, Commands table is pre-filled efficiently now
     for i=1, #Commands do
         if commandName == Commands[i] then
             commandFound = true
@@ -325,6 +361,14 @@ end
 MegaMacroParser = {}
 
 function MegaMacroParser.Parse(code)
+    -- Lazy initialization of external dependencies
+    InitializeParsingData()
+    UpdateConstants()
+
+    if not Colours or not GetCharacter then 
+        return code -- Fallback if parsing dependencies missing
+    end
+
     local result = ""
     local parsingContext = { Code = code, Index = 1 }
 

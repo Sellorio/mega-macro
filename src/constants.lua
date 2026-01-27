@@ -42,51 +42,46 @@ PetActionTextures = {
 
 MegaMacroTexture = 134400
 MegaMacroActiveStanceTexture = 136116
-MegaMacroCodeMaxLength = 250
-MegaMacroCodeMaxLengthForNative = 250
+MegaMacroCodeMaxLength = 1024 -- Increased for 12.0 internal storage
+MegaMacroCodeMaxLengthForNative = 255 -- Hard limit for Blizzard UI sync
 HighestMaxMacroCount = math.max(MacroLimits.GlobalCount, MacroLimits.PerClassCount, MacroLimits.PerSpecializationCount, MacroLimits.PerCharacterCount, MacroLimits.PerCharacterSpecializationCount)
 
 MegaMacroInfoFunctions = {
 	Spell = {
 		GetCooldown = function(abilityId)
-			local spellCooldownInfo = C_Spell.GetSpellCooldown(abilityId);
+			local spellCooldownInfo = C_Spell.GetSpellCooldown(abilityId)
 			if spellCooldownInfo then
-				return spellCooldownInfo.startTime, spellCooldownInfo.duration, spellCooldownInfo.isEnabled, spellCooldownInfo.modRate;
+				return spellCooldownInfo.startTime, spellCooldownInfo.duration, spellCooldownInfo.isEnabled, spellCooldownInfo.modRate
 			end
 		end,
 		GetCount = C_Spell.GetSpellCastCount,
-		GetCharges = function(spellId) return C_Spell.GetSpellCharges(spellId) end,
+		GetCharges = function(spellId) 
+			return C_Spell.GetSpellCharges(spellId) 
+		end,
 		IsUsable = C_Spell.IsSpellUsable,
 		IsInRange = function(spellId, target)
-			local spellIndex = FindSpellBookSlotBySpellID(spellId)
-			if spellIndex then
-				local result = C_Spell.IsSpellInRange(spellIndex, "spell", target)
-
-				if result == nil then
-					return nil
-				else
-					return result ~= 0
-				end
-            end
+			-- 12.0: IsSpellInRange now accepts SpellID or Name directly without needing the SpellBook index
+			local result = C_Spell.IsSpellInRange(spellId, target)
+			if result == nil then
+				return nil
+			else
+				return result
+			end
 		end,
 		IsCurrent = C_Spell.IsCurrentSpell,
 		IsEquipped = function(_) return false end,
 		IsAutoRepeat = C_Spell.IsAutoRepeatSpell,
 		IsLocked = C_LevelLink.IsSpellLocked,
 		GetLossOfControlCooldown = C_Spell.GetSpellLossOfControlCooldown,
-		IsOverlayed = IsSpellOverlayed
+		IsOverlayed = C_Spell.GetSpellOverlayed -- Updated for 12.0 namespace
 	},
- 	Item = {
+	Item = {
 		GetCooldown = C_Item.GetItemCooldown,
 		GetCount = function(itemId) return C_Item.GetItemCount(itemId, false, true) end,
-		GetCharges = function(_) return 0, 0, -1, 0, 1 end, -- charges, maxCharges, chargeStart, chargeDuration, chargeModRate
-		IsUsable = function(itemId) return C_Item.IsUsableItem(itemId), false end,
-		IsInRange = function(itemId)
-			if C_Item.GetItemInfo(itemId) then
-				return function(unit)
-					return C_Item.IsItemInRange(itemId, unit)
-				end
-			end
+		GetCharges = function(_) return 0, 0, -1, 0, 1 end, 
+		IsUsable = function(itemId) return C_Item.IsUsableItem(itemId) end,
+		IsInRange = function(itemId, target)
+			return C_Item.IsItemInRange(itemId, target)
 		end,
 		IsCurrent = C_Item.IsCurrentItem,
 		IsEquipped = function(itemId) return C_Item.IsEquippedItem(itemId) end,
@@ -98,7 +93,7 @@ MegaMacroInfoFunctions = {
 	Fallback = {
 		GetCooldown = function(_) return -1, 0, true end,
 		GetCount = function(_) return 0 end,
-		GetCharges = function(_) return 0, 0, -1, 0, 1 end, -- charges, maxCharges, chargeStart, chargeDuration, chargeModRate
+		GetCharges = function(_) return 0, 0, -1, 0, 1 end,
 		IsUsable = function(_) return false, false end,
 		IsInRange = function(_, _) return nil end,
 		IsCurrent = function(_) return false end,
@@ -111,7 +106,7 @@ MegaMacroInfoFunctions = {
 	Unknown = {
 		GetCooldown = function(_) return -1, 0, true end,
 		GetCount = function(_) return 0 end,
-		GetCharges = function(_) return 0, 0, -1, 0, 1 end, -- charges, maxCharges, chargeStart, chargeDuration, chargeModRate
+		GetCharges = function(_) return 0, 0, -1, 0, 1 end,
 		IsUsable = function(_) return true, false end,
 		IsInRange = function(_, _) return nil end,
 		IsCurrent = function(_) return false end,
