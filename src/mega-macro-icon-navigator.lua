@@ -18,59 +18,63 @@ end
 
 local function GetDefaultIconList()
     local icons = {}
+    local activeIcons = {};
 
-	-- We need to avoid adding duplicate spellIDs from the spellbook tabs for your other specs.
-	local activeIcons = {};
-
-	for i = 1, C_SpellBook.GetNumSpellBookSkillLines() do
+    -- 12.0 uses C_SpellBook for all spellbook-related queries
+    local numSkillLines = C_SpellBook.GetNumSpellBookSkillLines()
+    for i = 1, numSkillLines do
         local skillLine = C_SpellBook.GetSpellBookSkillLineInfo(i)
-        local tab = skillLine.name
-        local tabTex = skillLine.iconID
-        local offset = skillLine.itemIndexOffset
-        local numSpells = skillLine.numSpellBookItems
-		offset = offset + 1;
-		local tabEnd = offset + numSpells;
-		for j = offset, tabEnd - 1 do
-			--to get spell info by slot, you have to pass in a pet argument
-			local spellType, ID = C_SpellBook.GetSpellBookItemType(j, Enum.SpellBookSpellBank.Player);
-			if (spellType ~= "FUTURESPELL") then
-				local fileID = C_SpellBook.GetSpellBookItemTexture(j, Enum.SpellBookSpellBank.Player);
-				if (fileID) then
-					activeIcons[fileID] = true;
-				end
-			end
-			if (spellType == "FLYOUT") then
-				local _, _, numSlots, isKnown = GetFlyoutInfo(ID);
-				if (isKnown and numSlots > 0) then
-					for k = 1, numSlots do
-						local spellID
-						spellID, _, isKnown = GetFlyoutSlotInfo(ID, k)
-						if (isKnown) then
-							local fileID = GetSpellTexture(spellID);
-							if (fileID) then
-								activeIcons[fileID] = true;
-							end
-						end
-					end
-				end
-			end
-		end
-	end
+        if skillLine then
+            local offset = skillLine.itemIndexOffset + 1
+            local numSpells = skillLine.numSpellBookItems
+            local tabEnd = offset + numSpells
 
-	for fileDataID in pairs(activeIcons) do
-		icons[#icons + 1] = fileDataID;
-	end
+            for j = offset, tabEnd - 1 do
+                local spellType, ID = C_SpellBook.GetSpellBookItemType(j, Enum.SpellBookSpellBank.Player)
+                if (spellType ~= "FUTURESPELL") then
+                    local fileID = C_SpellBook.GetSpellBookItemTexture(j, Enum.SpellBookSpellBank.Player)
+                    if (fileID) then
+                        activeIcons[fileID] = true
+                    end
+                end
 
-	GetLooseMacroIcons(icons);
-	GetLooseMacroItemIcons(icons);
-	GetMacroIcons(icons);
-	GetMacroItemIcons(icons);
+                if (spellType == "FLYOUT") then
+                    -- 12.0 Migration: Flyout info moved to C_Spell
+                    local _, _, numSlots, isKnown = C_Spell.GetFlyoutInfo(ID)
+                    if (isKnown and numSlots > 0) then
+                        for k = 1, numSlots do
+                            local spellID, _
+                            spellID, _, isKnown = C_Spell.GetFlyoutSlotInfo(ID, k)
+                            if (isKnown) then
+                                local fileID = C_Spell.GetSpellTexture(spellID)
+                                if (fileID) then
+                                    activeIcons[fileID] = true
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
 
-	local iconListLength = #icons
-	for i=1, iconListLength do
-		if type(icons[i]) ~= "number" then
-			icons[i] = "INTERFACE\\ICONS\\"..icons[i]
-		end
+    for fileDataID in pairs(activeIcons) do
+        icons[#icons + 1] = fileDataID
+    end
+
+    -- 12.0 Migration: All Macro Icon functions moved to C_Macro namespace
+    C_Macro.GetLooseMacroIcons(icons)
+    C_Macro.GetLooseMacroItemIcons(icons)
+    C_Macro.GetMacroIcons(icons)
+    C_Macro.GetMacroItemIcons(icons)
+
+    -- 12.0 Clean up: Blizzard prefers FileDataIDs (numbers)
+    for i=1, #icons do
+        local iconVal = icons[i]
+        if type(iconVal) == "string" and not iconVal:find("\\") then
+            -- If it's a legacy string name without a path, format it correctly
+            icons[i] = "INTERFACE\\ICONS\\" .. iconVal
+        end
     end
 
     for i=1, #icons do
@@ -90,17 +94,19 @@ function MegaMacroIconNavigator.OnUpdate()
     if IconLoadingStarted and not IconLoadingFinished then
         for _=1, FetchesPerFrame do
             CurrentSpellId = CurrentSpellId + 1
+            
+            -- 12.0: C_Spell.GetSpellInfo returns a table. 
             local spellInfo = C_Spell.GetSpellInfo(CurrentSpellId)
-            if (spellInfo == nil) then
-                return
-            end
-            local name, _, icon, _, _, _, spellId = spellInfo.name, nil, spellInfo.iconID, spellInfo.castTime, spellInfo.minRange, spellInfo.maxRange, spellInfo.spellID
+            
+            if spellInfo then
+                local name = spellInfo.name
+                local icon = spellInfo.iconID
+                local spellId = spellInfo.spellID
 
-            if icon == 136243 then
-                -- 136243 is the a gear icon, we can ignore those spells (courtesy of WeakAuras)
-                MissCount = 0
-            elseif name then
-                if #name > 0 and icon then
+                if icon == 136243 then
+                    -- Ignore generic gear icons
+                    MissCount = 0
+                elseif name and #name > 0 and icon then
                     name = string.lower(name)
                     MissCount = 0
                     local cachedIconList = IconCache[name]
@@ -109,26 +115,32 @@ function MegaMacroIconNavigator.OnUpdate()
                         cachedIconList = {}
                         IconCache[name] = cachedIconList
                     end
+                    
                     local hasIcon = false
                     for i=1, #cachedIconList do
-                        if cachedIconList[i] == icon then
+                        if cachedIconList[i].Icon == icon then
                             hasIcon = true
                             break
                         end
                     end
+                    
                     if not hasIcon then
                         table.insert(cachedIconList, { SpellId = spellId, Icon = icon })
                     end
+                else
+                    MissCount = MissCount + 1
                 end
             else
                 MissCount = MissCount + 1
+            end
 
-                if MissCount > 400 then
-                    table.sort(IconCacheKeys)
-                    IconLoadingFinished = true
-                    CleanupPhase = true
-                    break
-                end
+            -- 12.0: Spell IDs now exceed 500,000. 
+            -- We increase the MissCount threshold to ensure we don't stop too early.
+            if MissCount > 2000 then
+                table.sort(IconCacheKeys)
+                IconLoadingFinished = true
+                CleanupPhase = true
+                break
             end
         end
     elseif CleanupPhase then
@@ -144,6 +156,7 @@ function MegaMacroIconNavigator.Search(searchText)
 
     if searchText and #searchText > 2 then
         searchText = string.lower(searchText)
+        -- Escape special characters for Lua pattern matching
         local escapedSearch = string.gsub(searchText, "([%(%)%.%+%-%*%?%[%]%^%$%%])", "%%%1")
 
         for _, key in ipairs(IconCacheKeys) do
@@ -161,8 +174,7 @@ function MegaMacroIconNavigator.Search(searchText)
                         end
 
                         resultCount = resultCount + 1
-
-                        if resultCount > 300 then
+                        if resultCount > 500 then -- Increased limit for 12.0 UI
                             break
                         end
                     end
@@ -175,5 +187,4 @@ function MegaMacroIconNavigator.Search(searchText)
     else
         return GetDefaultIconList()
     end
-
 end

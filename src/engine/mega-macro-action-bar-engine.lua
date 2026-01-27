@@ -9,14 +9,12 @@ For developer refererence, these are the features of an action bar button:
  - Is In Range
  - Is Current
  - Current Shapeshift Form (should appear as Is Current)
- - Count (spells or items). Example of spell count: Lesser Soul Fragments as displayed on Soul Cleave or Spirit Bomb.
+ - Count (spells or items).
  - Charges (spells only atm)
  - Spell Glow (such as on empowerments for Balance Druid)
  - Active Auto Attack Flash (flashes red when auto attack is active) - intentionally omitted from this addon
 
 ]]
-
-
 
 local LibActionButton = nil
 local ActionBarSystem = nil -- Blizzard or LAB or Dominos
@@ -28,12 +26,9 @@ local updateRange = false
 local ActionsBoundToMegaMacros = {}
 
 -- Cache that remembers the last macro ID and modifier state for each button.
--- It prevents unnecessary full‑icon recomputation on every click.
 local buttonCache = {}   -- [button] = { macroId = number|nil, mods = "SCA"|"" }
 
 -- Global snapshot of the modifier signature from the previous OnUpdate tick.
--- When this value changes we will flush the per‑button cache so every button
--- gets a fresh icon on the next frame.
 local previousGlobalMods = ""
 
 local function UpdateCurrentActionState(button, functions, abilityId)
@@ -55,47 +50,33 @@ end
 
 local function UpdateUsable(button, functions, abilityId)
     local icon = button.icon
-	local normalTexture = button.NormalTexture
-	if not normalTexture then
-		return;
-	end
+    local normalTexture = button.NormalTexture
+    if not normalTexture then
+        return
+    end
 
-	local isUsable, notEnoughMana = functions.IsUsable(abilityId)
-	if isUsable then
-		icon:SetVertexColor(1.0, 1.0, 1.0)
-		normalTexture:SetVertexColor(1.0, 1.0, 1.0)
-	elseif ( notEnoughMana ) then
-		icon:SetVertexColor(0.5, 0.5, 1.0)
-		normalTexture:SetVertexColor(0.5, 0.5, 1.0)
-	else
-		icon:SetVertexColor(0.4, 0.4, 0.4)
-		normalTexture:SetVertexColor(1.0, 1.0, 1.0)
-	end
-
-	-- local isLevelLinkLocked = functions.IsLocked(abilityId)
-	-- if not icon:IsDesaturated() then
-	-- 	icon:SetDesaturated(isLevelLinkLocked)
-	-- end
-
-	-- if button.LevelLinkLockIcon then
-	-- 	button.LevelLinkLockIcon:SetShown(isLevelLinkLocked)
-	-- end
+    local isUsable, notEnoughMana = functions.IsUsable(abilityId)
+    if isUsable then
+        icon:SetVertexColor(1.0, 1.0, 1.0)
+        normalTexture:SetVertexColor(1.0, 1.0, 1.0)
+    elseif ( notEnoughMana ) then
+        icon:SetVertexColor(0.5, 0.5, 1.0)
+        normalTexture:SetVertexColor(0.5, 0.5, 1.0)
+    else
+        icon:SetVertexColor(0.4, 0.4, 0.4)
+        normalTexture:SetVertexColor(1.0, 1.0, 1.0)
+    end
 end
 
 local function LibActionButton_EndChargeCooldown(self)
     self:Hide()
     self:SetParent(UIParent)
 
-    -- -----------------------------------------------------------------
-    --  Defensive clean‑up – the parent may already be nil (see the
-    --  earlier fix) and the pool table may not exist yet.
-    -- -----------------------------------------------------------------
     if self.parent then
         self.parent.chargeCooldown = nil
         self.parent = nil
     end
 
-    -- Ensure the pool table exists before inserting.
     if not LibActionButton.ChargeCooldowns then
         LibActionButton.ChargeCooldowns = {}
     end
@@ -103,9 +84,6 @@ local function LibActionButton_EndChargeCooldown(self)
 end
 
 local function LibActionButton_StartChargeCooldown(parent, chargeStart, chargeDuration, chargeModRate)
-    -------------------------------------------------------------------------
-    -- 1️⃣  Ensure the pool tables exist
-    -------------------------------------------------------------------------
     if not LibActionButton.ChargeCooldowns then
         LibActionButton.ChargeCooldowns = {}
     end
@@ -113,9 +91,6 @@ local function LibActionButton_StartChargeCooldown(parent, chargeStart, chargeDu
         LibActionButton.NumChargeCooldowns = 0
     end
 
-    -------------------------------------------------------------------------
-    -- 2️⃣  Pull a frame from the pool (or create a fresh one)
-    -------------------------------------------------------------------------
     if not parent.chargeCooldown then
         local cooldown = tremove(LibActionButton.ChargeCooldowns)
         if not cooldown then
@@ -129,22 +104,12 @@ local function LibActionButton_StartChargeCooldown(parent, chargeStart, chargeDu
             cooldown:SetScript("OnCooldownDone", LibActionButton_EndChargeCooldown)
         end
 
-        -----------------------------------------------------------------
-        -- 3️⃣  **Critical** – always (re)assign the custom .parent field.
-        -----------------------------------------------------------------
         cooldown.parent = parent
+        cooldown:SetHideCountdownNumbers(false)
+        cooldown:SetDrawSwipe(true)
+        cooldown:SetEdgeTexture("Interface\\Cooldown\\edge")
+        cooldown:SetSwipeColor(0, 0, 0)
 
-        -----------------------------------------------------------------
-        -- 4️⃣  **Force the correct visual defaults** every time we take a frame.
-        -----------------------------------------------------------------
-        cooldown:SetHideCountdownNumbers(false)   -- <<< show the timer text
-        cooldown:SetDrawSwipe(true)               -- <<< draw the normal spiral
-        cooldown:SetEdgeTexture("Interface\\Cooldown\\edge") -- same edge as normal cooldown
-        cooldown:SetSwipeColor(0, 0, 0)           -- default colour (matches normal)
-
-        -----------------------------------------------------------------
-        -- 5️⃣  Anchor the frame to the button
-        -----------------------------------------------------------------
         cooldown:SetParent(parent)
         cooldown:SetAllPoints(parent)
         cooldown:SetFrameStrata("TOOLTIP")
@@ -153,40 +118,23 @@ local function LibActionButton_StartChargeCooldown(parent, chargeStart, chargeDu
         parent.chargeCooldown = cooldown
     end
 
-    -------------------------------------------------------------------------
-    -- 6️⃣  Visual configuration that depends on the button’s opacity
-    -------------------------------------------------------------------------
     parent.chargeCooldown:SetDrawBling(parent.chargeCooldown:GetEffectiveAlpha() > 0.5)
-
-    -------------------------------------------------------------------------
-    -- 7️⃣  Feed the charge‑cooldown data into the frame
-    -------------------------------------------------------------------------
     CooldownFrame_Set(parent.chargeCooldown, chargeStart, chargeDuration, true, true, chargeModRate)
 
-    -------------------------------------------------------------------------
-    -- 8️⃣  Masque support (unchanged)
-    -------------------------------------------------------------------------
     if Masque and Masque.UpdateCharge then
         Masque:UpdateCharge(parent)
     end
 
-    -------------------------------------------------------------------------
-    -- 9️⃣  Edge case – if the charge is already ready, hide the frame
-    -------------------------------------------------------------------------
     if not chargeStart or chargeStart == 0 then
         LibActionButton_EndChargeCooldown(parent.chargeCooldown)
     end
 end
 
 local function UpdateCooldownLibActionButton(button, functions, abilityId)
-    -- 1️⃣  Gather all cooldown‑related data
     local locStart, locDuration = functions.GetLossOfControlCooldown(abilityId)
     local start, duration, enable, modRate = functions.GetCooldown(abilityId)
     local charges, maxCharges, chargeStart, chargeDuration, chargeModRate = functions.GetCharges(abilityId)
 
-    -------------------------------------------------------------------------
-    -- 2️⃣  Normal cooldown handling (unchanged apart from a tiny refactor)
-    -------------------------------------------------------------------------
     button.cooldown:SetDrawBling(button.cooldown:GetEffectiveAlpha() > 0.5)
 
     if (locStart + locDuration) > (start + duration) then
@@ -210,68 +158,57 @@ local function UpdateCooldownLibActionButton(button, functions, abilityId)
                 function() UpdateCooldownLibActionButton(button, functions, abilityId) end)
         end
 
-         -----------------------------------------------------------------
-        -- 3️⃣  **Charge‑cooldown handling**
-        -----------------------------------------------------------------
         local hasCharges = charges and maxCharges and maxCharges > 1
         if hasCharges and charges > 0 and charges < maxCharges then
-            -- *** NEW: use the main cooldown widget for the charge timer ***
-            -- The fourth argument (enable) is always true for charge cooldowns.
-            -- We keep the same modRate that the original code passed.
             CooldownFrame_Set(button.cooldown, chargeStart, chargeDuration, true, false, chargeModRate)
-
-            -- Ensure the normal cooldown edge/colour is appropriate for a charge.
             button.cooldown:SetEdgeTexture("Interface\\Cooldown\\edge")
             button.cooldown:SetSwipeColor(0, 0, 0)
-            button.cooldown:SetHideCountdownNumbers(false)   -- show numbers
+            button.cooldown:SetHideCountdownNumbers(false)
         else
-            -- No pending charge → clear any leftover charge timer.
-            -- (The regular cooldown will be set later in the function.)
-            button.cooldown:SetCooldown(0, 0)   -- clears the frame
+            button.cooldown:SetCooldown(0, 0)
         end
 
-        -----------------------------------------------------------------
-        -- 4️⃣  Finally set the *regular* cooldown (spell/item cooldown)
-        -----------------------------------------------------------------
         CooldownFrame_Set(button.cooldown, start, duration, enable, false, modRate)
     end
 end
 
 local function UpdateCooldownBlizzard(button, functions, abilityId)
-    locStart, locDuration = functions.GetLossOfControlCooldown(abilityId)
-    start, duration, enable, modRate = functions.GetCooldown(abilityId)
-    charges, maxCharges, chargeStart, chargeDuration, chargeModRate = functions.GetCharges(abilityId)
+    local locStart, locDuration = functions.GetLossOfControlCooldown(abilityId)
+    local start, duration, enable, modRate = functions.GetCooldown(abilityId)
+    local charges, maxCharges, chargeStart, chargeDuration, chargeModRate = functions.GetCharges(abilityId)
 
-	if ( (locStart + locDuration) > (start + duration) ) then
-		if ( button.cooldown.currentCooldownType ~= COOLDOWN_TYPE_LOSS_OF_CONTROL ) then
-			button.cooldown:SetEdgeTexture("Interface\\Cooldown\\edge-LoC")
-			button.cooldown:SetSwipeColor(0.17, 0, 0)
-			button.cooldown:SetHideCountdownNumbers(true)
-			button.cooldown.currentCooldownType = COOLDOWN_TYPE_LOSS_OF_CONTROL
-		end
+    if ( (locStart + locDuration) > (start + duration) ) then
+        if ( button.cooldown.currentCooldownType ~= COOLDOWN_TYPE_LOSS_OF_CONTROL ) then
+            button.cooldown:SetEdgeTexture("Interface\\Cooldown\\edge-LoC")
+            button.cooldown:SetSwipeColor(0.17, 0, 0)
+            button.cooldown:SetHideCountdownNumbers(true)
+            button.cooldown.currentCooldownType = COOLDOWN_TYPE_LOSS_OF_CONTROL
+        end
 
-		CooldownFrame_Set(button.cooldown, locStart, locDuration, true, true, modRate)
-		ClearChargeCooldown(button)
-	else
-		if ( button.cooldown.currentCooldownType ~= COOLDOWN_TYPE_NORMAL ) then
-			button.cooldown:SetEdgeTexture("Interface\\Cooldown\\edge")
-			button.cooldown:SetSwipeColor(0, 0, 0)
-			button.cooldown:SetHideCountdownNumbers(false)
-			button.cooldown.currentCooldownType = COOLDOWN_TYPE_NORMAL
-		end
+        CooldownFrame_Set(button.cooldown, locStart, locDuration, true, true, modRate)
+        if ClearChargeCooldown then ClearChargeCooldown(button) end
+    else
+        if ( button.cooldown.currentCooldownType ~= COOLDOWN_TYPE_NORMAL ) then
+            button.cooldown:SetEdgeTexture("Interface\\Cooldown\\edge")
+            button.cooldown:SetSwipeColor(0, 0, 0)
+            button.cooldown:SetHideCountdownNumbers(false)
+            button.cooldown.currentCooldownType = COOLDOWN_TYPE_NORMAL
+        end
 
-		if( locStart > 0 ) then
-			button.cooldown:SetScript("OnCooldownDone", ActionButton_OnCooldownDone)
-		end
+        if( locStart > 0 ) then
+            button.cooldown:SetScript("OnCooldownDone", ActionButton_OnCooldownDone)
+        end
 
-		if ( charges and maxCharges and maxCharges > 1 and charges < maxCharges ) then
-            StartChargeCooldown(button, chargeStart, chargeDuration, chargeModRate)
-		else
-			ClearChargeCooldown(button)
-		end
+        if ( charges and maxCharges and maxCharges > 1 and charges < maxCharges ) then
+            if StartChargeCooldown then
+                StartChargeCooldown(button, chargeStart, chargeDuration, chargeModRate)
+            end
+        else
+            if ClearChargeCooldown then ClearChargeCooldown(button) end
+        end
 
-		CooldownFrame_Set(button.cooldown, start, duration, enable, false, modRate)
-	end
+        CooldownFrame_Set(button.cooldown, start, duration, enable, false, modRate)
+    end
 end
 
 local function UpdateCount(button, functions, abilityId)
@@ -285,21 +222,21 @@ local function UpdateCount(button, functions, abilityId)
         countLabel:SetText(count > (button.maxDisplayCount or 9999) and "*" or count)
     else
         local charges, maxCharges = functions.GetCharges(abilityId)
-		if charges and maxCharges and maxCharges > 1 then
-			countLabel:SetText(charges)
-		else
-			countLabel:SetText("")
+        if charges and maxCharges and maxCharges > 1 then
+            countLabel:SetText(charges)
+        else
+            countLabel:SetText("")
         end
     end
 end
 
 local function UpdateEquipped(button, functions, abilityId)
     if functions.IsEquipped(abilityId) then
-		button.Border:SetVertexColor(0, 1.0, 0, 0.35)
-		button.Border:Show()
-	else
-		button.Border:Hide()
-	end
+        button.Border:SetVertexColor(0, 1.0, 0, 0.35)
+        button.Border:Show()
+    else
+        button.Border:Hide()
+    end
 end
 
 local function UpdateOverlayGlow(button, functions, abilityId)
@@ -323,127 +260,126 @@ end
 
 local function UpdateRange(button, functions, abilityId, target)
     local valid = functions.IsInRange(abilityId, target)
-    -- local valid = IsSpellInRange(spellName, target) or IsItemInRange(abilityId, target)
-	-- local valid = true
     local checksRange = (valid ~= nil);
     local inRange = checksRange and valid;
-	rangeTimer = 1;
+    
+    -- Optimized: Set timer based on state to reduce checks
+    rangeTimer = 1;
 
-	local hotkeyUpdated = false
-	if Bartender4 then
-		if checksRange and not inRange then
-			if Bartender4.db.profile.outofrange == "button" then
-				button.icon:SetVertexColor(
-					Bartender4.db.profile.colors.range.r,
-					Bartender4.db.profile.colors.range.g,
-					Bartender4.db.profile.colors.range.b)
-			elseif Bartender4.db.profile.outofrange == "hotkey" then
-				button.HotKey:SetVertexColor(
-					Bartender4.db.profile.colors.range.r,
-					Bartender4.db.profile.colors.range.g,
-					Bartender4.db.profile.colors.range.b)
-			end
-			return
-		end
-	end
+    local hotkeyUpdated = false
+    if Bartender4 then
+        if checksRange and not inRange then
+            if Bartender4.db.profile.outofrange == "button" then
+                button.icon:SetVertexColor(
+                    Bartender4.db.profile.colors.range.r,
+                    Bartender4.db.profile.colors.range.g,
+                    Bartender4.db.profile.colors.range.b)
+            elseif Bartender4.db.profile.outofrange == "hotkey" then
+                button.HotKey:SetVertexColor(
+                    Bartender4.db.profile.colors.range.r,
+                    Bartender4.db.profile.colors.range.g,
+                    Bartender4.db.profile.colors.range.b)
+            end
+            return
+        end
+    end
 
     if button.HotKey:GetText() == RANGE_INDICATOR then
-		if checksRange then
-			button.HotKey:Show();
-			if ( inRange ) then
-				button.HotKey:SetVertexColor(LIGHTGRAY_FONT_COLOR:GetRGB());
-			elseif not hotkeyUpdated then
-				button.HotKey:SetVertexColor(RED_FONT_COLOR:GetRGB());
-			end
-		else
-			button.HotKey:Hide();
-		end
-	else
-		if checksRange and not inRange and not hotkeyUpdated then
-			button.HotKey:SetVertexColor(RED_FONT_COLOR:GetRGB());
-		else
-			button.HotKey:SetVertexColor(LIGHTGRAY_FONT_COLOR:GetRGB());
-		end
-	end
+        if checksRange then
+            button.HotKey:Show();
+            if ( inRange ) then
+                button.HotKey:SetVertexColor(LIGHTGRAY_FONT_COLOR:GetRGB());
+            elseif not hotkeyUpdated then
+                button.HotKey:SetVertexColor(RED_FONT_COLOR:GetRGB());
+            end
+        else
+            button.HotKey:Hide();
+        end
+    else
+        if checksRange and not inRange and not hotkeyUpdated then
+            button.HotKey:SetVertexColor(RED_FONT_COLOR:GetRGB());
+        else
+            button.HotKey:SetVertexColor(LIGHTGRAY_FONT_COLOR:GetRGB());
+        end
+    end
 end
 
 local function UpdateActionBar(button, macroId)
     local data = MegaMacroIconEvaluator.GetCachedData(macroId)
     local functions = MegaMacroInfoFunctions.Unknown
 
-	if data then
-		if data.Type == "spell" then
-			functions = MegaMacroInfoFunctions.Spell
-		elseif data.Type == "item" then
-			functions = MegaMacroInfoFunctions.Item
-		elseif data.Type == "fallback" then
-			functions = MegaMacroInfoFunctions.Fallback
-		end
+    if data then
+        if data.Type == "spell" then
+            functions = MegaMacroInfoFunctions.Spell
+        elseif data.Type == "item" then
+            functions = MegaMacroInfoFunctions.Item
+        elseif data.Type == "fallback" then
+            functions = MegaMacroInfoFunctions.Fallback
+        end
 
-		UpdateCurrentActionState(button, functions, data.Id)
-		UpdateUsable(button, functions, data.Id)
-		UpdateCount(button, functions, data.Id)
-		UpdateEquipped(button, functions, data.Id)
-		UpdateOverlayGlow(button, functions, data.Id)
-		button.icon:SetTexture(data.Icon or MegaMacroTexture)
+        UpdateCurrentActionState(button, functions, data.Id)
+        UpdateUsable(button, functions, data.Id)
+        UpdateCount(button, functions, data.Id)
+        UpdateEquipped(button, functions, data.Id)
+        UpdateOverlayGlow(button, functions, data.Id)
+        button.icon:SetTexture(data.Icon or MegaMacroTexture)
 
-		if LibActionButton then
-			UpdateCooldownLibActionButton(button, functions, data.Id)
-		else
-			UpdateCooldownBlizzard(button, functions, data.Id)
-		end
+        if LibActionButton then
+            UpdateCooldownLibActionButton(button, functions, data.Id)
+        else
+            UpdateCooldownBlizzard(button, functions, data.Id)
+        end
 
-		-- this throttle was causing a flickering icon issue for bartender users
-		-- after having it disabled for about a month, I've noticed no performance drop
-		--if updateRange then
-		UpdateRange(button, functions, data.Id, data.Target)
-		--end
-	end
+        -- Range updates can be expensive, throttle handled by OnUpdate logic
+        UpdateRange(button, functions, data.Id, data.Target)
+    end
 end
 
 local function ResetActionBar(button)
-	button:SetChecked(false)
-	button.Count:SetText("")
-	button.Border:Hide() -- reset eqipped border
-	ActionButton_HideOverlayGlow(button)
-	ClearChargeCooldown(button)
-	UpdateRange(button, MegaMacroInfoFunctions.Unknown)
-	button.icon:SetVertexColor(1.0, 1.0, 1.0) -- reset opacity (is usable visuals)
+    button:SetChecked(false)
+    button.Count:SetText("")
+    button.Border:Hide() 
+    ActionButton_HideOverlayGlow(button)
+    if ClearChargeCooldown then ClearChargeCooldown(button) end
+    UpdateRange(button, MegaMacroInfoFunctions.Unknown)
+    button.icon:SetVertexColor(1.0, 1.0, 1.0) 
 
-	local normalTexture = button.NormalTexture
-	if normalTexture then
-		normalTexture:SetVertexColor(1.0, 1.0, 1.0) -- reset blue shift
-	end
+    local normalTexture = button.NormalTexture
+    if normalTexture then
+        normalTexture:SetVertexColor(1.0, 1.0, 1.0)
+    end
 end
 
 local function ForEachLibActionButton(func)
-    for button, _ in pairs(LibActionButton.buttonRegistry) do
-        func(button)
+    if LibActionButton and LibActionButton.buttonRegistry then
+        for button, _ in pairs(LibActionButton.buttonRegistry) do
+            func(button)
+        end
     end
 end
 
 local function ForEachDominosButton(func)
-	for i=1, 120 do
-		local button = nil
-		if i <= 12 then
-			button = _G[('ActionButton%d'):format(i)]
-		elseif i <= 24 then
-			button = _G["DominosActionButton"..(i - 12)]
-		elseif i <= 36 then
-			button = _G[('MultiBarRightButton%d'):format(i - 24)]
-		elseif i <= 48 then
-			button = _G[('MultiBarLeftButton%d'):format(i - 36)]
-		elseif i <= 60 then
-			button = _G[('MultiBarBottomRightButton%d'):format(i - 48)]
-		elseif i <= 72 then
-			button = _G[('MultiBarBottomLeftButton%d'):format(i - 60)]
-		else
-			button = _G["DominosActionButton"..(i - 60)]
-		end
-		if button then
-			func(button)
-		end
-	end
+    for i=1, 120 do
+        local button = nil
+        if i <= 12 then
+            button = _G[('ActionButton%d'):format(i)]
+        elseif i <= 24 then
+            button = _G["DominosActionButton"..(i - 12)]
+        elseif i <= 36 then
+            button = _G[('MultiBarRightButton%d'):format(i - 24)]
+        elseif i <= 48 then
+            button = _G[('MultiBarLeftButton%d'):format(i - 36)]
+        elseif i <= 60 then
+            button = _G[('MultiBarBottomRightButton%d'):format(i - 48)]
+        elseif i <= 72 then
+            button = _G[('MultiBarBottomLeftButton%d'):format(i - 60)]
+        else
+            button = _G["DominosActionButton"..(i - 60)]
+        end
+        if button then
+            func(button)
+        end
+    end
 end
 
 local function ForEachBlizzardActionButton(func)
@@ -462,14 +398,14 @@ MegaMacroActionBarEngine = {}
 function MegaMacroActionBarEngine.Initialize()
     if _G["BT4Button1"] then
         LibActionButton = LibStub("LibActionButton-1.0")
-		ActionBarSystem = "LAB"
+        ActionBarSystem = "LAB"
     elseif _G["ElvUI_Bar1Button1"] then
-		LibActionButton = LibStub("LibActionButton-1.0-ElvUI")
-		ActionBarSystem = "LAB"
-	elseif Dominos then
-		ActionBarSystem = "Dominos"
-	else
-		ActionBarSystem = "Blizzard"
+        LibActionButton = LibStub("LibActionButton-1.0-ElvUI")
+        ActionBarSystem = "LAB"
+    elseif Dominos then
+        ActionBarSystem = "Dominos"
+    else
+        ActionBarSystem = "Blizzard"
     end
 
     MegaMacroIconEvaluator.OnIconUpdated(function()
@@ -478,35 +414,26 @@ function MegaMacroActionBarEngine.Initialize()
 end
 
 -- Returns a short string that uniquely represents the current modifier key state.
--- "S" = Shift, "C" = Ctrl, "A" = Alt. Empty string means no modifiers.
 local function GetCurrentModifierSignature()
     local sig = ""
-    if IsShiftKeyDown()   then sig = sig .. "S" end
+    if IsShiftKeyDown()    then sig = sig .. "S" end
     if IsControlKeyDown() then sig = sig .. "C" end
-    if IsAltKeyDown()     then sig = sig .. "A" end
+    if IsAltKeyDown()      then sig = sig .. "A" end
     return sig
 end
 
 function MegaMacroActionBarEngine.OnUpdate(elapsed)
     UpdateRangeTimer(elapsed)
 
-    -----------------------------------------------------------------
-    -- 1️⃣  Detect a change in the *global* modifier state.
-    -----------------------------------------------------------------
     local currentGlobalMods = GetCurrentModifierSignature()
     if currentGlobalMods ~= previousGlobalMods then
-        -- Modifier keys were pressed or released since the last frame.
-        -- Invalidate every button's cached signature so they will all be
-        -- refreshed on this tick.
         for btn, _ in pairs(buttonCache) do
-            buttonCache[btn] = nil   -- clear the entry completely
+            buttonCache[btn] = nil
         end
         previousGlobalMods = currentGlobalMods
     end
-    -----------------------------------------------------------------
-    -- 2️⃣  Continue with the rest of the original OnUpdate logic.
-    -----------------------------------------------------------------
-    local focus = GetMouseFoci()[1]
+
+    local focus = GetMouseFoci and GetMouseFoci()[1] or GetMouseFocus and GetMouseFocus()
     local iterator = ForEachBlizzardActionButton
 
     if ActionBarSystem == "LAB" then
@@ -515,77 +442,69 @@ function MegaMacroActionBarEngine.OnUpdate(elapsed)
         iterator = ForEachDominosButton
     end
 
-	iterator(function(button)
-    local action    = button:GetAttribute("action") or button.action
-    local macroName = GetActionText(action)
-    local macroCode = GetMacroBody(macroName)
-    local type, arg1 = GetActionInfo(action)
-
-    -- Resolve the Mega‑Macro ID (identical to the original logic)
-    local macroId = type == "macro" and macroCode and tonumber(string.sub(macroCode, 2, 4))
-
-    -------------------------------------------------------------------------
-    -- 1️⃣  Decide if we need to rebuild the icon.
-    -------------------------------------------------------------------------
-    local needRefresh = false
-    local curMods     = GetCurrentModifierSignature()   -- ← captures BOTH press AND release
-
-    if macroId then
-        -- Button is bound to a Mega‑Macro – look at (or create) its cache entry
-        local cache = buttonCache[button]
-        if not cache then
-            cache = { macroId = nil, mods = nil }
-            buttonCache[button] = cache
+    iterator(function(button)
+        local action = button:GetAttribute("action") or button.action
+        -- 12.0: C_Macro namespace usage
+        local macroName = GetActionText(action)
+        local macroCode = nil
+        
+        -- 12.0 Safety: Only fetch macro body if we have a name, to avoid errors
+        if macroName then
+             macroCode = C_Macro.GetMacroBody(macroName)
         end
 
-        -- Refresh if the macro ID changed **or** the modifier signature changed
-        if cache.macroId ~= macroId or cache.mods ~= curMods then
-            needRefresh = true
-            cache.macroId = macroId
-            cache.mods    = curMods
-        end
-    else
-        -- Not a Mega‑Macro (or unbound).  Clean any stale cache entry.
-        if buttonCache[button] then
-            buttonCache[button] = nil
-        end
-        needRefresh = false
-    end
+        local type, arg1 = GetActionInfo(action)
 
-    -------------------------------------------------------------------------
-    -- 2️⃣  Run the full update only when we decided it’s necessary.
-    -------------------------------------------------------------------------
-    if macroId and needRefresh then
-        ActionsBoundToMegaMacros[button] = true
-        UpdateActionBar(button, macroId)
-
-        -- Tooltip handling (unchanged)
-        if button == focus then
-            ShowToolTipForMegaMacro(macroId)
+        -- 12.0 Safety: Ensure macroCode is a string before parsing to avoid Taint errors
+        local macroId = nil
+        if type == "macro" and macroCode and _G.type(macroCode) == "string" and #macroCode >= 4 then
+            macroId = tonumber(string.sub(macroCode, 2, 4))
         end
-    elseif ActionsBoundToMegaMacros[button] then
-        -- The button *was* a Mega‑Macro but now isn’t – clean up.
-        ActionsBoundToMegaMacros[button] = nil
-        if not arg1 then
-            ResetActionBar(button)
-        end
-    end
 
-    -------------------------------------------------------------------------
-    -- 3️⃣  The rest of the original per‑button loop (range handling, etc.)
-    --     stays exactly as it was – we only prevented unnecessary icon
-    --     recomputation.
-    -------------------------------------------------------------------------
-    -- (no additional code needed here – the original file already had the
-    --  range‑timer, tooltip, and other housekeeping calls after the block
-    --  you just replaced.)
-end)
+        local needRefresh = false
+        local curMods     = GetCurrentModifierSignature()
+
+        if macroId then
+            local cache = buttonCache[button]
+            if not cache then
+                cache = { macroId = nil, mods = nil }
+                buttonCache[button] = cache
+            end
+
+            if cache.macroId ~= macroId or cache.mods ~= curMods then
+                needRefresh = true
+                cache.macroId = macroId
+                cache.mods    = curMods
+            end
+        else
+            if buttonCache[button] then
+                buttonCache[button] = nil
+            end
+            needRefresh = false
+        end
+
+        if macroId and needRefresh then
+            ActionsBoundToMegaMacros[button] = true
+            UpdateActionBar(button, macroId)
+
+            if button == focus then
+                ShowToolTipForMegaMacro(macroId)
+            end
+        elseif ActionsBoundToMegaMacros[button] then
+            ActionsBoundToMegaMacros[button] = nil
+            if not arg1 then
+                ResetActionBar(button)
+            end
+        end
+    end)
 end
 
 function MegaMacroActionBarEngine.OnTargetChanged()
     rangeTimer = -1
 end
 
-hooksecurefunc("ActionButton_UpdateRangeIndicator", function()
-	rangeTimer = -1
-end)
+if hooksecurefunc then
+    hooksecurefunc("ActionButton_UpdateRangeIndicator", function()
+        rangeTimer = -1
+    end)
+end

@@ -12,10 +12,12 @@ local CodeInfoCache = {}
 --]]
 
 local function trim(s)
+    if not s then return "" end
     return s:gsub("^%s*(.-)%s*$", "%1")
 end
 
 local function lastIndexOf(str, match, maxIndex)
+    if not str then return nil end
     local index = string.find(str, match)
 
     if index ~= nil then
@@ -30,31 +32,28 @@ local function lastIndexOf(str, match, maxIndex)
 end
 
 local function Char(str, index)
-    if string.len(str) >= index then
+    if not str then return nil end
+    if #str >= index then
         return string.sub(str, index, index)
     end
 end
 
 local function ParseSpaces(parsingContext)
     local result = false
-
     while Char(parsingContext.Code, parsingContext.Index) == " " do
         result = true
         parsingContext.Index = parsingContext.Index + 1
     end
-
     return result
 end
 
 local function ParseEndOfLine(parsingContext)
     local result = false
-
     while Char(parsingContext.Code, parsingContext.Index) == "\n" do
         result = true
         parsingContext.Index = parsingContext.Index + 1
         ParseSpaces(parsingContext)
     end
-
     return result
 end
 
@@ -211,7 +210,7 @@ local function ParseShowtooltip(parsingContext)
 
         if wordResult and string.lower(word) == "showtooltip" then
             local body = trim(GrabRemainingLineCode(parsingContext))
-            if string.len(body) > 0 then
+            if #body > 0 then
                 table.insert(
                     CodeInfoCache[parsingContext.MacroId],
                     {
@@ -228,6 +227,8 @@ end
 
 local function AddFallbackAbility(macroId)
     local codeInfo = CodeInfoCache[macroId]
+    if not codeInfo then return end
+
     local codeInfoLength = #codeInfo
 
     for i=1, codeInfoLength do
@@ -284,16 +285,16 @@ local function AddFallbackAbility(macroId)
                     Type = "fallbackEquipSet",
                     Body = firstSetMentioned
                 })
-            elseif type == "click" then
-                local endOfConditions = (lastIndexOf(codeInfo[i].Body, "%]") or 0) + 1
-                local buttonName = trim(string.sub(codeInfo[i].Body, endOfConditions))
+        elseif type == "click" then
+            local endOfConditions = (lastIndexOf(codeInfo[i].Body, "%]") or 0) + 1
+            local buttonName = trim(string.sub(codeInfo[i].Body, endOfConditions))
     
-                table.insert(
-                    codeInfo,
-                    {
-                        Type = "fallbackClick",
-                        Body = buttonName
-                    })
+            table.insert(
+                codeInfo,
+                {
+                    Type = "fallbackClick",
+                    Body = buttonName
+                })
         elseif type == "stopmacro" then
             -- ignore
         end
@@ -301,6 +302,15 @@ local function AddFallbackAbility(macroId)
 end
 
 local function CalculateMacroInfo(macro)
+    -- 12.0 Safety: Guard against nil macro code to prevent crashes
+    if not macro or type(macro.Code) ~= "string" then
+        if macro and macro.Id then
+            CodeInfoCache[macro.Id] = {}
+            return CodeInfoCache[macro.Id]
+        end
+        return {}
+    end
+
     local parsingContext = { MacroId = macro.Id, Index = 1, Code = macro.Code }
     CodeInfoCache[macro.Id] = {}
 
@@ -308,9 +318,10 @@ local function CalculateMacroInfo(macro)
     ParseSpaces(parsingContext)
     ParseEndOfLine(parsingContext)
 
-    if parsingContext.Index < string.len(parsingContext.Code) then
+    -- Optimized loop using # operator
+    if parsingContext.Index < #parsingContext.Code then
         if not ParseShowtooltip(parsingContext) then
-            while parsingContext.Index <= string.len(parsingContext.Code) do
+            while parsingContext.Index <= #parsingContext.Code do
                 ParseCommand(parsingContext)
             end
         end
@@ -324,11 +335,14 @@ end
 MegaMacroCodeInfo = {}
 
 function MegaMacroCodeInfo.Get(macro)
+    if not macro or not macro.Id then return nil end
     return CodeInfoCache[macro.Id] or CalculateMacroInfo(macro)
 end
 
 function MegaMacroCodeInfo.Clear(macroId)
-    CodeInfoCache[macroId] = nil
+    if macroId then
+        CodeInfoCache[macroId] = nil
+    end
 end
 
 function MegaMacroCodeInfo.ClearAll()

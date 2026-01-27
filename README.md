@@ -31,7 +31,7 @@ slots!
 
 Building on the last feature, the per-class and per-specialization macros are not character specific. 
 You don't need to copy your macros around manually if you have more than one character of the same 
-classâ€”Mega Macro syncs them for you automatically.
+class—Mega Macro syncs them for you automatically.
 
 ### Improved macro icon/tooltip evaluation
 
@@ -51,11 +51,11 @@ Number 3 is the kicker here. This means if you are a healer and have heal-safe m
 /cast [help, no dead] Heal
 ```
 
-You don't need to prefix your macro code with `#showtooltip Heal` â€”the AddOn handles that for you! This cuts down 
+You don't need to prefix your macro code with `#showtooltip Heal` —the AddOn handles that for you! This cuts down 
 on redundant manual work and saves character space for functional code.
 
 As a bonus, `castsequence` commands will not only effortlessly display the correct icon, but you'll also get 
-the tooltip for the current ability in the sequenceâ€”something impossible in the default UI.
+the tooltip for the current ability in the sequence—something impossible in the default UI.
 
 ### Bigger macros!
 
