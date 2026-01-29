@@ -302,8 +302,8 @@ local function UpdateEquipped(button, functions, abilityId)
 	end
 end
 
-local function UpdateOverlayGlow(button, functions, abilityId)
-    if functions.IsOverlayed(abilityId) then
+local function UpdateOverlayGlow(button, abilityId)
+    if IsOverlayed(abilityId) then
         ActionButton_ShowOverlayGlow(button)
     else
         ActionButton_HideOverlayGlow(button)
@@ -384,7 +384,7 @@ local function UpdateActionBar(button, macroId)
 		UpdateUsable(button, functions, data.Id)
 		UpdateCount(button, functions, data.Id)
 		UpdateEquipped(button, functions, data.Id)
-		UpdateOverlayGlow(button, functions, data.Id)
+		UpdateOverlayGlow(button, data.Id)
 		button.icon:SetTexture(data.Icon or MegaMacroTexture)
 
 		if LibActionButton then
