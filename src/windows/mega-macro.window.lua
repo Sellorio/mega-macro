@@ -849,9 +849,11 @@ end
 -- Create the Config options
 function MecaMacro_GenerateConfig()
     -- Blizzard Action Bar Icons
-    MecaMacroConfig_GenerateCheckbox('UseBlizzardActionIcons', 'Blizzard Action Bar Icons', 'Disable Mega Macro Action Bar Engine. \nMacro Icons will be decided by blizzard instead of Mega Macro.', 0, -5, MegaMacroConfig.UseNativeActionBar, function(value) 
-        MegaMacroConfig.UseNativeActionBar = value
-    end)
+    if not MegaMacroIsForever then
+        MecaMacroConfig_GenerateCheckbox('UseBlizzardActionIcons', 'Blizzard Action Bar Icons', 'Disable Mega Macro Action Bar Engine. \nMacro Icons will be decided by blizzard instead of Mega Macro.', 0, -5, MegaMacroConfig.UseNativeActionBar, function(value)
+            MegaMacroConfig.UseNativeActionBar = value
+        end)
+    end
 	-- Make button "Uninstall"
 	MecaMacroConfig_GenerateButton('Uninstall', 'Uninstall', 'Removes MegaMacro information from Macros. Disable MegaMacro before reload to avoid re-importing them. \n\nNote: Current Class and Spec macros will become global. \nMacros for other Classes and Specs will be lost since Blizzard Macros do not have room for them.', 0, -30, function()
 		-- Warn and get confirmation

@@ -35,6 +35,8 @@ local function ModernClearCharges(self)
     if self.cooldown then self.cooldown:Clear() end
 end
 
+-- Only the action bar engine needs these, and it doesn't run on Forever
+if not MegaMacroIsForever then
 -- 1. Apply to Global Namespace
 _G.IsOverlayed = ModernIsOverlayed
 _G.ActionButton_HideOverlayGlow = ModernHideGlow
@@ -51,6 +53,7 @@ end
 if not _G.C_SpellActivationOverlay then _G.C_SpellActivationOverlay = {} end
 if not _G.C_SpellActivationOverlay.GetOverlayInfo then
     _G.C_SpellActivationOverlay.GetOverlayInfo = ModernIsOverlayed
+end
 end
 
 -------------------------------------------------------------------
@@ -91,6 +94,13 @@ local function OnUpdate(_, elapsed)
     if MegaMacroConfig['UseNativeActionBar'] and not MegaMacro_Frame:IsVisible() then
 		return
 	end
+    if MegaMacroIsForever then
+        -- Forever's macro conditionals are only evaluated for our window, outside of combat
+        if not InCombatLockdown() then
+            MegaMacroIconEvaluator.Update(elapsedMs)
+        end
+        return
+    end
     MegaMacroIconEvaluator.Update(elapsedMs)
     MegaMacroActionBarEngine.OnUpdate(elapsed)
 end
@@ -116,7 +126,9 @@ local function Initialize()
 
         MegaMacroCodeInfo.ClearAll()
         MegaMacroIconEvaluator.Initialize()
-        MegaMacroActionBarEngine.Initialize()
+        if not MegaMacroIsForever then
+            MegaMacroActionBarEngine.Initialize()
+        end
         MegaMacroEngine.SafeInitialize()
         MegaMacroEngine.ImportMacros()
         MegaMacroEngine.VerifyMacros()

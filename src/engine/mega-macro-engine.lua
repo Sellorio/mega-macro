@@ -352,8 +352,10 @@ function MegaMacroEngine.SafeInitialize()
 
     BindMacros() 
 
-    local originalPickupMacro = PickupMacro
-    PickupMacro = function(macroIndex) PickupMacroWrapper(originalPickupMacro, macroIndex) end
+    if not MegaMacroIsForever then
+        local originalPickupMacro = PickupMacro
+        PickupMacro = function(macroIndex) PickupMacroWrapper(originalPickupMacro, macroIndex) end
+    end
 
     return true
 end

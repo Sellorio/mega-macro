@@ -1,3 +1,5 @@
+MegaMacroIsForever = WOW_PROJECT_ID == WOW_PROJECT_CAMELOT
+
 MacroLimits = {
 	-- limit: 120 non-character specific macro slots
 	GlobalCount = 60,
