@@ -66,7 +66,23 @@ local f = CreateFrame("Frame", "MegaMacro_EventFrame", UIParent)
 f:RegisterEvent("PLAYER_ENTERING_WORLD")
 f:RegisterEvent("PLAYER_LEAVING_WORLD")
 f:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
+f:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
 f:RegisterEvent("PLAYER_TARGET_CHANGED")
+
+-- Forever only lets some classes choose a specialization and has dual spec on top of
+-- that, so there the active talent group is used when there is no specialization name.
+local function GetCurrentSpecialization()
+    local isSelectionEnabled = C_SpecializationInfo.IsSpecSelectionEnabled
+    local canChooseSpec = not isSelectionEnabled or isSelectionEnabled(select(3, UnitClass("player")))
+    local specIndex = C_SpecializationInfo.GetSpecialization()
+    local specName = canChooseSpec and specIndex and specIndex > 0 and select(2, C_SpecializationInfo.GetSpecializationInfo(specIndex))
+
+    if specName and specName ~= "" then
+        return specName
+    elseif isSelectionEnabled then
+        return C_SpecializationInfo.GetActiveSpecGroup() == 2 and DUAL_SPEC_SECONDARY or DUAL_SPEC_PRIMARY
+    end
+end
 
 local function OnUpdate(_, elapsed)
     MegaMacroSystemTime = GetTime()
@@ -93,10 +109,10 @@ local function Initialize()
         end
     end
 
-    local specIndex = GetSpecialization()
-    if specIndex then
+    local specialization = GetCurrentSpecialization()
+    if specialization then
         MegaMacroCachedClass = UnitClass("player")
-        MegaMacroCachedSpecialization = select(2, GetSpecializationInfo(specIndex))
+        MegaMacroCachedSpecialization = specialization
 
         MegaMacroCodeInfo.ClearAll()
         MegaMacroIconEvaluator.Initialize()
@@ -114,11 +130,17 @@ f:SetScript("OnEvent", function(self, event)
         Initialize()
     elseif event == "PLAYER_LEAVING_WORLD" then
         f:SetScript("OnUpdate", nil)
-    elseif event == "PLAYER_SPECIALIZATION_CHANGED" then
-        MegaMacroWindow.SaveMacro()
-
+    elseif event == "PLAYER_SPECIALIZATION_CHANGED" or event == "ACTIVE_TALENT_GROUP_CHANGED" then
         local oldValue = MegaMacroCachedSpecialization
-        MegaMacroCachedSpecialization = select(2, GetSpecializationInfo(GetSpecialization()))
+        local newValue = GetCurrentSpecialization()
+
+        -- These events also fire during login and for changes that keep the same specialization
+        if not oldValue or not newValue or oldValue == newValue then
+            return
+        end
+
+        MegaMacroWindow.SaveMacro()
+        MegaMacroCachedSpecialization = newValue
 
         MegaMacroCodeInfo.ClearAll()
         MegaMacroIconEvaluator.ResetCache()
