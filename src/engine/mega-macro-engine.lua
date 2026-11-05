@@ -352,8 +352,10 @@ function MegaMacroEngine.SafeInitialize()
 
     BindMacros() 
 
-    local originalPickupMacro = PickupMacro
-    PickupMacro = function(macroIndex) PickupMacroWrapper(originalPickupMacro, macroIndex) end
+    if not MegaMacroIsForever then
+        local originalPickupMacro = PickupMacro
+        PickupMacro = function(macroIndex) PickupMacroWrapper(originalPickupMacro, macroIndex) end
+    end
 
     return true
 end
@@ -441,14 +443,14 @@ function MegaMacroEngine.ImportMacros()
     if importSuccessful then
         MegaMacroGlobalData.Activated = true
     else
-        message(errorMessage)
+        print("Mega Macro: " .. errorMessage)
     end
 
     local importSuccessful, errorMessage = TryImportCharacterMacros()
     if importSuccessful then
         MegaMacroCharacterData.Activated = true
     else
-        message(errorMessage)
+        print("Mega Macro: " .. errorMessage)
     end
 
     InitializeMacroIndexCache()
@@ -552,6 +554,6 @@ function MegaMacroEngine.Uninstall()
     MegaMacroGlobalData.InactiveMacros = {}
 
     InitializeMacroIndexCache()
-    message("Mega Macro: Uninstalled. Disabled MegaMacro and reload your UI.")
+    print("Mega Macro: Uninstalled. Disable MegaMacro and reload your UI.")
     return true
 end

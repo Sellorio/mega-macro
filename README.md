@@ -85,6 +85,11 @@ The Mega Macro UI replicates the native macro UI down to every last detail **exc
 * Icons in macros list and selected macro are updated dynamically based on macro conditionals
 * Icons in macros list and selected macro trigger tooltips
 
+### World of Warcraft: Forever
+
+Forever is supported. The game draws the action bars there, so the `Blizzard Action Bar Icons` option is not
+available. Dynamic icons in the Mega Macro window still work outside of combat.
+
 ## Before you use
 
 This AddOn will destroy your existing macros once they have been imported. If the import fails, the AddOn

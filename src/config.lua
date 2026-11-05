@@ -21,6 +21,11 @@ function MegaMacro_InitialiseConfig()
             UseNativeActionBar = true,
         }
     end
+
+    -- The action bar engine isn't supported on Forever, the game draws the action bars
+    if MegaMacroIsForever then
+        MegaMacroConfig.UseNativeActionBar = true
+    end
 end
 
 function MegaMacroConfig_IsWindowDialog()

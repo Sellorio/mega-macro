@@ -60,10 +60,27 @@ local function CreateMacroSlotFrames()
 	end
 end
 
-local function FixIconPanelPosition()
-	local button = MegaMacro_PopupButton1
-	local point, relativeTo, relativePoint, x, y = button:GetPoint()
-	button:SetPoint(point, relativeTo:GetName(), relativePoint, x, y - 40)
+-- BuildIconArray no longer exists in the game's UI code
+local function CreateIconButtons()
+	local firstInRow
+	local previous
+
+	for i=1, NUM_MACRO_ICONS_SHOWN do
+		local button = CreateFrame("CheckButton", "MegaMacro_PopupButton"..i, MegaMacro_PopupFrame, "MegaMacro_PopupButtonTemplate")
+		button:SetID(i)
+
+		if i == 1 then
+			button:SetPoint("TOPLEFT", 26, -125)
+			firstInRow = button
+		elseif i % NUM_ICONS_PER_ROW == 1 then
+			button:SetPoint("TOPLEFT", firstInRow, "BOTTOMLEFT", 0, -8)
+			firstInRow = button
+		else
+			button:SetPoint("LEFT", previous, "RIGHT", 10, 0)
+		end
+
+		previous = button
+	end
 end
 
 local function UpdateIconList()
@@ -80,8 +97,7 @@ end
 
 local function InitializeIconListPanel()
 	if not IconListInitialized then
-		BuildIconArray(MegaMacro_PopupFrame, "MegaMacro_PopupButton", "MegaMacro_PopupButtonTemplate", NUM_ICONS_PER_ROW, NUM_ICON_ROWS)
-		FixIconPanelPosition()
+		CreateIconButtons()
 		IconListInitialized = true
 	end
 end
@@ -375,16 +391,8 @@ local function HandleReceiveDrag(targetScope)
 					end
 				end
 
+				-- Blizzard's macro window, if open, refreshes itself from UPDATE_MACROS
 				DeleteMacro(macroIndex)
-
-				if MacroFrame:IsVisible() then
-					MacroFrame_Update()
-					if MacroFrame.selectedTab == 1 then
-						MacroFrame_SetAccountMacros()
-					else
-						MacroFrame_SetCharacterMacros()
-					end
-				end
 			end
 		end
 	end
@@ -841,9 +849,11 @@ end
 -- Create the Config options
 function MecaMacro_GenerateConfig()
     -- Blizzard Action Bar Icons
-    MecaMacroConfig_GenerateCheckbox('UseBlizzardActionIcons', 'Blizzard Action Bar Icons', 'Disable Mega Macro Action Bar Engine. \nMacro Icons will be decided by blizzard instead of Mega Macro.', 0, -5, MegaMacroConfig.UseNativeActionBar, function(value) 
-        MegaMacroConfig.UseNativeActionBar = value
-    end)
+    if not MegaMacroIsForever then
+        MecaMacroConfig_GenerateCheckbox('UseBlizzardActionIcons', 'Blizzard Action Bar Icons', 'Disable Mega Macro Action Bar Engine. \nMacro Icons will be decided by blizzard instead of Mega Macro.', 0, -5, MegaMacroConfig.UseNativeActionBar, function(value)
+            MegaMacroConfig.UseNativeActionBar = value
+        end)
+    end
 	-- Make button "Uninstall"
 	MecaMacroConfig_GenerateButton('Uninstall', 'Uninstall', 'Removes MegaMacro information from Macros. Disable MegaMacro before reload to avoid re-importing them. \n\nNote: Current Class and Spec macros will become global. \nMacros for other Classes and Specs will be lost since Blizzard Macros do not have room for them.', 0, -30, function()
 		-- Warn and get confirmation
