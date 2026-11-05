@@ -206,7 +206,10 @@ local function ComputeMacroIcon(macro, staticTexture, isStaticTextureFallback)
             elseif codeInfo[codeInfoLength].Type == "fallbackEquipmentSet" then
                 effectType = "equipment set"
                 effectName = codeInfo[codeInfoLength].Body
-                icon = GetEquipmentSetInfoByName(effectName)
+                local setId = C_EquipmentSet.GetEquipmentSetID(effectName)
+                if setId then
+                    _, icon = C_EquipmentSet.GetEquipmentSetInfo(setId)
+                end
             elseif codeInfo[codeInfoLength].Type == "fallbackClick" then
                 effectType = "other"
                 effectName = codeInfo[codeInfoLength].Body

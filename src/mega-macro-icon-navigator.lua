@@ -46,7 +46,7 @@ local function GetDefaultIconList()
 						local spellID
 						spellID, _, isKnown = GetFlyoutSlotInfo(ID, k)
 						if (isKnown) then
-							local fileID = GetSpellTexture(spellID);
+							local fileID = C_Spell.GetSpellTexture(spellID);
 							if (fileID) then
 								activeIcons[fileID] = true;
 							end
