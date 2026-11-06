@@ -71,6 +71,7 @@ f:RegisterEvent("PLAYER_LEAVING_WORLD")
 f:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
 f:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
 f:RegisterEvent("PLAYER_TARGET_CHANGED")
+f:RegisterEvent("UPDATE_MACROS")
 
 -- Forever only lets some classes choose a specialization and has dual spec on top of
 -- that, so there the active talent group is used when there is no specialization name.
@@ -163,6 +164,8 @@ f:SetScript("OnEvent", function(self, event)
         end
     elseif event == "PLAYER_TARGET_CHANGED" then
         MegaMacroActionBarEngine.OnTargetChanged()
+    elseif event == "UPDATE_MACROS" then
+        MegaMacroEngine.OnNativeMacrosChanged()
     end
 end)
 

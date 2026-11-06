@@ -470,6 +470,13 @@ function MegaMacroEngine.GetMacroIndexFromId(macroId)
     return MacroIndexCache[macroId]
 end
 
+-- The game's macro window and other addons can add or remove macros, which shifts every index after them
+function MegaMacroEngine.OnNativeMacrosChanged()
+    if Initialized then
+        InitializeMacroIndexCache()
+    end
+end
+
 function MegaMacroEngine.OnMacroCreated(macro, macroIndex)
     BindNewMacro(macro, macroIndex)
 end
