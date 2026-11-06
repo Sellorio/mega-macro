@@ -1,6 +1,7 @@
 MegaMacroEngine = {}
 local ClickyFrameName = "MegaMacroClicky"
 local MacroIndexCache = {} -- caches native macro indexes - these change based on macro name so they are not the id we'll use in the addon
+local IsMacroIndexCacheStale = false
 local Initialized = false
 
 local function GenerateIdPrefix(id)
@@ -22,6 +23,7 @@ end
 
 local function InitializeMacroIndexCache()
     MacroIndexCache = {}
+    IsMacroIndexCacheStale = false
 
     for i=1, MacroLimits.MaxGlobalMacros do
         local _, _, macroCode, _ = GetMacroInfo(i)
@@ -48,6 +50,14 @@ local function InitializeMacroIndexCache()
     end
 end
 
+local function GetMacroIndexCache()
+    if IsMacroIndexCacheStale then
+        InitializeMacroIndexCache()
+    end
+
+    return MacroIndexCache
+end
+
 local function GenerateNativeMacroCode(macro)
     -- Check if there is #showtooltip already. If not, add it to the start.
     local code = macro.Code
@@ -61,7 +71,7 @@ local function GenerateNativeMacroCode(macro)
 end
 
 local function getTexture(macro, macroIndex)
-    local macroIndex = macroIndex or MacroIndexCache[macro.Id]
+    local macroIndex = macroIndex or GetMacroIndexCache()[macro.Id]
     local iconTexture = macro.StaticTexture
     if macroIndex and not iconTexture then
         local _, iconTexture, _, _ = GetMacroInfo(macroIndex)
@@ -70,7 +80,7 @@ local function getTexture(macro, macroIndex)
 end
 
 local function BindMacro(macro, macroIndex)
-    local macroIndex = macroIndex or MacroIndexCache[macro.Id]
+    local macroIndex = macroIndex or GetMacroIndexCache()[macro.Id]
 
     -- Bind code to macro
     if macroIndex then
@@ -86,7 +96,7 @@ local function BindMacro(macro, macroIndex)
 end
 
 local function BindNewMacro(macro, macroIndex)
-    local macroIndex = macroIndex or MacroIndexCache[macro.Id]
+    local macroIndex = macroIndex or GetMacroIndexCache()[macro.Id]
 
     if not macroIndex then
         -- Find a free slot. Need to know if global or character
@@ -197,7 +207,7 @@ function MegaMacroEngine.FindAvailableGlobalMacro()
 
         -- Find used indexes from MacroIndexCache
         local usedMacroIndexes = {}
-        for _, index in pairs(MacroIndexCache) do
+        for _, index in pairs(GetMacroIndexCache()) do
             usedMacroIndexes[index] = true
         end
 
@@ -232,7 +242,7 @@ function MegaMacroEngine.FindAvailableCharacterMacro()
 
         -- Find used indexes from MacroIndexCache
         local usedMacroIndexes = {}
-        for _, index in pairs(MacroIndexCache) do
+        for _, index in pairs(GetMacroIndexCache()) do
             usedMacroIndexes[index] = true
         end
 
@@ -272,7 +282,7 @@ end
 
 local function UnbindMacro(macro)
     if Initialized then
-        local macroIndex = MacroIndexCache[macro.Id]
+        local macroIndex = GetMacroIndexCache()[macro.Id]
 
         if macroIndex then
             MegaMacroEngine.GetOrCreateClicky(macro.Id):SetAttribute("macrotext", "")
@@ -394,7 +404,7 @@ function MegaMacroEngine.VerifyMacros()
     local macroIds = {}
     local function VerifyMacro(macro, i)
         local macroId = macro.Id
-        local macroIndex = MacroIndexCache[macro.Id]
+        local macroIndex = GetMacroIndexCache()[macro.Id]
         -- Check for duplicate macroIds
         if macroIds[macroId] then
             -- print("Mega Macro: Found duplicate macroId " .. macroId .. " " .. macro.DisplayName)
@@ -457,7 +467,7 @@ function MegaMacroEngine.ImportMacros()
 end
 
 function MegaMacroEngine.GetMacroIdFromIndex(macroIndex)
-    for id, index in pairs(MacroIndexCache) do
+    for id, index in pairs(GetMacroIndexCache()) do
         if index == macroIndex then
             return id
         end
@@ -467,7 +477,12 @@ function MegaMacroEngine.GetMacroIdFromIndex(macroIndex)
 end
 
 function MegaMacroEngine.GetMacroIndexFromId(macroId)
-    return MacroIndexCache[macroId]
+    return GetMacroIndexCache()[macroId]
+end
+
+-- The game's macro window and other addons can add or remove macros, which shifts every index after them
+function MegaMacroEngine.OnNativeMacrosChanged()
+    IsMacroIndexCacheStale = true
 end
 
 function MegaMacroEngine.OnMacroCreated(macro, macroIndex)
@@ -503,7 +518,7 @@ function MegaMacroEngine.OnMacroMoved(oldMacro, newMacro)
         for i=1, 120 do
             local type, id = GetActionInfo(i)
             if type == "macro" and MegaMacroEngine.GetMacroIdFromIndex(id) == oldMacro.Id then
-                PickupMacro(MacroIndexCache[newMacro.Id])
+                PickupMacro(GetMacroIndexCache()[newMacro.Id])
                 PlaceAction(i)
                 ClearCursor()
             end
