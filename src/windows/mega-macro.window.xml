@@ -456,6 +456,8 @@
 	</Frame>
 	<Frame name="MegaMacro_PopupFrame" toplevel="true" frameStrata="HIGH" parent="UIParent" movable="true" enableMouse="true" hidden="true">
 		<Scripts>
+			<OnShow>MegaMacro_PopupFrame_OnShow();</OnShow>
+			<OnHide>MegaMacro_PopupFrame_OnHide();</OnHide>
 			<OnUpdate>MegaMacro_PopupFrame_OnUpdate();</OnUpdate>
 		</Scripts>
 		<Size x="525" y="564"/>
