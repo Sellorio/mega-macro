@@ -817,33 +817,29 @@ function MegaMacro_IconSearchBox_TextChanged()
 	UpdateIconList()
 end
 
+-- The game only inserts shift-clicked links into its own macro window, so do the same for ours.
+-- Everything that can be shift-clicked (spellbook, bags, toys, character page) ends up here.
 function MegaMacro_RegisterShiftClicks()
-	function shiftClickHookFunction(self) 
-		local slot = SpellBook_GetSpellBookSlot(self);
-		if ( slot > MAX_SPELLS ) then
+	hooksecurefunc(ChatFrameUtil, "InsertLink", function(text)
+		if not text or not MegaMacro_FrameText:HasFocus() then
 			return
 		end
-	
-		if IsModifiedClick("CHATLINK") and MegaMacro_FrameText:HasFocus() then
-			local spellName, subSpellName = GetSpellBookItemName(slot, SpellBookFrame.bookType)
-	
-			if spellName and not IsPassiveSpell(slot, SpellBookFrame.bookType) then
-				if subSpellName and string.len(subSpellName) > 0 then
-					MegaMacro_FrameText:Insert(spellName.."("..subSpellName..")")
-				else
-					MegaMacro_FrameText:Insert(spellName)
-				end
-			end
+
+		local isItem = string.find(text, "item:", 1, true) ~= nil
+		local name = isItem and C_Item.GetItemInfo(text) or string.match(text, "%[(.-)%]") or text
+		local cursorPosition = MegaMacro_FrameText:GetCursorPosition()
+		local isLineStart = cursorPosition == 0 or string.sub(MegaMacro_FrameText:GetText(), cursorPosition, cursorPosition) == "\n"
+
+		if not isLineStart then
+			MegaMacro_FrameText:Insert(name)
+		elseif not isItem then
+			MegaMacro_FrameText:Insert(SLASH_CAST1.." "..name.."\n")
+		elseif C_Item.GetItemSpell(text) then
+			MegaMacro_FrameText:Insert(SLASH_USE1.." "..name.."\n")
+		else
+			MegaMacro_FrameText:Insert(SLASH_EQUIP1.." "..name.."\n")
 		end
-	end
-	
-	-- This is a kind of a hack, but it gets the shift click to work. We loop through all the spellbook buttons and hook their OnClick functions individually, since the generic SpellButton_OnModifiedClick was removed.
-	for i = 1, 120 do
-		local buttonName = "SpellButton" .. i
-		if _G[buttonName] ~= nil then
-			hooksecurefunc(_G[buttonName], "OnModifiedClick", shiftClickHookFunction)
-		end
-	end
+	end)
 end
 
 -- Create the Config options
