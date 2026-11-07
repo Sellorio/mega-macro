@@ -173,35 +173,6 @@
 				<Anchors>
 					<Anchor point="TOPLEFT" x="12" y="-66"/>
 				</Anchors>
-				<Layers>
-					<Layer level="ARTWORK">
-						<Texture name="$parentTop" file="Interface\PaperDollInfoFrame\UI-Character-ScrollBar">
-							<Size x="31" y="102"/>
-							<Anchors>
-								<Anchor point="TOPLEFT" relativePoint="TOPRIGHT" x="-2" y="5"/>
-							</Anchors>
-							<TexCoords left="0" right="0.484375" top="0" bottom="0.4"/>
-						</Texture>
-						<Texture name="$parentBottom" file="Interface\PaperDollInfoFrame\UI-Character-ScrollBar">
-							<Size x="31" y="106"/>
-							<Anchors>
-								<Anchor point="BOTTOMLEFT" relativePoint="BOTTOMRIGHT" x="-2" y="-2"/>
-							</Anchors>
-							<TexCoords left="0.515625" right="1.0" top="0" bottom="0.4140625"/>
-						</Texture>
-						<Texture name="$parentMiddle" file="Interface\PaperDollInfoFrame\UI-Character-ScrollBar">
-							<Size x="31" y="1"/>
-							<Anchors>
-								<Anchor point="TOP" relativeTo="$parentTop" relativePoint="BOTTOM"/>
-								<Anchor point="BOTTOM" relativeTo="$parentBottom" relativePoint="TOP"/>
-							</Anchors>
-							<TexCoords left="0" right="0.484375" top=".75" bottom="1.0"/>
-						</Texture>
-					</Layer>
-				</Layers>
-				<Scripts>
-					<OnLoad function="ScrollFrame_OnLoad"/>
-				</Scripts>
 				<ScrollChild>
 					<Frame name="MegaMacro_ButtonContainer">
 						<Size x="439" y="10"/>
@@ -235,74 +206,42 @@
 			</Button>
 			<ScrollFrame name="MegaMacro_FrameScrollFrame" inherits="UIPanelScrollFrameTemplate">
 				<Size x="591" y="185"/>
-				<Scripts>
-					<OnMouseWheel>
-						ScrollFrameTemplate_OnMouseWheel(self, delta);
-					</OnMouseWheel>
-					<OnVerticalScroll>
-						local scrollbar1 = MegaMacro_FrameScrollFrameScrollBar;
-						local scrollbar2 = MegaMacro_FormattedFrameScrollFrameScrollBar;
-						scrollbar1:SetValue(offset);
-						scrollbar2:SetValue(offset);
-						local mini1, maxi1 = scrollbar1:GetMinMaxValues();
-						local mini2, maxi2 = scrollbar2:GetMinMaxValues();
-						if delta == 0 then
-							MegaMacro_FrameScrollFrameScrollBarScrollUpButton:Disable();
-							MegaMacro_FormattedFrameScrollFrameScrollBarScrollUpButton:Disable();
-						else
-							MegaMacro_FrameScrollFrameScrollBarScrollUpButton:Enable();
-							MegaMacro_FormattedFrameScrollFrameScrollBarScrollUpButton:Enable();
-						end
-						if scrollbar1:GetValue() - maxi1 == 0 then
-							MegaMacro_FrameScrollFrameScrollBarScrollDownButton:Disable();
-							MegaMacro_FormattedFrameScrollFrameScrollBarScrollDownButton:Disable();
-						else
-							MegaMacro_FrameScrollFrameScrollBarScrollDownButton:Enable();
-							MegaMacro_FormattedFrameScrollFrameScrollBarScrollDownButton:Enable();
-						end
-					</OnVerticalScroll>
-				</Scripts>
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeTo="MegaMacro_FrameSelectedMacroBackground" relativePoint="BOTTOMLEFT" x="11" y="-13"/>
 				</Anchors>
 				<ScrollChild>
 					<EditBox name="MegaMacro_FrameText" multiLine="true" letters="1023" autoFocus="false" countInvisibleLetters="true">
 						<Size x="589" y="185"/>
+						<Frames>
+							<!-- Shows the coloured text. It's a child of the box being typed in, so the two scroll together and can't drift apart. -->
+							<EditBox name="MegaMacro_FormattedFrameText" multiLine="true" letters="9999" autoFocus="false" countInvisibleLetters="true">
+								<Size x="589" y="185"/>
+								<Anchors>
+									<Anchor point="TOPLEFT"/>
+								</Anchors>
+								<Scripts>
+									<OnLoad>
+										self:EnableMouse(false);
+										self:Disable();
+									</OnLoad>
+								</Scripts>
+								<FontString inherits="GameFontHighlightSmall"/>
+							</EditBox>
+						</Frames>
 						<Scripts>
 							<OnLoad>
 								ScrollingEdit_OnCursorChanged(self, 0, 0, 0, 0);
-								self:GetRegions():SetAlpha(0.2);
+								self:GetRegions():SetAlpha(0);
 							</OnLoad>
+							<OnShow>
+								-- keep the box being typed in on top so that it gets the clicks
+								MegaMacro_FormattedFrameText:SetFrameLevel(self:GetFrameLevel() - 1);
+							</OnShow>
 							<OnKeyDown>MegaMacro_TextBox_OnKeyDown(self, key);</OnKeyDown>
 							<OnTextChanged>MegaMacro_TextBox_TextChanged(self);</OnTextChanged>
 							<OnCursorChanged function="ScrollingEdit_OnCursorChanged"/>
 							<OnUpdate>ScrollingEdit_OnUpdate(self, elapsed, self:GetParent());</OnUpdate>
 							<OnEscapePressed function="EditBox_ClearFocus"/>
-						</Scripts>
-						<FontString inherits="GameFontHighlightSmall"/>
-					</EditBox>
-				</ScrollChild>
-			</ScrollFrame>
-			<ScrollFrame name="MegaMacro_FormattedFrameScrollFrame" inherits="UIPanelScrollFrameTemplate">
-				<Size x="591" y="185"/>
-				<Scripts>
-					<OnMouseWheel>
-						ScrollFrameTemplate_OnMouseWheel(self, delta);
-					</OnMouseWheel>
-				</Scripts>
-				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="MegaMacro_FrameSelectedMacroBackground" relativePoint="BOTTOMLEFT" x="11" y="-13"/>
-				</Anchors>
-				<ScrollChild>
-					<EditBox name="MegaMacro_FormattedFrameText" multiLine="true" letters="9999" autoFocus="false" countInvisibleLetters="true">
-						<Size x="589" y="185"/>
-						<Scripts>
-							<OnLoad>
-								ScrollingEdit_OnCursorChanged(self, 0, 0, 0, 0);
-								MegaMacro_FrameText:SetFrameLevel(self:GetFrameLevel() + 1)
-							</OnLoad>
-							<OnCursorChanged function="ScrollingEdit_OnCursorChanged"/>
-							<OnUpdate>ScrollingEdit_OnUpdate(self, elapsed, self:GetParent());</OnUpdate>
 						</Scripts>
 						<FontString inherits="GameFontHighlightSmall"/>
 					</EditBox>
