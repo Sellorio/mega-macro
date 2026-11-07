@@ -264,6 +264,16 @@ local function SetMacroItems()
 	SelectMacro(MacroItems[1])
 end
 
+-- Adding and removing macros needs a free macro slot and action bar changes, which have to wait
+local function IsBlockedByCombat()
+	if InCombatLockdown() then
+		print("Mega Macro: You can't do that in combat.")
+		return true
+	end
+
+	return false
+end
+
 local function NewMacro()
 	SelectMacro(nil)
 
@@ -281,7 +291,7 @@ local function NewMacro()
 end
 
 local function DeleteMegaMacro()
-	if SelectedMacro ~= nil then
+	if SelectedMacro ~= nil and not IsBlockedByCombat() then
 		MegaMacro.Delete(SelectedMacro)
 		SetMacroItems()
 	end
@@ -326,6 +336,11 @@ local function HandleReceiveDrag(targetScope)
 	local type, macroIndex = GetCursorInfo()
 
 	if type == "macro" then
+		if IsBlockedByCombat() then
+			ClearCursor()
+			return true
+		end
+
 		local macroId = MegaMacroEngine.GetMacroIdFromIndex(macroIndex)
 
 		if macroId then
@@ -545,7 +560,7 @@ function MegaMacro_MacroButton_OnClick(self)
 	if not HandleReceiveDrag(SelectedScope) then
 		if self.Macro then
 			SelectMacro(self.Macro)
-		elseif self.IsNewButton then
+		elseif self.IsNewButton and not IsBlockedByCombat() then
 			NewMacro()
 		else
 			self:SetChecked(false)
@@ -701,6 +716,10 @@ function MegaMacro_EditOkButton_OnClick()
 		SetMacroItems()
 		SelectMacro(selectedMacro)
 	elseif PopupMode == PopupModes.New then
+		if IsBlockedByCombat() then
+			return
+		end
+
 		local createdMacro = MegaMacro.Create(enteredText, SelectedScope, SelectedIcon, isStaticTextureFallback)
 		SetMacroItems()
 		SelectMacro(createdMacro)
@@ -865,8 +884,10 @@ function MecaMacro_GenerateConfig()
 			button1 = "Yes",
 			button2 = "No",
 			OnAccept = function()
-				MegaMacroEngine.Uninstall()
-				print("MegaMacro uninstalled.")
+				if not IsBlockedByCombat() then
+					MegaMacroEngine.Uninstall()
+					print("MegaMacro uninstalled.")
+				end
 			end,
 			OnCancel = function()
 				print("Uninstallation cancelled.")
