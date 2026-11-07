@@ -17,7 +17,6 @@ local SelectedMacro = nil
 local PopupMode = nil
 local IconListInitialized = false
 local SelectedIcon = nil
-local IconList = {}
 local SelectedTabIndex = 1
 
 NUM_ICONS_PER_ROW = 10
@@ -80,18 +79,6 @@ local function CreateIconButtons()
 		end
 
 		previous = button
-	end
-end
-
-local function UpdateIconList()
-	local searchText = MegaMacro_IconSearchBox:GetText()
-	local items = MegaMacroIconNavigator.Search(searchText)
-	local itemCount = #items
-
-	IconList = { { Name = "No Icon", Icon = MegaMacroTexture } }
-
-	for i=1, itemCount do
-		IconList[i + 1] = items[i]
 	end
 end
 
@@ -486,6 +473,7 @@ function MegaMacro_Window_OnHide()
 	SaveMacro()
 	IsOpen = false
     MegaMacro_PopupFrame:Hide()
+	MegaMacroIconNavigator.Release()
 end
 
 function MegaMacro_Window_OnDragStop()
@@ -741,8 +729,19 @@ function MegaMacro_EditCancelButton_OnClick_Wrapper()
 	MegaMacro_EditCancelButton_OnClick()
 end
 
+function MegaMacro_PopupFrame_OnShow()
+	MegaMacroIconNavigator.SetSearch(MegaMacro_IconSearchBox:GetText())
+end
+
+function MegaMacro_PopupFrame_OnHide()
+	MegaMacroIconNavigator.EndSearch()
+end
+
 function MegaMacro_PopupFrame_OnUpdate()
-	local numMacroIcons = #IconList;
+	MegaMacroIconNavigator.OnUpdate()
+
+	-- The first slot is always "no icon", followed by the results
+	local numMacroIcons = MegaMacroIconNavigator.GetResultCount() + 1;
 	local macroPopupIcon, macroPopupButton;
 	local macroPopupOffset = FauxScrollFrame_GetOffset(MegaMacro_PopupScrollFrame);
 	local index;
@@ -752,11 +751,17 @@ function MegaMacro_PopupFrame_OnUpdate()
 		macroPopupButton = _G["MegaMacro_PopupButton"..i];
 		macroPopupIcon = _G["MegaMacro_PopupButton"..i.."Icon"];
 		index = (macroPopupOffset * NUM_ICONS_PER_ROW) + i;
-		local iconListData = IconList[index]
+		local icon, spellId
 
-		if index <= numMacroIcons and iconListData then
-			macroPopupIcon:SetTexture(iconListData.Icon);
-			macroPopupButton.SpellId = iconListData.SpellId
+		if index == 1 then
+			icon = MegaMacroTexture
+		elseif index <= numMacroIcons then
+			icon, spellId = MegaMacroIconNavigator.GetResult(index - 1)
+		end
+
+		if icon then
+			macroPopupIcon:SetTexture(icon);
+			macroPopupButton.SpellId = spellId
 			macroPopupButton:Show();
 		else
 			macroPopupIcon:SetTexture("");
@@ -764,7 +769,7 @@ function MegaMacro_PopupFrame_OnUpdate()
 			macroPopupButton:Hide();
 		end
 
-		macroPopupButton:SetChecked(iconListData and SelectedIcon == iconListData.Icon)
+		macroPopupButton:SetChecked(icon and SelectedIcon == icon)
 	end
 
 	-- Scrollbar stuff
@@ -814,7 +819,10 @@ end
 
 function MegaMacro_IconSearchBox_TextChanged()
 	UpdateSearchPlaceholder()
-	UpdateIconList()
+
+	if MegaMacro_PopupFrame:IsShown() then
+		MegaMacroIconNavigator.SetSearch(MegaMacro_IconSearchBox:GetText())
+	end
 end
 
 -- The game only inserts shift-clicked links into its own macro window, so do the same for ours.

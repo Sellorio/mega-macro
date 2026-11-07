@@ -91,7 +91,6 @@ end
 local function OnUpdate(_, elapsed)
     MegaMacroSystemTime = GetTime()
     local elapsedMs = elapsed * 1000
-    MegaMacroIconNavigator.OnUpdate()
     if MegaMacroConfig['UseNativeActionBar'] and not MegaMacro_Frame:IsVisible() then
 		return
 	end
@@ -108,7 +107,6 @@ end
 
 local function Initialize()
     MegaMacro_InitialiseConfig()
-    MegaMacroIconNavigator.BeginLoadingIcons()
 
     SLASH_Mega1 = "/m"
     SLASH_Mega2 = "/macro"
