@@ -65,6 +65,9 @@ MegaMacroCachedSpecialization = nil
 MegaMacroFullyActive = false
 MegaMacroSystemTime = GetTime()
 
+local IsMacroSetupPending = false
+local SpecializationBeforeCombat = nil
+
 local f = CreateFrame("Frame", "MegaMacro_EventFrame", UIParent)
 f:RegisterEvent("PLAYER_ENTERING_WORLD")
 f:RegisterEvent("PLAYER_LEAVING_WORLD")
@@ -72,6 +75,7 @@ f:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
 f:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
 f:RegisterEvent("PLAYER_TARGET_CHANGED")
 f:RegisterEvent("UPDATE_MACROS")
+f:RegisterEvent("PLAYER_REGEN_ENABLED")
 
 -- Forever only lets some classes choose a specialization and has dual spec on top of
 -- that, so there the active talent group is used when there is no specialization name.
@@ -105,6 +109,35 @@ local function OnUpdate(_, elapsed)
     MegaMacroActionBarEngine.OnUpdate(elapsed)
 end
 
+-- Macros can't be changed in combat, so a reload during combat finishes this when it ends
+local function SetUpMacros()
+    IsMacroSetupPending = InCombatLockdown()
+
+    if not IsMacroSetupPending then
+        MegaMacroEngine.SafeInitialize()
+        MegaMacroEngine.ImportMacros()
+        MegaMacroEngine.VerifyMacros()
+    end
+
+    MegaMacroFullyActive = MegaMacroGlobalData.Activated and MegaMacroCharacterData.Activated
+end
+
+local function OnCombatEnded()
+    if IsMacroSetupPending then
+        SetUpMacros()
+    end
+
+    MegaMacroEngine.BindMacrosChangedInCombat()
+
+    local oldSpecialization = SpecializationBeforeCombat
+    SpecializationBeforeCombat = nil
+
+    if oldSpecialization and oldSpecialization ~= MegaMacroCachedSpecialization then
+        MegaMacroEngine.OnSpecializationChanged(oldSpecialization, MegaMacroCachedSpecialization)
+        MegaMacroWindow.OnSpecializationChanged(oldSpecialization, MegaMacroCachedSpecialization)
+    end
+end
+
 local function Initialize()
     MegaMacro_InitialiseConfig()
 
@@ -128,10 +161,7 @@ local function Initialize()
         if not MegaMacroIsForever then
             MegaMacroActionBarEngine.Initialize()
         end
-        MegaMacroEngine.SafeInitialize()
-        MegaMacroEngine.ImportMacros()
-        MegaMacroEngine.VerifyMacros()
-        MegaMacroFullyActive = MegaMacroGlobalData.Activated and MegaMacroCharacterData.Activated
+        SetUpMacros()
         f:SetScript("OnUpdate", OnUpdate)
     end
 end
@@ -159,11 +189,15 @@ f:SetScript("OnEvent", function(self, event)
         if not InCombatLockdown() then -- this event triggers when levelling up too - in combat we don't want it to cause errors
             MegaMacroEngine.OnSpecializationChanged(oldValue, MegaMacroCachedSpecialization)
             MegaMacroWindow.OnSpecializationChanged(oldValue, MegaMacroCachedSpecialization)
+        else
+            SpecializationBeforeCombat = SpecializationBeforeCombat or oldValue
         end
     elseif event == "PLAYER_TARGET_CHANGED" then
         MegaMacroActionBarEngine.OnTargetChanged()
     elseif event == "UPDATE_MACROS" then
         MegaMacroEngine.OnNativeMacrosChanged()
+    elseif event == "PLAYER_REGEN_ENABLED" then
+        OnCombatEnded()
     end
 end)
 

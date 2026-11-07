@@ -1,8 +1,10 @@
 MegaMacroEngine = {}
 local ClickyFrameName = "MegaMacroClicky"
 local MacroIndexCache = {} -- caches native macro indexes - these change based on macro name so they are not the id we'll use in the addon
-local IsMacroIndexCacheStale = false
+local IsMacroIndexCacheStale = true -- starts stale so it can be read before setup, which waits out combat after a reload
 local Initialized = false
+-- Macros can't be edited in combat, so the ones changed then are bound when it ends
+local MacrosToBindAfterCombat = {}
 
 local function GenerateIdPrefix(id)
     local result = "00"..id
@@ -80,6 +82,14 @@ local function getTexture(macro, macroIndex)
 end
 
 local function BindMacro(macro, macroIndex)
+    if InCombatLockdown() then
+        if not next(MacrosToBindAfterCombat) then
+            print("Mega Macro: Your macro changes will apply when combat ends.")
+        end
+        MacrosToBindAfterCombat[macro.Id] = macro
+        return
+    end
+
     local macroIndex = macroIndex or GetMacroIndexCache()[macro.Id]
 
     -- Bind code to macro
@@ -371,6 +381,10 @@ function MegaMacroEngine.SafeInitialize()
 end
 
 function MegaMacroEngine.VerifyMacros()
+    if InCombatLockdown() then
+        return
+    end
+
     -- Verify all is well. Check for macros in wrong space, or duplicate macros.
     local numberOfGlobalMacros, numberOfCharacterMacros = GetNumMacros()
 
@@ -483,6 +497,13 @@ end
 -- The game's macro window and other addons can add or remove macros, which shifts every index after them
 function MegaMacroEngine.OnNativeMacrosChanged()
     IsMacroIndexCacheStale = true
+end
+
+function MegaMacroEngine.BindMacrosChangedInCombat()
+    for id, macro in pairs(MacrosToBindAfterCombat) do
+        MacrosToBindAfterCombat[id] = nil
+        BindMacro(macro)
+    end
 end
 
 function MegaMacroEngine.OnMacroCreated(macro, macroIndex)
