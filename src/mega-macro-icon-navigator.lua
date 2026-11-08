@@ -5,6 +5,9 @@
 -- Scanning and matching are spread over frames while the picker is open, and the results
 -- fill in as they're found.
 
+-- Kept local so the throwaway values assigned below never land in the global `_`
+local _
+
 local FrameBudgetMs = 4
 local StepsBetweenClockChecks = 64
 local MinSearchLength = 3

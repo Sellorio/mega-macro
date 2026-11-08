@@ -1,3 +1,6 @@
+-- Kept local so the throwaway values assigned below never land in the global `_`
+local _
+
 local MacrosToUpdatePerMs = 2
 local LastMacroScope = MegaMacroScopes.Global
 local LastMacroList = nil
