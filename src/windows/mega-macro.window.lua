@@ -18,6 +18,7 @@ local PopupMode = nil
 local IconListInitialized = false
 local SelectedIcon = nil
 local SelectedTabIndex = 1
+local CreatedSlotCount = 0
 
 NUM_ICONS_PER_ROW = 10
 NUM_ICON_ROWS = 9
@@ -45,8 +46,8 @@ local function GetMacroButtonUI(index)
 end
 
 -- Creates the button frames for the macro slots
-local function CreateMacroSlotFrames()
-	for i=1, HighestMaxMacroCount do
+local function CreateMacroSlotFrames(count)
+	for i=CreatedSlotCount+1, count do
 		local button = CreateFrame("CheckButton", "MegaMacro_MacroButton" .. i, MegaMacro_ButtonContainer, "MegaMacro_ButtonTemplate")
 		button:SetID(i)
 		if i == 1 then
@@ -56,6 +57,7 @@ local function CreateMacroSlotFrames()
 		else
 			button:SetPoint("LEFT", "MegaMacro_MacroButton"..(i-1), "RIGHT", 13, 0)
 		end
+		CreatedSlotCount = i
 	end
 end
 
@@ -109,6 +111,11 @@ end
 local function InitializeMacroSlots()
 	local scopeSlotCount = MegaMacro.GetSlotCount(SelectedScope)
 
+	-- The Inactive tab only needs as many as it has macros to list
+	if SelectedScope == MegaMacroScopes.Inactive then
+		scopeSlotCount = math.max(HighestMaxMacroCount, #MacroItems)
+	end
+
 	for i=1, scopeSlotCount do
 		local buttonFrame = _G["MegaMacro_MacroButton" .. i]
 
@@ -119,7 +126,7 @@ local function InitializeMacroSlots()
 		buttonFrame:Show()
 	end
 
-	for i=scopeSlotCount+1, HighestMaxMacroCount do
+	for i=scopeSlotCount+1, CreatedSlotCount do
 		local buttonFrame = _G["MegaMacro_MacroButton" .. i]
 
 		if buttonFrame == nil then
@@ -132,7 +139,7 @@ end
 
 local function SaveMacro()
 	local newCode = MegaMacro_FrameText:GetText()
-	if SelectedMacro ~= nil and SelectedMacro.Code ~= newCode then
+	if SelectedMacro ~= nil and not SelectedMacro.IsUnmanaged and SelectedMacro.Code ~= newCode then
 		MegaMacro.UpdateCode(SelectedMacro, newCode)
 	end
 
@@ -143,7 +150,9 @@ end
 local function RefreshSelectedMacroIcon()
 	local displayedTexture = ""
 
-	if SelectedMacro then
+	if SelectedMacro and SelectedMacro.IsUnmanaged then
+		displayedTexture = SelectedMacro.StaticTexture
+	elseif SelectedMacro then
 		if SelectedIcon == MegaMacroTexture then
 			local data = MegaMacroIconEvaluator.GetCachedData(SelectedMacro.Id)
 			displayedTexture = data and data.Icon or MegaMacroTexture
@@ -187,7 +196,7 @@ local function SelectMacro(macro)
 	MegaMacro_CancelButton:Disable()
 	MegaMacro_FrameText:Disable()
 
-	for i=1, HighestMaxMacroCount do
+	for i=1, CreatedSlotCount do
 		local buttonFrame, _, buttonIcon = GetMacroButtonUI(i)
 
 		if macro and buttonFrame.Macro == macro then
@@ -196,9 +205,11 @@ local function SelectMacro(macro)
 			MegaMacro_FrameSelectedMacroName:SetText(macro.DisplayName)
 			MegaMacro_FrameSelectedMacroButtonIcon:SetTexture(buttonIcon:GetTexture())
 			MegaMacro_FrameText:SetText(macro.Code)
-			MegaMacro_EditButton:Enable();
 			MegaMacro_DeleteButton:Enable();
-			MegaMacro_FrameText:Enable()
+			if not macro.IsUnmanaged then
+				MegaMacro_EditButton:Enable();
+				MegaMacro_FrameText:Enable()
+			end
 		else
 			buttonFrame:SetChecked(false)
 		end
@@ -211,20 +222,56 @@ local function SetMacroItems()
 	local items = MegaMacro.GetMacrosInScope(SelectedScope)
 	MacroItems = items or {}
 
-	table.sort(
-		MacroItems,
-		function(left, right)
-			return (left.DisplayName or "") < (right.DisplayName or "")
-		end)
+	local function SortByName(left, right)
+		return (left.DisplayName or "") < (right.DisplayName or "")
+	end
+
+	table.sort(MacroItems, SortByName)
+
+	-- Macros we don't manage go after the inactive ones. This has to be a copy, the list is saved data.
+	if SelectedScope == MegaMacroScopes.Inactive then
+		local unmanagedMacros = MegaMacroEngine.GetUnmanagedMacros()
+		table.sort(unmanagedMacros, SortByName)
+
+		local inactiveMacros = MacroItems
+		MacroItems = {}
+		for _, macro in ipairs(inactiveMacros) do
+			table.insert(MacroItems, macro)
+		end
+		for _, macro in ipairs(unmanagedMacros) do
+			table.insert(MacroItems, macro)
+		end
+
+		CreateMacroSlotFrames(#MacroItems)
+		InitializeMacroSlots()
+	end
 
 	local newMacroButtonCreated = false
+	-- Slots past this are dimmed: they need an ID or game macro that something on the Inactive tab is using
+	local lastUsableSlot = #MacroItems
+	local slotCount = MegaMacro.GetSlotCount(SelectedScope)
 
-	for i=1, HighestMaxMacroCount do
+	if SelectedScope ~= MegaMacroScopes.Inactive then
+		lastUsableSlot = #MacroItems + MegaMacroEngine.GetAvailableSlotCount(SelectedScope)
+	end
+
+	for i=1, CreatedSlotCount do
 		local buttonFrame, buttonName, buttonIcon = GetMacroButtonUI(i)
 
 		local macro = MacroItems[i]
+		local isBlockedSlot = not macro and SelectedScope ~= MegaMacroScopes.Inactive and i > lastUsableSlot and i <= slotCount
+		buttonFrame.IsBlockedSlot = isBlockedSlot
+		buttonFrame:SetAlpha(isBlockedSlot and 0.3 or 1)
 
-		if macro then
+		if macro and macro.IsUnmanaged then
+			buttonFrame.Macro = macro
+			buttonFrame.IsNewButton = false
+			buttonName:SetText(macro.DisplayName)
+			buttonIcon:SetTexture(macro.StaticTexture)
+			buttonIcon:SetTexCoord(0, 1, 0, 1)
+			buttonIcon:SetAlpha(0.5)
+			buttonIcon:SetDesaturated(true)
+		elseif macro then
 			buttonFrame.Macro = macro
 			buttonFrame.IsNewButton = false
 			-- buttonFrame:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
@@ -239,7 +286,7 @@ local function SetMacroItems()
 				buttonIcon:SetAlpha(0.5)
 				buttonIcon:SetDesaturated(true)
 			end
-		elseif not newMacroButtonCreated and SelectedScope ~= MegaMacroScopes.Inactive then
+		elseif not newMacroButtonCreated and SelectedScope ~= MegaMacroScopes.Inactive and i <= lastUsableSlot then
 			buttonFrame.Macro = nil
 			buttonFrame.IsNewButton = true
 			-- buttonFrame:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
@@ -292,7 +339,11 @@ end
 
 local function DeleteMegaMacro()
 	if SelectedMacro ~= nil and not IsBlockedByCombat() then
-		MegaMacro.Delete(SelectedMacro)
+		if SelectedMacro.IsUnmanaged then
+			MegaMacroEngine.DeleteUnmanagedMacro(SelectedMacro)
+		else
+			MegaMacro.Delete(SelectedMacro)
+		end
 		SetMacroItems()
 	end
 end
@@ -317,8 +368,48 @@ local function UpdateTooltipIfButtonIsHovered(updatedMacroId)
 	end
 end
 
+local function ShowMacroTooltip(owner, macro)
+	if macro.IsUnmanaged then
+		GameTooltip:SetOwner(owner, "ANCHOR_RIGHT")
+		GameTooltip:AddLine(macro.DisplayName, 1, 1, 1)
+		if macro.IsTextLost then
+			GameTooltip:AddLine("Its text was lost. Drag it to another tab to keep its name, icon and action bar spots, then rewrite it.", nil, nil, nil, true)
+		else
+			GameTooltip:AddLine("Not managed by Mega Macro. Drag it to another tab to import it.", nil, nil, nil, true)
+		end
+		if macro.HeldId then
+			local tabName = macro.HeldId <= MacroIndexOffsets.PerClass and "global"
+				or macro.HeldId <= MacroIndexOffsets.PerSpecialization and "class"
+				or macro.HeldId <= MacroIndexOffsets.PerCharacter and "specialization"
+				or macro.HeldId <= MacroIndexOffsets.Inactive and "character"
+			-- One that was already inactive gives no hint where it belongs
+			if tabName then
+				GameTooltip:AddLine("Came from the " .. tabName .. " tab.", 0.6, 0.6, 0.6, true)
+			end
+		end
+		GameTooltip:Show()
+	else
+		ShowToolTipForMegaMacro(macro.Id)
+	end
+end
+
+local function PrintTabIsFull(scope)
+	if #MegaMacro.GetMacrosInScope(scope) < MegaMacro.GetSlotCount(scope) then
+		print("Mega Macro: There's no room on that tab. Macros on the Inactive tab are taking up its space. Import or delete some of them to free it.")
+	else
+		print("Mega Macro: That tab is full. Import or delete macros on the Inactive tab to free up space.")
+	end
+end
+
 local function PickupMegaMacro(macro)
-	local macroIndex = MegaMacroEngine.GetMacroIndexFromId(macro.Id)
+	local macroIndex
+
+	if macro.IsUnmanaged then
+		macroIndex = MegaMacroEngine.FindUnmanagedMacroIndex(macro)
+	else
+		macroIndex = MegaMacroEngine.GetMacroIndexFromId(macro.Id)
+	end
+
 	-- highlight all tabs to indicate it can be moved to a tab
 	for i=1, 5 do
 		if i ~= SelectedTabIndex then
@@ -342,17 +433,22 @@ local function HandleReceiveDrag(targetScope)
 		end
 
 		local macroId = MegaMacroEngine.GetMacroIdFromIndex(macroIndex)
+		local macro = MegaMacro.GetById(macroId)
 
-		if macroId then
-			local macro = MegaMacro.GetById(macroId)
+		if macro then
 			ClearCursor()
 
 			if IsControlKeyDown() then
 				local newDisplayName = macro.Scope == targetScope and macro.DisplayName.." copy" or macro.DisplayName
 				local newMacro = MegaMacro.Create(newDisplayName, targetScope, macro.StaticTexture)
-				MegaMacro.UpdateCode(newMacro, macro.Code)
 
-				if targetScope == SelectedScope then
+				if newMacro then
+					MegaMacro.UpdateCode(newMacro, macro.Code)
+				else
+					PrintTabIsFull(targetScope)
+				end
+
+				if newMacro and targetScope == SelectedScope then
 					SetMacroItems()
 					SelectMacro(newMacro)
 				end
@@ -361,40 +457,33 @@ local function HandleReceiveDrag(targetScope)
 			else
 				local newMacro = MegaMacro.Move(macro, targetScope)
 
-				if targetScope == SelectedScope then
+				if not newMacro then
+					PrintTabIsFull(targetScope)
+				elseif targetScope == SelectedScope then
 					SetMacroItems()
 					SelectMacro(newMacro)
 				elseif macro.Scope == SelectedScope then
 					SetMacroItems()
 				end
 			end
+		elseif macroId and MegaMacro.IsKnownId(macroId) then
+			ClearCursor()
+			print("Mega Macro: That macro belongs to another class or specialization.")
+		elseif targetScope == MegaMacroScopes.Inactive then
+			ClearCursor()
+			print("Mega Macro: Drag it to another tab to import it.")
 		else
 			ClearCursor()
-			local name, _, body = GetMacroInfo(macroIndex)
-			local newMacro = MegaMacro.Create(name, targetScope, MegaMacroTexture)
+			local newMacro = MegaMacroEngine.ImportNativeMacro(macroIndex, targetScope)
 
-			if newMacro then
-				MegaMacro.UpdateCode(newMacro, body)
+			if not newMacro then
+				PrintTabIsFull(targetScope)
 			end
 
 			SetMacroItems()
-			SelectMacro(newMacro)
 
-			if not InCombatLockdown() then
-				local newMacroIndex = MegaMacroEngine.GetMacroIndexFromId(newMacro.Id)
-				if newMacroIndex then
-					for i=1, 120 do
-						local actionButtonType, actionButtonArg = GetActionInfo(i)
-						if actionButtonType == "macro" and actionButtonArg == macroIndex then
-							PickupMacro(newMacroIndex)
-							PlaceAction(i)
-							ClearCursor()
-						end
-					end
-				end
-
-				-- Blizzard's macro window, if open, refreshes itself from UPDATE_MACROS
-				DeleteMacro(macroIndex)
+			if newMacro and targetScope == SelectedScope then
+				SelectMacro(newMacro)
 			end
 		end
 	end
@@ -420,7 +509,55 @@ StaticPopupDialogs["CONFIRM_DELETE_SELECTED_MEGA_MACRO"] = {
 	showAlert = 1
 }
 
+local function ShowRecoveryPrompt(info)
+	local lines = { "Mega Macro found macros left from an earlier install." }
+	local recoverableCount = info.GlobalCount + info.CharacterCount
+
+	table.insert(lines, recoverableCount .. " are global and character macros, which can be fully recovered.")
+
+	if info.ClassOrSpecCount > 0 then
+		table.insert(lines, info.ClassOrSpecCount .. " are class or spec macros. Those slots are shared, so they may be for a different class or spec. Review them on the Inactive tab and drag them to the right tab.")
+	end
+
+	if info.LostCount > 0 then
+		table.insert(lines, info.LostCount .. " lost their text. Only their name and icon are left on the Inactive tab.")
+	end
+
+	table.insert(lines, "Recover the " .. recoverableCount .. " global and character macros now?")
+
+	StaticPopupDialogs["MEGAMACRO_RECOVER_MACROS"] = {
+		text = "%s",
+		button1 = "Recover",
+		button2 = "Not now",
+		OnAccept = function()
+			if not IsBlockedByCombat() then
+				local recovered = MegaMacroEngine.RecoverMacros()
+				local info = MegaMacroEngine.GetRecoveryInfo()
+				MegaMacroGlobalData.RecoverableMacroCount = info.GlobalCount
+				MegaMacroCharacterData.RecoverableMacroCount = info.CharacterCount
+				print("Mega Macro: Recovered " .. recovered .. " macros.")
+
+				local leftCount = info.GlobalCount + info.CharacterCount
+				if leftCount > 0 then
+					print("Mega Macro: " .. leftCount .. " didn't fit and are still on the Inactive tab.")
+				end
+
+				if MegaMacro_Frame:IsShown() then
+					SetMacroItems()
+				end
+			end
+		end,
+		timeout = 0,
+		whileDead = true,
+		hideOnEscape = true,
+		preferredIndex = 3, -- to avoid UI taint
+	}
+
+	StaticPopup_Show("MEGAMACRO_RECOVER_MACROS", table.concat(lines, "\n\n"))
+end
+
 MegaMacroWindow = {
+	ShowRecoveryPrompt = ShowRecoveryPrompt,
 	Show = function()
 		if MegaMacroConfig_IsWindowDialog() then
 			MegaMacro_Frame:SetMovable(false)
@@ -544,7 +681,7 @@ function MegaMacro_FrameTab_OnReceiveDrag(self)
 end
 
 function MegaMacro_ButtonContainer_OnLoad()
-	CreateMacroSlotFrames()
+	CreateMacroSlotFrames(HighestMaxMacroCount)
 end
 
 function MegaMacro_ButtonContainer_OnShow()
@@ -570,7 +707,12 @@ end
 
 function MegaMacro_MacroButton_OnEnter(self)
 	if self.Macro then
-		ShowToolTipForMegaMacro(self.Macro.Id)
+		ShowMacroTooltip(self, self.Macro)
+	elseif self.IsBlockedSlot then
+		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+		GameTooltip:AddLine("Slot in use", 1, 1, 1)
+		GameTooltip:AddLine("Macros on the Inactive tab are taking up this space. Import or delete some of them to free it.", nil, nil, nil, true)
+		GameTooltip:Show()
 	end
 end
 
@@ -597,7 +739,7 @@ end
 
 function MegaMacro_FrameSelectedMacroButton_OnEnter()
 	if SelectedMacro then
-		ShowToolTipForMegaMacro(SelectedMacro.Id)
+		ShowMacroTooltip(MegaMacro_FrameSelectedMacroButton, SelectedMacro)
 	end
 end
 
@@ -612,7 +754,7 @@ function MegaMacro_FrameSelectedMacroButton_OnDragStart()
 end
 
 function MegaMacro_FrameTextButton_OnClick()
-	if SelectedMacro then
+	if SelectedMacro and not SelectedMacro.IsUnmanaged then
 		MegaMacro_FrameText:SetFocus();
 	end
 end
@@ -723,7 +865,12 @@ function MegaMacro_EditOkButton_OnClick()
 		local createdMacro = MegaMacro.Create(enteredText, SelectedScope, SelectedIcon, isStaticTextureFallback)
 		SetMacroItems()
 		SelectMacro(createdMacro)
-		MegaMacro_FrameText:SetFocus()
+
+		if createdMacro then
+			MegaMacro_FrameText:SetFocus()
+		else
+			PrintTabIsFull(SelectedScope)
+		end
 	end
 
 	MegaMacro_PopupFrame:Hide()
@@ -877,7 +1024,7 @@ function MecaMacro_GenerateConfig()
         end)
     end
 	-- Make button "Uninstall"
-	MecaMacroConfig_GenerateButton('Uninstall', 'Uninstall', 'Removes MegaMacro information from Macros. Disable MegaMacro before reload to avoid re-importing them. \n\nNote: Current Class and Spec macros will become global. \nMacros for other Classes and Specs will be lost since Blizzard Macros do not have room for them.', 0, -30, function()
+	MecaMacroConfig_GenerateButton('Uninstall', 'Uninstall', 'Removes MegaMacro information from Macros. Disable MegaMacro before reload to avoid re-importing them. \n\nNote: Current Class and Spec macros will become global. \nMacros for other Classes and Specs will be lost since Blizzard Macros do not have room for them.', 0, MegaMacroIsForever and -5 or -30, function()
 		-- Warn and get confirmation
 		StaticPopupDialogs["MEGAMACRO_UNINSTALL_WARNING"] = {
 			text = "Are you sure you want to uninstall MegaMacro?",

@@ -11,7 +11,10 @@ local function RemoveItemFromArray(t, item)
     end
 end
 
+-- IDs that already have a game macro come first, since the others need room in the game's macro list
 local function GetNextAvailableMacroId(startOffset, count, existingMacros)
+    local firstFree
+
     for i=1 + startOffset, startOffset + count do
         local isMatched = false
 
@@ -22,18 +25,57 @@ local function GetNextAvailableMacroId(startOffset, count, existingMacros)
             end
         end
 
+        if not isMatched and MegaMacroEngine.IsIdHeldByUnknownMacro(i) then
+            isMatched = true
+        end
+
         if not isMatched then
-            return i
+            if MegaMacroEngine.GetMacroIndexFromId(i) then
+                return i
+            end
+
+            firstFree = firstFree or i
         end
     end
 
-    return nil
+    return firstFree
 end
 
 MegaMacro = {}
 MegaMacro.GetNextAvailableMacroId = GetNextAvailableMacroId
 
-function MegaMacro.Create(displayName, scope, staticTexture, isStaticTextureFallback, code, macroIndex)
+local function GetIdRange(scope)
+    if scope == MegaMacroScopes.Global then
+        return MacroIndexOffsets.Global, MacroLimits.GlobalCount
+    elseif scope == MegaMacroScopes.Class then
+        return MacroIndexOffsets.PerClass, MacroLimits.PerClassCount
+    elseif scope == MegaMacroScopes.Specialization then
+        return MacroIndexOffsets.PerSpecialization, MacroLimits.PerSpecializationCount
+    elseif scope == MegaMacroScopes.Character then
+        return MacroIndexOffsets.PerCharacter, MacroLimits.PerCharacterCount
+    elseif scope == MegaMacroScopes.CharacterSpecialization then
+        return MacroIndexOffsets.PerCharacterSpecialization, MacroLimits.PerCharacterSpecializationCount
+    elseif scope == MegaMacroScopes.Inactive then
+        return MacroIndexOffsets.Inactive, MacroLimits.InactiveCount
+    end
+end
+
+MegaMacro.GetIdRange = GetIdRange
+
+-- True if a macro in this scope could take this ID: it's in the scope's range and no saved macro uses it
+function MegaMacro.CanUseId(scope, macroId)
+    local offset, count = GetIdRange(scope)
+    return offset and macroId and macroId > offset and macroId <= offset + count and not MegaMacro.IsKnownId(macroId) or false
+end
+
+-- The ID the next macro created in this scope will get
+function MegaMacro.GetNextIdInScope(scope)
+    local offset, count = GetIdRange(scope)
+    return offset and GetNextAvailableMacroId(offset, count, MegaMacro.GetMacrosInScope(scope))
+end
+
+-- preferredId is used instead of the next free ID when the scope can take it
+function MegaMacro.Create(displayName, scope, staticTexture, isStaticTextureFallback, code, macroIndex, preferredId)
     local result = {}
 
     local id
@@ -116,6 +158,13 @@ function MegaMacro.Create(displayName, scope, staticTexture, isStaticTextureFall
         return nil
     end
 
+    if preferredId and MegaMacro.CanUseId(scope, preferredId) then
+        id = preferredId
+    elseif not macroIndex and scope ~= MegaMacroScopes.Inactive and MegaMacroEngine.GetAvailableSlotCount(scope) == 0 then
+        -- No ID or game macro is free for it, so it would be saved but never work
+        return nil
+    end
+
     if id == nil then
         return nil
     end
@@ -151,6 +200,43 @@ function MegaMacro.GetSlotCount(scope)
     end
 
     return 0
+end
+
+-- True if saved data for this character uses the ID in any scope, including other classes and specializations
+function MegaMacro.IsKnownId(macroId)
+    local function HasId(macroList)
+        for _, macro in ipairs(macroList or {}) do
+            if macro.Id == macroId then
+                return true
+            end
+        end
+
+        return false
+    end
+
+    if HasId(MegaMacroGlobalData.Macros) or HasId(MegaMacroGlobalData.InactiveMacros) or HasId(MegaMacroCharacterData.Macros) then
+        return true
+    end
+
+    for _, classData in pairs(MegaMacroGlobalData.Classes) do
+        if HasId(classData.Macros) then
+            return true
+        end
+
+        for _, specializationData in pairs(classData.Specializations) do
+            if HasId(specializationData.Macros) then
+                return true
+            end
+        end
+    end
+
+    for _, specializationData in pairs(MegaMacroCharacterData.Specializations) do
+        if HasId(specializationData.Macros) then
+            return true
+        end
+    end
+
+    return false
 end
 
 function MegaMacro.GetById(macroId)
@@ -221,6 +307,9 @@ end
 
 function MegaMacro.Move(self, newScope)
     local newMacro = MegaMacro.Create(self.DisplayName, newScope, self.StaticTexture)
+    if not newMacro then
+        return nil
+    end
     MegaMacro.UpdateCode(newMacro, self.Code)
     MegaMacroEngine.OnMacroMoved(self, newMacro)
     MegaMacro.Delete(self)
