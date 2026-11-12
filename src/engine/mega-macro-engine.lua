@@ -462,8 +462,11 @@ function MegaMacroEngine.VerifyMacros()
     MegaMacroCharacterData.UnplacedMacroCount = unplacedCount
 
     local unmanagedCount = #MegaMacroEngine.GetUnmanagedMacros()
-    if unmanagedCount > (MegaMacroCharacterData.UnmanagedMacroCount or 0) then
-        print("Mega Macro: " .. unmanagedCount .. " macros aren't managed by Mega Macro. They're listed on the Inactive tab, drag one to another tab to import it.")
+    local newCount = unmanagedCount - (MegaMacroCharacterData.UnmanagedMacroCount or 0)
+    if newCount == 1 then
+        print("Mega Macro: 1 new macro isn't managed by Mega Macro. It's listed on the Inactive tab, drag it to another tab to import it.")
+    elseif newCount > 1 then
+        print("Mega Macro: " .. newCount .. " new macros aren't managed by Mega Macro. They're listed on the Inactive tab, drag one to another tab to import it.")
     end
     MegaMacroCharacterData.UnmanagedMacroCount = unmanagedCount
 end

@@ -373,7 +373,11 @@ local function ShowMacroTooltip(owner, macro)
 		GameTooltip:SetOwner(owner, "ANCHOR_RIGHT")
 		GameTooltip:AddLine(macro.DisplayName, 1, 1, 1)
 		if macro.IsTextLost then
-			GameTooltip:AddLine("Its text was lost. Drag it to another tab to keep its name, icon and action bar spots, then rewrite it.", nil, nil, nil, true)
+			GameTooltip:AddLine("Text was lost. Drag to another tab to keep its name, icon and action bar spots, then rewrite it.", nil, nil, nil, true)
+		elseif macro.HeldId and macro.HeldId > MacroIndexOffsets.PerClass and macro.HeldId <= MacroIndexOffsets.PerCharacter then
+			GameTooltip:AddLine("Saved data is missing. It may be for a different class or spec. Drag to the right tab to import it.", nil, nil, nil, true)
+		elseif macro.HeldId then
+			GameTooltip:AddLine("Saved data is missing. Drag to another tab to import it.", nil, nil, nil, true)
 		else
 			GameTooltip:AddLine("Not managed by Mega Macro. Drag it to another tab to import it.", nil, nil, nil, true)
 		end
