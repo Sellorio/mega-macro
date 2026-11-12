@@ -109,6 +109,20 @@ local function OnUpdate(_, elapsed)
     MegaMacroActionBarEngine.OnUpdate(elapsed)
 end
 
+-- Asks once whether to recover macros left from lost saved data, and again only if more turn up
+local function OfferRecovery()
+    local info = MegaMacroEngine.GetRecoveryInfo()
+    local isMore = info.GlobalCount > (MegaMacroGlobalData.RecoverableMacroCount or 0)
+        or info.CharacterCount > (MegaMacroCharacterData.RecoverableMacroCount or 0)
+
+    MegaMacroGlobalData.RecoverableMacroCount = info.GlobalCount
+    MegaMacroCharacterData.RecoverableMacroCount = info.CharacterCount
+
+    if isMore then
+        MegaMacroWindow.ShowRecoveryPrompt(info)
+    end
+end
+
 -- Macros can't be changed in combat, so a reload during combat finishes this when it ends
 local function SetUpMacros()
     IsMacroSetupPending = InCombatLockdown()
@@ -117,6 +131,7 @@ local function SetUpMacros()
         MegaMacroEngine.SafeInitialize()
         MegaMacroEngine.ImportMacros()
         MegaMacroEngine.VerifyMacros()
+        OfferRecovery()
     end
 
     MegaMacroFullyActive = MegaMacroGlobalData.Activated and MegaMacroCharacterData.Activated
