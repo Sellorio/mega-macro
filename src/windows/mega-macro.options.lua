@@ -541,9 +541,12 @@ local function CreatePanel()
 	local uninstall = CreateButton("Uninstall", 100, ConfirmUninstall)
 	uninstall:SetPoint("BOTTOMLEFT", MegaMacro_Frame, "BOTTOMLEFT", 4, 4)
 
-	local uninstallDescription = Panel:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-	uninstallDescription:SetPoint("LEFT", uninstall, "RIGHT", 8, 0)
-	uninstallDescription:SetText("Turns your macros back into normal game macros.")
+	uninstall:SetScript("OnEnter", function(self)
+		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+		GameTooltip:AddLine("Turns your macros back into normal game macros.", 1, 1, 1, true)
+		GameTooltip:Show()
+	end)
+	uninstall:SetScript("OnLeave", function() GameTooltip:Hide() end)
 end
 
 MegaMacroOptions = {
