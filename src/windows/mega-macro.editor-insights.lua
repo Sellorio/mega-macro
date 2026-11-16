@@ -3,54 +3,124 @@
 
 local RefreshInterval = 0.15
 
-local ConditionHelp = {
-    actionbar = "Your main action bar is on this page, e.g. actionbar:2.",
-    bar = "Your main action bar is on this page, e.g. bar:2.",
-    advflyable = "You're somewhere you can skyride.",
-    bonusbar = "A bonus action bar is showing, such as a stance or form bar. Add a number to check for a specific one.",
-    btn = "The macro was clicked with this mouse button: 1 left, 2 right, 3 middle, 4 and 5 side buttons.",
-    button = "The macro was clicked with this mouse button: 1 left, 2 right, 3 middle, 4 and 5 side buttons.",
-    canexitvehicle = "You're in a vehicle you can leave.",
-    channeling = "You're channelling a spell. Add a spell name to check for that spell only.",
-    channelling = "You're channelling a spell. Add a spell name to check for that spell only.",
-    combat = "You're in combat.",
-    cursor = "You're holding something on your cursor, like an item or spell.",
-    dead = "The target is dead.",
-    equipped = "You have this type of item equipped, e.g. equipped:Shields or equipped:Two-Handed Axes.",
-    worn = "You have this type of item equipped, e.g. worn:Shields or worn:Two-Handed Axes.",
-    exists = "The target exists.",
-    extrabar = "The extra action button is showing.",
-    flyable = "You're somewhere you can fly.",
-    flying = "You're flying.",
-    form = "You're in this form or stance. 0 means no form. The numbers depend on your class, spec and talents.",
-    stance = "You're in this stance or form. 0 means none. The numbers depend on your class, spec and talents.",
-    group = "You're in a group. Use group:party or group:raid to be specific.",
-    harm = "The target is an enemy you can attack.",
-    help = "The target is friendly and can be helped.",
-    indoors = "You're indoors.",
-    outdoors = "You're outdoors.",
-    mod = "A modifier key is held. On its own it means any; use mod:shift, mod:ctrl or mod:alt for a specific one.",
-    modifier = "A modifier key is held. On its own it means any; use modifier:shift, modifier:ctrl or modifier:alt for a specific one.",
-    mounted = "You're mounted.",
-    overridebar = "An override action bar is showing, like on some quest vehicles.",
-    possessbar = "A possess action bar is showing, like when controlling another creature.",
-    vehicleui = "You're in a vehicle with its own action bar.",
-    unithasvehicleui = "The target is in a vehicle with its own action bar.",
-    party = "The target is in your party.",
-    raid = "The target is in your raid.",
-    pet = "You have a pet out. Add a name or pet family to check for a specific one.",
-    petbattle = "You're in a pet battle.",
-    pvptalent = "You have this PvP talent selected.",
-    talent = "You have this talent selected.",
-    hastalent = "You have this talent.",
-    spec = "You're using this specialization. The numbers are in the order your specs are listed.",
-    stealth = "You're stealthed.",
-    swimming = "You're swimming.",
-    known = "You know this spell or ability.",
-    noknown = "You don't know this spell or ability.",
-    hasbuff = "The target has this buff.",
-    facing = "You're facing the target.",
+-- What each condition means, worded for both the plain and the "no" version.
+-- Each takes the text after the colon (if any) and whether it's the "no" version.
+
+local function Simple(yes, no)
+    return function(_, negated)
+        return negated and no or yes
+    end
+end
+
+-- "a", "a or b", "a, b or c"
+local function JoinOr(items)
+    if #items <= 1 then
+        return items[1] or ""
+    end
+    return table.concat(items, ", ", 1, #items - 1) .. " or " .. items[#items]
+end
+
+local function SplitArg(arg)
+    local items = {}
+    for item in string.gmatch(arg or "", "[^/]+") do
+        items[#items + 1] = (string.gsub(item, "^%s*(.-)%s*$", "%1"))
+    end
+    return items
+end
+
+local MouseButtonNames = {
+    ["1"] = "left", LeftButton = "left", ["2"] = "right", RightButton = "right",
+    ["3"] = "middle", MiddleButton = "middle", ["4"] = "fourth", Button4 = "fourth", ["5"] = "fifth", Button5 = "fifth",
 }
+
+local function Modifier(arg, negated)
+    if not arg or arg == "" then
+        return negated and "No modifier key (Shift, Ctrl or Alt) is held." or "A modifier key (Shift, Ctrl or Alt) is held."
+    end
+    local keys = {}
+    for _, key in ipairs(SplitArg(arg)) do
+        -- shiftctrl means both together
+        local parts = {}
+        local lower = string.lower(key)
+        for _, name in ipairs({ "Shift", "Ctrl", "Alt" }) do
+            if string.find(lower, string.lower(name), 1, true) then
+                parts[#parts + 1] = name
+            end
+        end
+        keys[#keys + 1] = #parts > 0 and table.concat(parts, "+") or key
+    end
+    if negated then
+        if #keys == 1 then
+            return keys[1] .. " isn't held."
+        elseif #keys == 2 then
+            return "Neither " .. keys[1] .. " nor " .. keys[2] .. " is held."
+        end
+        return "None of " .. JoinOr(keys) .. " is held."
+    end
+    return JoinOr(keys) .. " is held."
+end
+
+local function WithArg(yes, no, yesWithout, noWithout)
+    return function(arg, negated)
+        if arg and arg ~= "" then
+            return string.format(negated and no or yes, JoinOr(SplitArg(arg)))
+        end
+        return negated and noWithout or yesWithout
+    end
+end
+
+local ConditionText = {
+    actionbar = WithArg("Action bar page %s is showing.", "Action bar page %s isn't showing."),
+    advflyable = Simple("You can skyride here.", "You can't skyride here."),
+    bonusbar = WithArg("Bonus action bar %s is showing.", "Bonus action bar %s isn't showing.",
+        "A bonus action bar (like a form's bar) is showing.", "No bonus action bar is showing."),
+    button = function(arg, negated)
+        local names = {}
+        for _, item in ipairs(SplitArg(arg)) do
+            names[#names + 1] = MouseButtonNames[item] or item
+        end
+        return string.format(negated and "You don't click it with the %s mouse button." or "You click it with the %s mouse button.", JoinOr(names))
+    end,
+    canexitvehicle = Simple("You're in a vehicle you can leave.", "You're not in a vehicle you can leave."),
+    channeling = WithArg("You're channelling %s.", "You're not channelling %s.", "You're channelling a spell.", "You're not channelling a spell."),
+    combat = Simple("You're in combat.", "You're not in combat."),
+    cursor = Simple("You're holding something on your cursor.", "Your cursor is empty."),
+    dead = Simple("The target is dead.", "The target isn't dead."),
+    equipped = WithArg("You have %s equipped.", "You don't have %s equipped."),
+    exists = Simple("There is a target.", "There's no target."),
+    extrabar = Simple("The extra action button is showing.", "The extra action button isn't showing."),
+    facing = Simple("You're facing the target.", "You're not facing the target."),
+    flyable = Simple("You can fly here.", "You can't fly here."),
+    flying = Simple("You're flying.", "You're not flying."),
+    group = WithArg("You're in a %s.", "You're not in a %s.", "You're in a group.", "You're not in a group."),
+    harm = Simple("The target is an enemy you can attack.", "The target isn't an enemy you can attack."),
+    hasbuff = WithArg("The target has %s.", "The target doesn't have %s."),
+    help = Simple("The target is someone you can help, like a friendly player.", "The target isn't someone you can help."),
+    indoors = Simple("You're indoors.", "You're not indoors."),
+    known = WithArg("You know %s.", "You don't know %s."),
+    modifier = Modifier,
+    mounted = Simple("You're mounted.", "You're not mounted."),
+    outdoors = Simple("You're outdoors.", "You're not outdoors."),
+    overridebar = Simple("A vehicle or quest action bar is showing.", "No vehicle or quest action bar is showing."),
+    party = Simple("The target is in your party.", "The target isn't in your party."),
+    pet = WithArg("Your %s is out.", "Your %s isn't out.", "You have a pet out.", "You don't have a pet out."),
+    petbattle = Simple("You're in a pet battle.", "You're not in a pet battle."),
+    possessbar = Simple("You're controlling another creature.", "You're not controlling another creature."),
+    pvptalent = WithArg("You have PvP talent %s.", "You don't have PvP talent %s."),
+    raid = Simple("The target is in your raid.", "The target isn't in your raid."),
+    stealth = Simple("You're stealthed.", "You're not stealthed."),
+    swimming = Simple("You're swimming.", "You're not swimming."),
+    talent = WithArg("You have talent %s.", "You don't have talent %s."),
+    unithasvehicleui = Simple("The target is in a vehicle.", "The target isn't in a vehicle."),
+    vehicleui = Simple("You're in a vehicle.", "You're not in a vehicle."),
+}
+ConditionText.bar = ConditionText.actionbar
+ConditionText.btn = ConditionText.button
+ConditionText.channelling = ConditionText.channeling
+ConditionText.worn = ConditionText.equipped
+ConditionText.mod = ConditionText.modifier
+ConditionText.hastalent = ConditionText.talent
+ConditionText.noknown = function(arg, negated) return ConditionText.known(arg, not negated) end
 
 local UnitHelp = {
     player = "yourself",
@@ -61,6 +131,13 @@ local UnitHelp = {
     none = "no one. The spell is cast without a target",
     pet = "your pet",
     vehicle = "your vehicle",
+}
+
+-- For "true right now for ..."
+local ShortUnitNames = {
+    player = "you",
+    mouseover = "the unit under your mouse",
+    cursor = "the ground under your mouse",
 }
 
 local IndexedUnitHelp = {
@@ -162,27 +239,13 @@ local function AddState(tooltip, passes, trueText, falseText)
     end
 end
 
-local function AddNumberedList(tooltip, entries, selected, zeroText)
-    local function Add(index, name, active)
-        local isSelected = selected[index]
-        local text = index .. ": " .. name .. (active and "  (now)" or "")
-        if isSelected then
-            tooltip:AddLine(text, 1, 0.82, 0)
-        else
-            tooltip:AddLine(text, 0.6, 0.6, 0.6)
-        end
+-- Words the rule as a rule ("True when you're in combat."), so it isn't read as a
+-- statement about right now. Key names keep their capital.
+local function TrueWhen(sentence)
+    if not string.match(sentence, "^Shift") and not string.match(sentence, "^Ctrl") and not string.match(sentence, "^Alt") then
+        sentence = string.gsub(sentence, "^%u", string.lower)
     end
-
-    if zeroText then
-        local anyActive = false
-        for _, entry in pairs(entries) do
-            anyActive = anyActive or entry.Active
-        end
-        Add(0, zeroText, not anyActive)
-    end
-    for index = 1, #entries do
-        Add(index, entries[index].Name, entries[index].Active)
-    end
+    return "True when " .. sentence
 end
 
 local function SelectedNumbers(arg)
@@ -191,6 +254,68 @@ local function SelectedNumbers(arg)
         selected[tonumber(number)] = true
     end
     return selected
+end
+
+-- Lists this character's forms (or specs) with the ones in the macro highlighted
+local function AddList(tooltip, entries, selected, zeroName)
+    local function Add(index, name, active)
+        local text = index .. ": " .. name .. (active and "  (current)" or "")
+        if selected[index] then
+            tooltip:AddLine(text, 1, 1, 1)
+        else
+            tooltip:AddLine(text, 0.6, 0.6, 0.6)
+        end
+    end
+
+    if zeroName then
+        local anyActive = false
+        for _, entry in ipairs(entries) do
+            anyActive = anyActive or entry.Active
+        end
+        Add(0, zeroName, not anyActive)
+    end
+    for index, entry in ipairs(entries) do
+        Add(index, entry.Name, entry.Active)
+    end
+end
+
+-- stance:/form: (zeroName set) and spec:, named the way this character has them
+local function ShowNumbered(tooltip, token, entries, noun, zeroName)
+    local text
+
+    if not token.Arg or token.Arg == "" then
+        if zeroName then
+            text = token.Negated and "You're not in any " .. noun .. "." or "You're in a " .. noun .. "."
+        else
+            text = "You have a " .. noun .. "."
+        end
+    else
+        local names, missing = {}, {}
+        for _, item in ipairs(SplitArg(token.Arg)) do
+            local number = tonumber(item)
+            if number == 0 and zeroName then
+                names[#names + 1] = string.lower(zeroName)
+            elseif number and entries[number] then
+                names[#names + 1] = entries[number].Name
+            else
+                names[#names + 1] = noun .. " " .. item
+                missing[#missing + 1] = item
+            end
+        end
+
+        text = "You're " .. (token.Negated and "not " or "") .. (zeroName and "in " or "using ") .. JoinOr(names) .. "."
+        if #missing > 0 then
+            text = text .. " This character doesn't have a " .. noun .. " " .. JoinOr(missing) .. "."
+        end
+    end
+    tooltip:AddLine(TrueWhen(text), 1, 0.82, 0, true)
+
+    if #entries > 0 then
+        tooltip:AddLine(" ")
+        AddList(tooltip, entries, SelectedNumbers(token.Arg), zeroName)
+    elseif zeroName then
+        tooltip:AddLine("This character has no forms or stances.", 0.6, 0.6, 0.6, true)
+    end
 end
 
 local function ShowCondition(tooltip, token)
@@ -202,32 +327,16 @@ local function ShowCondition(tooltip, token)
         return
     end
 
-    if token.Negated then
-        tooltip:AddLine("True when this isn't the case:", 0.8, 0.8, 0.8, true)
-    end
-    tooltip:AddLine(ConditionHelp[name] or "A macro condition.", 1, 0.82, 0, true)
-
-    local selected = SelectedNumbers(token.Arg)
     if name == "stance" or name == "form" then
-        local forms = Helpers.Forms()
-        tooltip:AddLine(" ")
-        if #forms == 0 then
-            tooltip:AddLine("This character has no forms or stances right now.", 0.6, 0.6, 0.6, true)
-        else
-            tooltip:AddLine("On this character:", 1, 1, 1)
-        end
-        AddNumberedList(tooltip, forms, selected, "No form")
+        ShowNumbered(tooltip, token, Helpers.Forms(), name, "No " .. name)
     elseif name == "spec" then
-        local specs = Helpers.Specs()
-        if #specs > 0 then
-            tooltip:AddLine(" ")
-            tooltip:AddLine("On this character:", 1, 1, 1)
-            AddNumberedList(tooltip, specs, selected)
-        end
+        ShowNumbered(tooltip, token, Helpers.Specs(), "spec")
+    elseif ConditionText[name] then
+        tooltip:AddLine(TrueWhen(ConditionText[name](token.Arg, token.Negated)), 1, 0.82, 0, true)
     end
 
     local unit = token.Group and token.Group.Target and token.Group.Target.Unit
-    local checkedOn = unit and DescribeUnit(unit)
+    local checkedOn = unit and (ShortUnitNames[unit] or DescribeUnit(unit))
     tooltip:AddLine(" ")
     AddState(tooltip, token.Passes,
         "True right now" .. (checkedOn and (" for " .. checkedOn) or ""),
