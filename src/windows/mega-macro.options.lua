@@ -503,13 +503,28 @@ local function CreatePanel()
 
 	local automaticDescription = Panel:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
 	automaticDescription:SetPoint("TOPLEFT", automatic, "BOTTOMLEFT", 26, 4)
+	automaticDescription:SetPoint("RIGHT", Panel, "RIGHT", 0, 0)
+	automaticDescription:SetJustifyH("LEFT")
 	automaticDescription:SetText("Once a day at login, if your macros changed. Keeps daily ones for a week, weekly for a month, monthly for six months.")
 
 	local generalTitle = Panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
-	generalTitle:SetPoint("TOPLEFT", automatic, "BOTTOMLEFT", 2, -30)
+	generalTitle:SetPoint("TOPLEFT", automaticDescription, "BOTTOMLEFT", -24, -16)
 	generalTitle:SetText("General")
 
-	local lastGeneral = generalTitle
+	local livePreview = CreateCheckbox("LivePreview", "Fade macro conditionals",
+		"In the macro editor, lines and options that wouldn't run with your current target, modifier keys, form and so on are faded out. Updates as things change.",
+		MegaMacroConfig.LivePreview ~= false, function(value)
+			MegaMacroConfig.LivePreview = value
+			MegaMacroEditorInsights.Refresh()
+		end)
+	livePreview:SetPoint("TOPLEFT", generalTitle, "BOTTOMLEFT", -2, -6)
+
+	local hoverHelp = CreateCheckbox("HoverHelp", "Explain macro text on hover",
+		"Point at a condition, target, spell or command in the macro editor to see what it means and whether it's true right now. Shows which form each stance number is on this character.",
+		MegaMacroConfig.HoverHelp ~= false, function(value)
+			MegaMacroConfig.HoverHelp = value
+		end)
+	hoverHelp:SetPoint("TOPLEFT", livePreview, "BOTTOMLEFT", 0, 2)
 
 	-- The game draws the action bars on Forever
 	if not MegaMacroIsForever then
@@ -518,12 +533,13 @@ local function CreatePanel()
 			MegaMacroConfig.UseNativeActionBar, function(value)
 				MegaMacroConfig.UseNativeActionBar = value
 			end)
-		blizzardIcons:SetPoint("TOPLEFT", generalTitle, "BOTTOMLEFT", -2, -6)
-		lastGeneral = blizzardIcons
+		-- Second column, so General stays clear of the bottom button row
+		blizzardIcons:SetPoint("TOPLEFT", livePreview, "TOPLEFT", 300, 0)
 	end
 
+	-- Sits in the bottom button row, where Delete is on the macro tabs
 	local uninstall = CreateButton("Uninstall", 100, ConfirmUninstall)
-	uninstall:SetPoint("TOPLEFT", lastGeneral, "BOTTOMLEFT", 0, -8)
+	uninstall:SetPoint("BOTTOMLEFT", MegaMacro_Frame, "BOTTOMLEFT", 4, 4)
 
 	uninstall:SetScript("OnEnter", function(self)
 		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")

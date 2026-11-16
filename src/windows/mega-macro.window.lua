@@ -845,7 +845,7 @@ function MegaMacro_TextBox_TextChanged(self)
 	end)
 
 	ScrollingEdit_OnTextChanged(self, self:GetParent())
-	MegaMacro_FormattedFrameText:SetText(MegaMacroParser.Parse(text))
+	MegaMacroEditorInsights.Refresh()
 end
 
 function MegaMacro_CancelButton_OnClick()
