@@ -258,7 +258,7 @@ local function CreateRestoreDialog()
 	local message = RestoreDialog:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
 	message:SetPoint("TOP", RestoreDialog.Title, "BOTTOM", 0, -8)
 	message:SetWidth(330)
-	message:SetText("Tick the tabs to put back. The others stay as they are. Your macros are backed up first, so you can undo this.")
+	message:SetText("Choose which tabs to restore. Your macros are backed up first, so you can undo this.")
 
 	RestoreDialog.Rows = {}
 
@@ -440,7 +440,7 @@ local function CreatePanel()
 
 	local description = Panel:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
 	description:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -6)
-	description:SetText("A backup holds your macros, plus the character tab of whoever made it. You choose which tabs to restore.")
+	description:SetText("A backup holds all the macros of the character who made it. You can choose which tabs to restore.")
 
 	local listBox = CreateFrame("Frame", nil, Panel, "TooltipBackdropTemplate")
 	listBox:SetPoint("TOPLEFT", 0, -60)
