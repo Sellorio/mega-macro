@@ -440,10 +440,12 @@ local function CreatePanel()
 
 	local description = Panel:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
 	description:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -6)
-	description:SetText("A backup holds all the macros of the character who made it. You can choose which tabs to restore.")
+	description:SetPoint("RIGHT", Panel, "RIGHT", 0, 0)
+	description:SetJustifyH("LEFT")
+	description:SetText("A backup holds your global, inactive, class and spec macros, plus the character tabs of whoever made it. You can choose which tabs to restore.")
 
 	local listBox = CreateFrame("Frame", nil, Panel, "TooltipBackdropTemplate")
-	listBox:SetPoint("TOPLEFT", 0, -60)
+	listBox:SetPoint("TOPLEFT", 0, -72)
 	listBox:SetPoint("RIGHT", Panel, "RIGHT", 0, 0)
 	listBox:SetHeight(192)
 
