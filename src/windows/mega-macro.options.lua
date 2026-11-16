@@ -533,7 +533,8 @@ local function CreatePanel()
 			MegaMacroConfig.UseNativeActionBar, function(value)
 				MegaMacroConfig.UseNativeActionBar = value
 			end)
-		blizzardIcons:SetPoint("TOPLEFT", hoverHelp, "BOTTOMLEFT", 0, 2)
+		-- Second column, so General stays clear of the bottom button row
+		blizzardIcons:SetPoint("TOPLEFT", livePreview, "TOPLEFT", 300, 0)
 	end
 
 	-- Sits in the bottom button row, where Delete is on the macro tabs
