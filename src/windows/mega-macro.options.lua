@@ -723,7 +723,7 @@ MegaMacroCodeDialog = {
 		ImportScope = scope
 		Dialog.Title:SetText("Import")
 		if scope then
-			SetDialogMessage("Paste a code with Ctrl+V. Macros are added to this tab, backups to the list on the Options tab.")
+			SetDialogMessage("Paste an exported code with Ctrl+V.")
 		else
 			SetDialogMessage("Paste a backup code with Ctrl+V.")
 		end
