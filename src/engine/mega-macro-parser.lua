@@ -26,8 +26,14 @@ local Colours = GetMegaMacroParsingColourData()
 local Conditions = GetMegaMacroParsingConditionsData()
 local GetCharacter, GetWord, ParseResult = GetMegaMacroParsingFunctions()
 
-local ConditionalEnclosed = "|c"..Colours.Syntax.."[|r"
-local ConditionalBroken = "|c"..Colours.Error.."[|r"
+-- The opening [ of a conditional, coloured once we know whether it was closed
+local function OpeningBracket(parsingContext, index, colour)
+    local savedIndex = parsingContext.Index
+    parsingContext.Index = index
+    local result = ParseResult(parsingContext, 1, colour)
+    parsingContext.Index = savedIndex
+    return result
+end
 
 local function IsEndOfLine(parsingContext, offset)
     local character = GetCharacter(parsingContext, offset)
@@ -196,6 +202,7 @@ local function ParseConditional(parsingContext)
         return "", false
     end
 
+    local bracketIndex = parsingContext.Index
     parsingContext.Index = parsingContext.Index + 1
 
     local result = ""
@@ -206,13 +213,13 @@ local function ParseConditional(parsingContext)
         character = GetCharacter(parsingContext)
 
         if IsEndOfLine(parsingContext) then
-            return ConditionalBroken..result, true
+            return OpeningBracket(parsingContext, bracketIndex, Colours.Error)..result, true
         end
         if character == ']' then
-            return ConditionalEnclosed..result..ParseResult(parsingContext, 1, Colours.Syntax), true
+            return OpeningBracket(parsingContext, bracketIndex, Colours.Syntax)..result..ParseResult(parsingContext, 1, Colours.Syntax), true
         end
         if character ~= ',' then
-            return ConditionalBroken..result..ParseRestOfLineAsError(), true
+            return OpeningBracket(parsingContext, bracketIndex, Colours.Error)..result..ParseRestOfLineAsError(parsingContext), true
         end
 
         result = result..ParseResult(parsingContext, 1, Colours.Syntax)
@@ -220,7 +227,7 @@ local function ParseConditional(parsingContext)
         newResult = ParseConditionalPart(parsingContext)
     end
 
-    return ConditionalBroken..result
+    return OpeningBracket(parsingContext, bracketIndex, Colours.Error)..result
 end
 
 local function ParseCommand(parsingContext)
@@ -324,9 +331,10 @@ end
 
 MegaMacroParser = {}
 
-function MegaMacroParser.Parse(code)
+-- dim (optional): set of character indexes to fade, from MegaMacroInsights.Evaluate
+function MegaMacroParser.Parse(code, dim)
     local result = ""
-    local parsingContext = { Code = code, Index = 1 }
+    local parsingContext = { Code = code, Index = 1, Dim = dim }
 
     local newResult, notEndOfCode = ParseLine(parsingContext)
     while notEndOfCode do
