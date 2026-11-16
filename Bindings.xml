@@ -1,0 +1,5 @@
+<Bindings>
+	<Binding name="MEGAMACRO_TOGGLE" header="MEGAMACRO" category="ADDONS">
+		MegaMacro_Toggle()
+	</Binding>
+</Bindings>

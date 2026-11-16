@@ -101,7 +101,7 @@
 					</Anchors>
 					<TexCoords left="0" right="1.0" top="0" bottom="0.25"/>
 				</Texture>
-				<Texture file="Interface\ClassTrainerFrame\UI-ClassTrainer-HorizontalBar">
+				<Texture name="MegaMacro_HorizontalBarRight" file="Interface\ClassTrainerFrame\UI-ClassTrainer-HorizontalBar">
 					<Size x="75" y="16"/>
 					<Anchors>
 						<Anchor point="LEFT" relativeTo="MegaMacro_HorizontalBarLeft" relativePoint="RIGHT" x="0" y="0"/>
@@ -184,14 +184,6 @@
 							<OnShow>MegaMacro_ButtonContainer_OnShow();</OnShow>
 							<OnReceiveDrag>MegaMacro_ButtonContainer_OnReceiveDrag();</OnReceiveDrag>
 						</Scripts>
-						<Frames>
-							<Frame name="MegaMacro_ConfigContainer" hidden="true">
-								<Size x="439" y="10"/>
-								<Anchors>
-									<Anchor point="TOPLEFT"/>
-								</Anchors>
-							</Frame>
-						</Frames>
 					</Frame>
 				</ScrollChild>
 			</ScrollFrame>
@@ -356,7 +348,7 @@
 					<OnReceiveDrag>MegaMacro_FrameTab_OnReceiveDrag(self);</OnReceiveDrag>
 				</Scripts>
 			</Button>
-			<Button name="MegaMacro_FrameTab6" inherits="PanelTabButtonTemplate" text="Config" id="6">
+			<Button name="MegaMacro_FrameTab6" inherits="PanelTabButtonTemplate" text="Options" id="6">
 				<Anchors>
 					<Anchor point="LEFT" relativeTo="MegaMacro_FrameTab5" relativePoint="RIGHT" x="0" y="0"/>
 				</Anchors>
@@ -380,6 +372,24 @@
 						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
 						StaticPopup_Show("CONFIRM_DELETE_SELECTED_MEGA_MACRO");
 					</OnClick>
+				</Scripts>
+			</Button>
+			<Button name="MegaMacro_ExportTabButton" inherits="UIPanelButtonTemplate" text="Export Tab">
+				<Size x="90" y="22"/>
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="MegaMacro_DeleteButton" relativePoint="RIGHT" x="4" y="0"/>
+				</Anchors>
+				<Scripts>
+					<OnClick>MegaMacro_ExportTabButton_OnClick();</OnClick>
+				</Scripts>
+			</Button>
+			<Button name="MegaMacro_ImportButton" inherits="UIPanelButtonTemplate" text="Import">
+				<Size x="80" y="22"/>
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="MegaMacro_ExportTabButton" relativePoint="RIGHT" x="4" y="0"/>
+				</Anchors>
+				<Scripts>
+					<OnClick>MegaMacro_ImportButton_OnClick();</OnClick>
 				</Scripts>
 			</Button>
 			<Button name="MegaMacro_ExitButton" inherits="UIPanelButtonTemplate" text="EXIT">
