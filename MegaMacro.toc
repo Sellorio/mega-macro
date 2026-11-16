@@ -4,15 +4,23 @@
 ## Author: Sellorio
 ## Version: 1.0.0
 ## OptionalDeps: ElvUI
+## AddonCompartmentFunc: MegaMacro_OnAddonCompartmentClick
+## AddonCompartmentFuncOnEnter: MegaMacro_OnAddonCompartmentEnter
+## AddonCompartmentFuncOnLeave: MegaMacro_OnAddonCompartmentLeave
 
 ## SavedVariables: MegaMacroConfig, MegaMacroGlobalData
 ## SavedVariablesPerCharacter: MegaMacroCharacterData
+
+libs/LibStub/LibStub.lua
+libs/AceSerializer-3.0/AceSerializer-3.0.lua
+libs/LibDeflate/LibDeflate.lua
 
 src/constants.lua
 src/config.lua
 src/tooltip-functions.lua
 src/mega-macro.lua
 src/mega-macro-icon-navigator.lua
+src/backups.lua
 
 src/engine/mega-macro-action-bar-engine.lua
 src/engine/mega-macro-code-info.lua
@@ -25,5 +33,6 @@ src/engine/parsing/conditions.lua
 src/engine/mega-macro-parser.lua
 
 src/windows/mega-macro.window.xml
+src/windows/mega-macro.options.lua
 
 src/main.lua

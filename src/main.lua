@@ -131,6 +131,7 @@ local function SetUpMacros()
         MegaMacroEngine.SafeInitialize()
         MegaMacroEngine.ImportMacros()
         MegaMacroEngine.VerifyMacros()
+        MegaMacroBackups.CreateAutomaticBackup()
         OfferRecovery()
     end
 
@@ -153,18 +154,67 @@ local function OnCombatEnded()
     end
 end
 
+function MegaMacro_Open()
+    MegaMacroWindow.Show()
+
+    if not MegaMacroFullyActive then
+        ShowMacroFrame()
+    end
+end
+
+-- Used by the key binding (Bindings.xml) and the addon compartment (toc)
+function MegaMacro_Toggle()
+    if MegaMacro_Frame:IsShown() then
+        HideUIPanel(MegaMacro_Frame)
+    else
+        MegaMacro_Open()
+    end
+end
+
+function MegaMacro_OnAddonCompartmentClick()
+    MegaMacro_Toggle()
+end
+
+-- The client passes the menu button somewhere in the args (position varies by version)
+function MegaMacro_OnAddonCompartmentEnter(...)
+    local owner
+    for i = 1, select("#", ...) do
+        local arg = select(i, ...)
+        if type(arg) == "table" and arg.GetObjectType then
+            owner = arg
+            break
+        end
+    end
+    owner = owner or AddonCompartmentFrame or UIParent
+
+    GameTooltip:SetOwner(owner, "ANCHOR_LEFT")
+    GameTooltip:SetText("Mega Macro", NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b)
+
+    local key = GetBindingKey("MEGAMACRO_TOGGLE")
+    if key then
+        local keyText = GetBindingText and GetBindingText(key) or key
+        GameTooltip:AddLine("Open/close: " .. keyText, 1, 1, 1)
+    else
+        GameTooltip:AddLine("Click to open/close, or type /m", 1, 1, 1)
+        GameTooltip:AddLine("Set a hotkey in Options > Keybindings > AddOns", 0.6, 0.6, 0.6, true)
+    end
+
+    GameTooltip:Show()
+end
+
+function MegaMacro_OnAddonCompartmentLeave()
+    GameTooltip:Hide()
+end
+
+BINDING_HEADER_MEGAMACRO = "Mega Macro"
+BINDING_NAME_MEGAMACRO_TOGGLE = "Open / Close Mega Macro"
+
 local function Initialize()
     MegaMacro_InitialiseConfig()
 
     SLASH_Mega1 = "/m"
     SLASH_Mega2 = "/macro"
-    SlashCmdList["Mega"] = function()
-        MegaMacroWindow.Show()
-
-        if not MegaMacroFullyActive then
-            ShowMacroFrame()
-        end
-    end
+    SlashCmdList["Mega"] = MegaMacro_Open
 
     local specialization = GetCurrentSpecialization()
     if specialization then

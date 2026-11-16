@@ -22,6 +22,10 @@ function MegaMacro_InitialiseConfig()
         }
     end
 
+    if MegaMacroConfig.AutomaticBackups == nil then
+        MegaMacroConfig.AutomaticBackups = true
+    end
+
     -- The action bar engine isn't supported on Forever, the game draws the action bars
     if MegaMacroIsForever then
         MegaMacroConfig.UseNativeActionBar = true

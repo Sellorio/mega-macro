@@ -96,7 +96,7 @@ local function InitializeTabs()
 	MegaMacro_FrameTab2:SetText(MegaMacroCachedClass)
 	MegaMacro_FrameTab4:SetText(playerName)
 	MegaMacro_FrameTab5:SetText("Inactive")
-	MegaMacro_FrameTab6:SetText("Config")
+	MegaMacro_FrameTab6:SetText("Options")
 
 	if MegaMacroCachedSpecialization == '' then
 		MegaMacro_FrameTab3:SetText("Locked")
@@ -308,6 +308,10 @@ local function SetMacroItems()
 		end
 	end
 
+	local savedMacros = MegaMacro.GetMacrosInScope(SelectedScope)
+	-- The Inactive tab is leftovers from every class and spec, not a set to hand to someone
+	MegaMacro_ExportTabButton:SetEnabled(SelectedScope ~= MegaMacroScopes.Inactive and savedMacros ~= nil and #savedMacros > 0)
+
 	SelectMacro(MacroItems[1])
 end
 
@@ -405,6 +409,32 @@ local function PrintTabIsFull(scope)
 	end
 end
 
+-- While a macro is being dragged, the other tabs light up to show it can be dropped on them
+local DropTargetWatcher = CreateFrame("Frame")
+
+local function SetDropTargetTabsHighlighted(highlighted)
+	for i=1, 5 do
+		local tab = _G["MegaMacro_FrameTab"..i]
+
+		if highlighted and i ~= SelectedTabIndex then
+			tab:LockHighlight()
+		else
+			tab:UnlockHighlight()
+		end
+	end
+
+	-- Clear the highlight once the macro leaves the cursor, however that happens
+	if highlighted then
+		DropTargetWatcher:SetScript("OnUpdate", function()
+			if GetCursorInfo() ~= "macro" then
+				SetDropTargetTabsHighlighted(false)
+			end
+		end)
+	else
+		DropTargetWatcher:SetScript("OnUpdate", nil)
+	end
+end
+
 local function PickupMegaMacro(macro)
 	local macroIndex
 
@@ -414,15 +444,8 @@ local function PickupMegaMacro(macro)
 		macroIndex = MegaMacroEngine.GetMacroIndexFromId(macro.Id)
 	end
 
-	-- highlight all tabs to indicate it can be moved to a tab
-	for i=1, 5 do
-		if i ~= SelectedTabIndex then
-			local tab = _G["MegaMacro_FrameTab"..i]
-			tab:LockHighlight()
-		end
-	end
-
 	if macroIndex then
+		SetDropTargetTabsHighlighted(true)
 		PickupMacro(macroIndex)
 	end
 end
@@ -586,6 +609,19 @@ MegaMacroWindow = {
 	OnSpecializationChanged = function(oldValue, newValue)
 		InitializeTabs()
 		SetMacroItems()
+	end,
+	IsBlockedByCombat = function()
+		return IsBlockedByCombat()
+	end,
+	-- Shows the macro if it's on the open tab, otherwise refreshes whichever tab is open
+	ShowMacro = function(macro)
+		if IsOpen and SelectedScope ~= 'config' then
+			SetMacroItems()
+
+			if macro and macro.Scope == SelectedScope then
+				SelectMacro(macro)
+			end
+		end
 	end
 }
 
@@ -628,6 +664,7 @@ end
 function MegaMacro_Window_OnHide()
 	SaveMacro()
 	IsOpen = false
+	SetDropTargetTabsHighlighted(false)
     MegaMacro_PopupFrame:Hide()
 	MegaMacroIconNavigator.Release()
 end
@@ -646,16 +683,17 @@ function MegaMacro_FrameTab_OnClick(self)
 	if not HandleReceiveDrag(scope) then
 		PanelTemplates_SetTab(MegaMacro_Frame, tabIndex);
 		MegaMacro_ButtonScrollFrame:SetVerticalScroll(0)
-		MegaMacro_ConfigContainer:Hide()
-		
+
 		if tabIndex == 6 then
+			SelectMacro(nil)
 			SelectedScope = 'config'
-			MegaMacro_FrameTab_ShowConfig()
+			MegaMacroOptions.Show()
 			return
 		end
 
 		SelectedScope = scope
 		SelectedTabIndex = tabIndex
+		MegaMacroOptions.Hide()
 
 		InitializeMacroSlots()
 		SetMacroItems()
@@ -664,18 +702,19 @@ function MegaMacro_FrameTab_OnClick(self)
 	end
 end
 
-function MegaMacro_FrameTab_ShowConfig()
-	-- Initialize Config Options
-	if not MegaMacro_ConfigContainer.initialized then
-		MecaMacro_GenerateConfig()
-		MegaMacro_ConfigContainer.initialized = true
+function MegaMacro_ExportTabButton_OnClick()
+	local macros = MegaMacro.GetMacrosInScope(SelectedScope)
+
+	if macros and #macros > 0 then
+		SaveMacro()
+		local tabName = _G["MegaMacro_FrameTab" .. SelectedTabIndex]:GetText()
+		local count = #macros == 1 and "1 macro" or #macros .. " macros"
+		MegaMacroCodeDialog.ShowCode(tabName .. " tab (" .. count .. ")", MegaMacroBackups.GetTabCode(macros))
 	end
+end
 
-	--Clear macro area
-	InitializeMacroSlots()
-	SelectMacro(nil)
-
-	MegaMacro_ConfigContainer:Show()
+function MegaMacro_ImportButton_OnClick()
+	MegaMacroCodeDialog.ShowImport(SelectedScope)
 end
 
 function MegaMacro_FrameTab_OnReceiveDrag(self)
@@ -731,9 +770,9 @@ function MegaMacro_MacroButton_OnDragStart(self)
 end
 
 function MegaMacro_MacroButton_OnDragStop(self)
-	for i=1, 5 do
-		local tab = _G["MegaMacro_FrameTab"..i]
-		tab:UnlockHighlight()
+	-- The macro stays on the cursor if it's let go over nothing, so only clear once it's gone
+	if GetCursorInfo() ~= "macro" then
+		SetDropTargetTabsHighlighted(false)
 	end
 end
 
@@ -1017,71 +1056,4 @@ function MegaMacro_RegisterShiftClicks()
 			MegaMacro_FrameText:Insert(SLASH_EQUIP1.." "..name.."\n")
 		end
 	end)
-end
-
--- Create the Config options
-function MecaMacro_GenerateConfig()
-    -- Blizzard Action Bar Icons
-    if not MegaMacroIsForever then
-        MecaMacroConfig_GenerateCheckbox('UseBlizzardActionIcons', 'Blizzard Action Bar Icons', 'Disable Mega Macro Action Bar Engine. \nMacro Icons will be decided by blizzard instead of Mega Macro.', 0, -5, MegaMacroConfig.UseNativeActionBar, function(value)
-            MegaMacroConfig.UseNativeActionBar = value
-        end)
-    end
-	-- Make button "Uninstall"
-	MecaMacroConfig_GenerateButton('Uninstall', 'Uninstall', 'Removes MegaMacro information from Macros. Disable MegaMacro before reload to avoid re-importing them. \n\nNote: Current Class and Spec macros will become global. \nMacros for other Classes and Specs will be lost since Blizzard Macros do not have room for them.', 0, MegaMacroIsForever and -5 or -30, function()
-		-- Warn and get confirmation
-		StaticPopupDialogs["MEGAMACRO_UNINSTALL_WARNING"] = {
-			text = "Are you sure you want to uninstall MegaMacro?",
-			button1 = "Yes",
-			button2 = "No",
-			OnAccept = function()
-				if not IsBlockedByCombat() then
-					MegaMacroEngine.Uninstall()
-					print("MegaMacro uninstalled.")
-				end
-			end,
-			OnCancel = function()
-				print("Uninstallation cancelled.")
-			end,
-			timeout = 0,
-			whileDead = true,
-			hideOnEscape = true,
-			preferredIndex = 3, -- to avoid UI taint
-		}
-
-		StaticPopup_Show("MEGAMACRO_UNINSTALL_WARNING")
-	end)
-end
-
-function MecaMacroConfig_GenerateCheckbox(name, text, tooltip, x, y, checked, onClick)
-    local checkbox = CreateFrame("CheckButton", "MegaMacro_ConfigContainer_" .. name, MegaMacro_ConfigContainer, "ChatConfigCheckButtonTemplate")
-    checkbox:SetPoint("TOPLEFT", x, y)
-    checkbox:SetChecked(checked)
-    checkbox:SetScript("OnClick", function(self)
-        onClick(checkbox:GetChecked())
-    end)
-    checkbox.tooltip = tooltip
-    
-    local textFrame = _G[checkbox:GetName() .. "Text"]
-    textFrame:SetFontObject("GameFontNormalSmall")
-    textFrame:SetText(text)
-
-    return checkbox
-end
-
-function MecaMacroConfig_GenerateButton(name, text, tooltip, x, y, onClick)
-	local button = CreateFrame("Button", "MegaMacro_ConfigContainer_" .. name, MegaMacro_ConfigContainer, "UIPanelButtonTemplate")
-	button:SetPoint("TOPLEFT", x, y)
-	-- set width
-	button:SetWidth(100)
-	button:SetScript("OnClick", function(self)
-		onClick()
-	end)
-	button.tooltipText = tooltip
-	
-	local textFrame = _G[button:GetName() .. "Text"]
-	textFrame:SetFontObject("GameFontNormalSmall")
-	textFrame:SetText(text)
-
-	return button
 end

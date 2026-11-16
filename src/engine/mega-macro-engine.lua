@@ -815,12 +815,83 @@ function MegaMacroEngine.OnMacroMoved(oldMacro, newMacro)
     end
 end
 
-function MegaMacroEngine.OnSpecializationChanged(oldValue, newValue)
-    UnbindMacrosList(MegaMacroGlobalData.Classes[MegaMacroCachedClass].Specializations[oldValue].Macros)
-    UnbindMacrosList(MegaMacroCharacterData.Specializations[oldValue].Macros)
+-- The macros that have a game macro on this character: global, this class and spec, and this character's
+local function GetActiveMacros()
+    local result = {}
+    local lists = { MegaMacroGlobalData.Macros, MegaMacroCharacterData.Macros }
+    local classData = MegaMacroGlobalData.Classes[MegaMacroCachedClass]
 
-    BindMacrosList(MegaMacroGlobalData.Classes[MegaMacroCachedClass].Specializations[newValue].Macros)
-    BindMacrosList(MegaMacroCharacterData.Specializations[newValue].Macros)
+    if classData then
+        table.insert(lists, classData.Macros)
+
+        if classData.Specializations[MegaMacroCachedSpecialization] then
+            table.insert(lists, classData.Specializations[MegaMacroCachedSpecialization].Macros)
+        end
+    end
+
+    if MegaMacroCharacterData.Specializations[MegaMacroCachedSpecialization] then
+        table.insert(lists, MegaMacroCharacterData.Specializations[MegaMacroCachedSpecialization].Macros)
+    end
+
+    for _, list in ipairs(lists) do
+        for _, macro in ipairs(list) do
+            table.insert(result, macro)
+        end
+    end
+
+    return result
+end
+
+-- Swaps in a different set of saved macros, such as a backup, and brings the game's macros in line.
+-- A macro that's gone keeps its game macro, blank, so action bars pick it up again if it comes back.
+function MegaMacroEngine.ReplaceMacros(replace)
+    local oldMacros = GetActiveMacros()
+
+    replace()
+
+    local newIds = {}
+    for _, macro in ipairs(GetActiveMacros()) do
+        newIds[macro.Id] = true
+    end
+
+    for _, macro in ipairs(oldMacros) do
+        if not newIds[macro.Id] then
+            UnbindMacro(macro)
+        end
+    end
+
+    MegaMacroCodeInfo.ClearAll()
+    MegaMacroIconEvaluator.ResetCache()
+    BindMacros()
+    MegaMacroEngine.VerifyMacros()
+end
+
+-- A spec's lists don't exist until something is saved for it, and a restored backup may not have them
+local function GetSpecializationMacroLists(specialization)
+    local lists = {}
+    local classData = MegaMacroGlobalData.Classes[MegaMacroCachedClass]
+    local classSpecialization = classData and classData.Specializations[specialization]
+    local characterSpecialization = MegaMacroCharacterData.Specializations[specialization]
+
+    if classSpecialization then
+        table.insert(lists, classSpecialization.Macros)
+    end
+
+    if characterSpecialization then
+        table.insert(lists, characterSpecialization.Macros)
+    end
+
+    return lists
+end
+
+function MegaMacroEngine.OnSpecializationChanged(oldValue, newValue)
+    for _, list in ipairs(GetSpecializationMacroLists(oldValue)) do
+        UnbindMacrosList(list)
+    end
+
+    for _, list in ipairs(GetSpecializationMacroLists(newValue)) do
+        BindMacrosList(list)
+    end
 end
 
 function MegaMacroEngine.Uninstall()
