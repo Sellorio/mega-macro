@@ -155,7 +155,8 @@ end
 
 local function MergeCharacterSpecializationMacros()
     -- Remove the character specialization macros and add them to character macros.
-    local characterSpecializationMacros = MegaMacroCharacterData.Specializations[MegaMacroCachedSpecialization].Macros
+    local characterSpecialization = MegaMacroCharacterData.Specializations[MegaMacroCachedSpecialization]
+    local characterSpecializationMacros = characterSpecialization and characterSpecialization.Macros
     local characterMacros = MegaMacroCharacterData.Macros
     if not characterSpecializationMacros or #characterSpecializationMacros == 0 then
         return
@@ -580,8 +581,7 @@ local function FindIdWithoutMacro(scope)
     end
 end
 
--- Turns a macro from the game's list into a Mega Macro. Returns nothing if there's no room.
-function MegaMacroEngine.ImportNativeMacro(macroIndex, scope)
+local function ImportNativeMacroInScope(macroIndex, scope)
     local name, iconTexture, body = GetMacroInfo(macroIndex)
     local isTextLost = GetIdFromMacroCode(body) and string.find(body, ClickyFrameName, 1, true)
     local code = isTextLost and "" or RemoveIdFromMacroCode(body)
@@ -605,9 +605,9 @@ function MegaMacroEngine.ImportNativeMacro(macroIndex, scope)
 
     if isSameList and not isIdInList then
         -- Converting it where it is keeps it on any action bars
-        macro = MegaMacro.Create(name, scope, iconTexture or MegaMacroTexture, true, code, macroIndex, preferredId)
+        macro = MegaMacro.CreateInScope(name, scope, iconTexture or MegaMacroTexture, true, code, macroIndex, preferredId)
     else
-        macro = MegaMacro.Create(name, scope, iconTexture or MegaMacroTexture, true, code)
+        macro = MegaMacro.CreateInScope(name, scope, iconTexture or MegaMacroTexture, true, code)
 
         -- Callers say when there's no room, since the first import tries the Inactive tab next
         if macro and not GetMacroIndexCache()[macro.Id] then
@@ -630,34 +630,74 @@ function MegaMacroEngine.ImportNativeMacro(macroIndex, scope)
     return macro
 end
 
--- How many more macros this tab can really take. Besides the tab's own limit, each one needs a free ID
--- and a place in the game's macro list, and macros on the Inactive tab can be using both.
-function MegaMacroEngine.GetAvailableSlotCount(scope)
-    local room = MegaMacro.GetSlotCount(scope) - #MegaMacro.GetMacrosInScope(scope)
-    local offset, count = MegaMacro.GetIdRange(scope)
+-- Turns a macro from the game's list into a Mega Macro on the tab for this scope. Returns nothing if there's no room.
+-- On a tab with more than one scope, a macro left from lost saved data tries the scope its ID is from first.
+function MegaMacroEngine.ImportNativeMacro(macroIndex, scope)
+    local scopes = MegaMacro.GetMergedTabScopes(scope)
 
-    if room <= 0 or not offset or scope == MegaMacroScopes.Inactive then
-        return math.max(room, 0)
+    if not scopes then
+        return ImportNativeMacroInScope(macroIndex, scope)
     end
 
-    local usedIds = {}
-    for _, macro in ipairs(MegaMacro.GetMacrosInScope(scope)) do
-        usedIds[macro.Id] = true
+    local _, _, body = GetMacroInfo(macroIndex)
+    local ownId = GetIdFromMacroCode(body)
+    local offset, count = MegaMacro.GetIdRange(scopes[2])
+
+    if ownId and ownId > offset and ownId <= offset + count then
+        scopes = { scopes[2], scopes[1] }
     end
 
-    -- An ID that already has a game macro (a blank one, or a slot another class shares) reuses it
-    local cache = GetMacroIndexCache()
-    local idsWithMacro, idsNeedingMacro = 0, 0
-    for macroId=offset + 1, offset + count do
-        if not usedIds[macroId] and not MegaMacroEngine.IsIdHeldByUnknownMacro(macroId) then
-            if cache[macroId] then
-                idsWithMacro = idsWithMacro + 1
-            else
-                idsNeedingMacro = idsNeedingMacro + 1
-            end
+    for _, tabScope in ipairs(scopes) do
+        local macro = ImportNativeMacroInScope(macroIndex, tabScope)
+
+        if macro then
+            return macro
         end
     end
 
+    return nil
+end
+
+-- The scopes must all be in the same part of the game's list (global or character), since they share its free macros.
+-- Not for the Inactive tab, whose scope is nil.
+local function GetAvailableSlotCountForScopes(scopes)
+    local cache = GetMacroIndexCache()
+    -- Slots each scope can fill from IDs that already have a game macro, and slots that need a new one
+    local withMacroTotal, needingMacroTotal = 0, 0
+
+    for _, scope in ipairs(scopes) do
+        local room = MegaMacro.GetSlotCount(scope) - #MegaMacro.GetMacrosInScope(scope)
+        local offset, count = MegaMacro.GetIdRange(scope)
+
+        if room > 0 and offset then
+            local usedIds = {}
+            for _, macro in ipairs(MegaMacro.GetMacrosInScope(scope)) do
+                usedIds[macro.Id] = true
+            end
+
+            -- An ID that already has a game macro (a blank one, or a slot another class shares) reuses it
+            local idsWithMacro, idsNeedingMacro = 0, 0
+            for macroId=offset + 1, offset + count do
+                if not usedIds[macroId] and not MegaMacroEngine.IsIdHeldByUnknownMacro(macroId) then
+                    if cache[macroId] then
+                        idsWithMacro = idsWithMacro + 1
+                    else
+                        idsNeedingMacro = idsNeedingMacro + 1
+                    end
+                end
+            end
+
+            local withMacro = math.min(room, idsWithMacro)
+            withMacroTotal = withMacroTotal + withMacro
+            needingMacroTotal = needingMacroTotal + math.min(room - withMacro, idsNeedingMacro)
+        end
+    end
+
+    if needingMacroTotal == 0 then
+        return withMacroTotal
+    end
+
+    local scope = scopes[1]
     local isGlobal = scope == MegaMacroScopes.Global or scope == MegaMacroScopes.Class or scope == MegaMacroScopes.Specialization
     local globalCount, characterCount = GetNumMacros()
     local freeMacros = isGlobal and MacroLimits.MaxGlobalMacros - globalCount or MacroLimits.MaxCharacterMacros - characterCount
@@ -671,7 +711,24 @@ function MegaMacroEngine.GetAvailableSlotCount(scope)
         end
     end
 
-    return math.min(room, idsWithMacro + math.min(math.max(freeMacros, 0), idsNeedingMacro))
+    return withMacroTotal + math.min(math.max(freeMacros, 0), needingMacroTotal)
+end
+
+-- How many more macros this tab can really take. Besides the tab's own limit, each one needs a free ID
+-- and a place in the game's macro list, and macros on the Inactive tab can be using both.
+function MegaMacroEngine.GetAvailableSlotCount(scope)
+    -- Inactive macros don't need an ID or game macro of their own
+    if scope == MegaMacroScopes.Inactive then
+        return math.max(MegaMacro.GetSlotCount(scope) - #MegaMacro.GetMacrosInScope(scope), 0)
+    end
+
+    return GetAvailableSlotCountForScopes({ scope })
+end
+
+-- The same for every scope the tab shows
+function MegaMacroEngine.GetTabAvailableSlotCount(tabScope)
+    local scopes = MegaMacro.GetMergedTabScopes(tabScope)
+    return scopes and GetAvailableSlotCountForScopes(scopes) or MegaMacroEngine.GetAvailableSlotCount(tabScope)
 end
 
 -- Macros left by Mega Macro whose saved data was lost (a new PC, a reinstall, a deleted WTF folder).

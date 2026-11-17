@@ -568,6 +568,9 @@ function MegaMacroBackups.Restore(backup, parts)
             MegaMacroCharacterData.Macros = contents.Character.Macros
             MegaMacroCharacterData.Specializations = contents.Character.Specializations
         end
+
+        -- A backup from an older version can have Forever's spec macros in more than one list
+        MegaMacroMergeForeverSpecializations()
     end)
 
     return true

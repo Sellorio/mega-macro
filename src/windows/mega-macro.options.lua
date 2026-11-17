@@ -199,8 +199,10 @@ local function CreateDialogFrame(name, width, height)
 	return frame
 end
 
--- In the order the tabs appear
-local RestorePartOrder = { "Global", "Class", "Specializations", "Character", "Inactive", "OtherClasses" }
+-- In the order the tabs appear. On Forever the class tab holds the spec macros, so they're restored together.
+local RestorePartOrder = MegaMacroIsForever
+	and { "Global", "Class", "Character", "Inactive", "OtherClasses" }
+	or { "Global", "Class", "Specializations", "Character", "Inactive", "OtherClasses" }
 
 local function GetRestorePartLabel(part)
 	if part == "Class" then
@@ -236,6 +238,10 @@ local function RestoreChecked()
 	local parts = {}
 	for part, row in pairs(RestoreDialog.Rows) do
 		parts[MegaMacroBackups.RestoreParts[part]] = row:IsEnabled() and row:GetChecked() or nil
+	end
+
+	if MegaMacroIsForever then
+		parts[MegaMacroBackups.RestoreParts.Specializations] = parts[MegaMacroBackups.RestoreParts.Class]
 	end
 
 	RestoreDialog:Hide()
@@ -316,6 +322,10 @@ local function RestoreSelected()
 
 	for part, row in pairs(RestoreDialog.Rows) do
 		local count = info.Counts[MegaMacroBackups.RestoreParts[part]]
+
+		if MegaMacroIsForever and part == "Class" then
+			count = count + info.Counts[MegaMacroBackups.RestoreParts.Specializations]
+		end
 		local countText = count == 0 and "Empty" or count == 1 and "1 macro" or count .. " macros"
 		local isAvailable = part ~= "Character" or info.HasCharacter
 		-- Another character's tab replaces this one's, so it's only put on when asked for
@@ -402,12 +412,19 @@ local function ConfirmUninstall()
 	end
 
 	-- The tabs as they're named right now, so the player knows exactly which macros stay
-	local keptTabs = MegaMacro_FrameTab1:GetText() .. ", " .. MegaMacro_FrameTab2:GetText() .. ", "
-		.. MegaMacro_FrameTab3:GetText() .. " and " .. MegaMacro_FrameTab4:GetText()
+	local keptTabs, otherSets
+	if MegaMacroIsForever then
+		keptTabs = MegaMacro_FrameTab1:GetText() .. ", " .. MegaMacro_FrameTab2:GetText() .. " and " .. MegaMacro_FrameTab4:GetText()
+		otherSets = "your other classes"
+	else
+		keptTabs = MegaMacro_FrameTab1:GetText() .. ", " .. MegaMacro_FrameTab2:GetText() .. ", "
+			.. MegaMacro_FrameTab3:GetText() .. " and " .. MegaMacro_FrameTab4:GetText()
+		otherSets = "your other classes and specs"
+	end
 
 	StaticPopupDialogs["MEGAMACRO_UNINSTALL_WARNING"] = {
 		text = "Uninstall Mega Macro?\n\nYour " .. keptTabs .. " macros become normal game macros. "
-			.. "Macros for your other classes and specs, and on the Inactive tab, don't fit in the game's macro list and are left out.\n\n"
+			.. "Macros for " .. otherSets .. ", and on the Inactive tab, don't fit in the game's macro list and are left out.\n\n"
 			.. "Everything is backed up first, so you can restore it if you come back.\n\n"
 			.. "Afterwards, disable Mega Macro and reload, or it will take over your macros again.",
 		button1 = "Uninstall",

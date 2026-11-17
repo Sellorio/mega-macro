@@ -98,7 +98,12 @@ local function InitializeTabs()
 	MegaMacro_FrameTab5:SetText("Inactive")
 	MegaMacro_FrameTab6:SetText("Options")
 
-	if MegaMacroCachedSpecialization == '' then
+	if MegaMacroIsForever then
+		-- The class tab holds the spec macros, so the next tab moves into this one's place
+		MegaMacro_FrameTab3:Hide()
+		MegaMacro_FrameTab4:ClearAllPoints()
+		MegaMacro_FrameTab4:SetPoint("LEFT", MegaMacro_FrameTab2, "RIGHT", 0, 0)
+	elseif MegaMacroCachedSpecialization == '' then
 		MegaMacro_FrameTab3:SetText("Locked")
 		MegaMacro_FrameTab3:Disable()
 	else
@@ -109,7 +114,7 @@ end
 
 -- Shows and hides macro slot buttons based on the number of slots available in the scope
 local function InitializeMacroSlots()
-	local scopeSlotCount = MegaMacro.GetSlotCount(SelectedScope)
+	local scopeSlotCount = MegaMacro.GetTabSlotCount(SelectedScope)
 
 	-- The Inactive tab only needs as many as it has macros to list
 	if SelectedScope == MegaMacroScopes.Inactive then
@@ -219,7 +224,7 @@ local function SelectMacro(macro)
 end
 
 local function SetMacroItems()
-	local items = MegaMacro.GetMacrosInScope(SelectedScope)
+	local items = MegaMacro.GetMacrosOnTab(SelectedScope)
 	MacroItems = items or {}
 
 	local function SortByName(left, right)
@@ -249,10 +254,10 @@ local function SetMacroItems()
 	local newMacroButtonCreated = false
 	-- Slots past this are dimmed: they need an ID or game macro that something on the Inactive tab is using
 	local lastUsableSlot = #MacroItems
-	local slotCount = MegaMacro.GetSlotCount(SelectedScope)
+	local slotCount = MegaMacro.GetTabSlotCount(SelectedScope)
 
 	if SelectedScope ~= MegaMacroScopes.Inactive then
-		lastUsableSlot = #MacroItems + MegaMacroEngine.GetAvailableSlotCount(SelectedScope)
+		lastUsableSlot = #MacroItems + MegaMacroEngine.GetTabAvailableSlotCount(SelectedScope)
 	end
 
 	for i=1, CreatedSlotCount do
@@ -308,7 +313,7 @@ local function SetMacroItems()
 		end
 	end
 
-	local savedMacros = MegaMacro.GetMacrosInScope(SelectedScope)
+	local savedMacros = MegaMacro.GetMacrosOnTab(SelectedScope)
 	-- The Inactive tab is leftovers from every class and spec, not a set to hand to someone
 	MegaMacro_ExportTabButton:SetEnabled(SelectedScope ~= MegaMacroScopes.Inactive and savedMacros ~= nil and #savedMacros > 0)
 
@@ -379,7 +384,8 @@ local function ShowMacroTooltip(owner, macro)
 		if macro.IsTextLost then
 			GameTooltip:AddLine("Text was lost. Drag to another tab to keep its name, icon and action bar spots, then rewrite it.", nil, nil, nil, true)
 		elseif macro.HeldId and macro.HeldId > MacroIndexOffsets.PerClass and macro.HeldId <= MacroIndexOffsets.PerCharacter then
-			GameTooltip:AddLine("Saved data is missing. It may be for a different class or spec. Drag to the right tab to import it.", nil, nil, nil, true)
+			local belongsTo = MegaMacroIsForever and "class" or "class or spec"
+			GameTooltip:AddLine("Saved data is missing. It may be for a different " .. belongsTo .. ". Drag to the right tab to import it.", nil, nil, nil, true)
 		elseif macro.HeldId then
 			GameTooltip:AddLine("Saved data is missing. Drag to another tab to import it.", nil, nil, nil, true)
 		else
@@ -388,7 +394,7 @@ local function ShowMacroTooltip(owner, macro)
 		if macro.HeldId then
 			local tabName = macro.HeldId <= MacroIndexOffsets.PerClass and "global"
 				or macro.HeldId <= MacroIndexOffsets.PerSpecialization and "class"
-				or macro.HeldId <= MacroIndexOffsets.PerCharacter and "specialization"
+				or macro.HeldId <= MacroIndexOffsets.PerCharacter and (MegaMacroIsForever and "class" or "specialization")
 				or macro.HeldId <= MacroIndexOffsets.Inactive and "character"
 			-- One that was already inactive gives no hint where it belongs
 			if tabName then
@@ -402,7 +408,7 @@ local function ShowMacroTooltip(owner, macro)
 end
 
 local function PrintTabIsFull(scope)
-	if #MegaMacro.GetMacrosInScope(scope) < MegaMacro.GetSlotCount(scope) then
+	if #MegaMacro.GetMacrosOnTab(scope) < MegaMacro.GetTabSlotCount(scope) then
 		print("Mega Macro: There's no room on that tab. Macros on the Inactive tab are taking up its space. Import or delete some of them to free it.")
 	else
 		print("Mega Macro: That tab is full. Import or delete macros on the Inactive tab to free up space.")
@@ -466,7 +472,7 @@ local function HandleReceiveDrag(targetScope)
 			ClearCursor()
 
 			if IsControlKeyDown() then
-				local newDisplayName = macro.Scope == targetScope and macro.DisplayName.." copy" or macro.DisplayName
+				local newDisplayName = MegaMacro.IsOnTab(macro, targetScope) and macro.DisplayName.." copy" or macro.DisplayName
 				local newMacro = MegaMacro.Create(newDisplayName, targetScope, macro.StaticTexture)
 
 				if newMacro then
@@ -479,7 +485,7 @@ local function HandleReceiveDrag(targetScope)
 					SetMacroItems()
 					SelectMacro(newMacro)
 				end
-			elseif targetScope == macro.Scope then
+			elseif MegaMacro.IsOnTab(macro, targetScope) then
 				-- do nothing
 			else
 				local newMacro = MegaMacro.Move(macro, targetScope)
@@ -489,13 +495,13 @@ local function HandleReceiveDrag(targetScope)
 				elseif targetScope == SelectedScope then
 					SetMacroItems()
 					SelectMacro(newMacro)
-				elseif macro.Scope == SelectedScope then
+				elseif MegaMacro.IsOnTab(macro, SelectedScope) then
 					SetMacroItems()
 				end
 			end
 		elseif macroId and MegaMacro.IsKnownId(macroId) then
 			ClearCursor()
-			print("Mega Macro: That macro belongs to another class or specialization.")
+			print("Mega Macro: That macro belongs to another " .. (MegaMacroIsForever and "class." or "class or specialization."))
 		elseif targetScope == MegaMacroScopes.Inactive then
 			ClearCursor()
 			print("Mega Macro: Drag it to another tab to import it.")
@@ -543,7 +549,11 @@ local function ShowRecoveryPrompt(info)
 	table.insert(lines, recoverableCount .. " are global and character macros, which can be fully recovered.")
 
 	if info.ClassOrSpecCount > 0 then
-		table.insert(lines, info.ClassOrSpecCount .. " are class or spec macros. Those slots are shared, so they may be for a different class or spec. Review them on the Inactive tab and drag them to the right tab.")
+		if MegaMacroIsForever then
+			table.insert(lines, info.ClassOrSpecCount .. " are class macros. Those slots are shared, so they may be for a different class. Review them on the Inactive tab and drag them to the right tab.")
+		else
+			table.insert(lines, info.ClassOrSpecCount .. " are class or spec macros. Those slots are shared, so they may be for a different class or spec. Review them on the Inactive tab and drag them to the right tab.")
+		end
 	end
 
 	if info.LostCount > 0 then
@@ -618,7 +628,7 @@ MegaMacroWindow = {
 		if IsOpen and SelectedScope ~= 'config' then
 			SetMacroItems()
 
-			if macro and macro.Scope == SelectedScope then
+			if macro and MegaMacro.IsOnTab(macro, SelectedScope) then
 				SelectMacro(macro)
 			end
 		end
@@ -703,7 +713,7 @@ function MegaMacro_FrameTab_OnClick(self)
 end
 
 function MegaMacro_ExportTabButton_OnClick()
-	local macros = MegaMacro.GetMacrosInScope(SelectedScope)
+	local macros = MegaMacro.GetMacrosOnTab(SelectedScope)
 
 	if macros and #macros > 0 then
 		SaveMacro()
