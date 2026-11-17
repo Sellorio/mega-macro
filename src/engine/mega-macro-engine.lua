@@ -346,6 +346,39 @@ function MegaMacroEngine.SafeInitialize()
     return true
 end
 
+local function IsOnActionBar(macroIndex)
+    for i=1, ActionSlotCount do
+        local actionType, actionId = GetActionInfo(i)
+        if actionType == "macro" and actionId == macroIndex then
+            return true
+        end
+    end
+
+    return false
+end
+
+-- Blank game macros left by inactive macros that were deleted or moved by older versions. Nothing
+-- can use or show them, so each one only takes up a slot. Ones on an action bar are left alone.
+local function RemoveInactiveLeftovers()
+    local removed = false
+
+    -- Backwards, since deleting one moves the ones after it
+    for i=MacroLimits.MaxGlobalMacros + MacroLimits.MaxCharacterMacros, 1, -1 do
+        local name, _, body = GetMacroInfo(i)
+        local macroId = GetIdFromMacroCode(body)
+
+        if macroId and macroId > MacroIndexOffsets.Inactive and IsBlank(name) and IsBlank(RemoveIdFromMacroCode(body))
+            and not MegaMacro.IsKnownId(macroId) and not IsOnActionBar(i) then
+            DeleteMacro(i)
+            removed = true
+        end
+    end
+
+    if removed then
+        InitializeMacroIndexCache()
+    end
+end
+
 -- Points action bar buttons that use one game macro at another
 local function MoveActionBarButtons(oldIndex, newIndex)
     for i=1, ActionSlotCount do
@@ -450,6 +483,7 @@ function MegaMacroEngine.VerifyMacros()
 
     InitializeMacroIndexCache()
     RemoveStrayCharacterCopies()
+    RemoveInactiveLeftovers()
 
     if restoredCount == 1 then
         print("Mega Macro: Restored 1 missing macro.")
@@ -852,6 +886,18 @@ function MegaMacroEngine.OnMacroDeleted(macro)
                 ClearCursor()
             end
         end
+    end
+
+    -- Other macros keep their game macro, blank, so a restored backup finds their action bar spots again.
+    -- An inactive one has none to keep, and a blank would take up a slot nothing can see or free.
+    local macroIndex = GetMacroIndexCache()[macro.Id]
+
+    if Initialized and macro.Id > MacroIndexOffsets.Inactive and macroIndex and not InCombatLockdown()
+        and not IsOnActionBar(macroIndex) then
+        MegaMacroEngine.GetOrCreateClicky(macro.Id):SetAttribute("macrotext", "")
+        DeleteMacro(macroIndex)
+        InitializeMacroIndexCache()
+        return
     end
 
     UnbindMacro(macro)
