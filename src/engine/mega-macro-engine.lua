@@ -97,13 +97,24 @@ local function BindMacro(macro, macroIndex)
     -- Bind code to macro
     if macroIndex then
         local iconTexture = getTexture(macro, macroIndex)
+        local name = FormatMacroDisplayName(macro.DisplayName)
+        local body
+
         if #macro.Code <= MegaMacroCodeMaxLengthForNative then
-            EditMacro(macroIndex, FormatMacroDisplayName(macro.DisplayName), iconTexture, GenerateNativeMacroCode(macro), true, macroIndex > MacroLimits.MaxGlobalMacros)
+            body = GenerateNativeMacroCode(macro)
         else
             MegaMacroEngine.GetOrCreateClicky(macro.Id):SetAttribute("macrotext", macro.Code)
-            EditMacro(macroIndex, FormatMacroDisplayName(macro.DisplayName), iconTexture, MegaMacroEngine.GetMacroStubCode(macro.Id), true, macroIndex > MacroLimits.MaxGlobalMacros)
+            body = MegaMacroEngine.GetMacroStubCode(macro.Id)
         end
-        InitializeMacroIndexCache()
+
+        -- Setup binds every macro after each loading screen. Each edit makes the game refresh action
+        -- bars and tell other addons, so a game macro that already matches is left as it is.
+        local currentName, currentIcon, currentBody = GetMacroInfo(macroIndex)
+
+        if currentName ~= name or currentBody ~= body or (iconTexture ~= nil and currentIcon ~= iconTexture) then
+            EditMacro(macroIndex, name, iconTexture, body, true, macroIndex > MacroLimits.MaxGlobalMacros)
+            InitializeMacroIndexCache()
+        end
     end
 end
 
