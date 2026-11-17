@@ -21,13 +21,14 @@ local function FormatMacroDisplayName(megaMacroDisplayName)
     end
 end
 
+-- Spaces after the ID are allowed, since editing the macro in the game's macro window can leave one there
 local function GetIdFromMacroCode(macroCode)
-    local id = macroCode and (string.match(macroCode, "^#(%d%d%d)\n") or string.match(macroCode, "^#(%d%d%d)$"))
+    local id = macroCode and (string.match(macroCode, "^#(%d%d%d)[ \t]*\n") or string.match(macroCode, "^#(%d%d%d)[ \t]*$"))
     return id and tonumber(id)
 end
 
 local function RemoveIdFromMacroCode(macroCode)
-    return GetIdFromMacroCode(macroCode) and string.gsub(macroCode, "^#%d%d%d\n?", "", 1) or macroCode
+    return GetIdFromMacroCode(macroCode) and string.gsub(macroCode, "^#%d%d%d[ \t]*\n?", "", 1) or macroCode
 end
 
 local function IsBlank(text)
