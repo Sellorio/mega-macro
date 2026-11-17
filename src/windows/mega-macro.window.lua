@@ -20,10 +20,12 @@ local SelectedIcon = nil
 local SelectedTabIndex = 1
 local CreatedSlotCount = 0
 
-NUM_ICONS_PER_ROW = 10
-NUM_ICON_ROWS = 9
-NUM_MACRO_ICONS_SHOWN = NUM_ICONS_PER_ROW * NUM_ICON_ROWS
-MACRO_ICON_ROW_HEIGHT = 36
+-- Blizzard's macro window has globals with the game's own names for these. Setting those from here
+-- taints that window, and then it can't save a macro in combat, so ours have their own names.
+local IconsPerRow = 10
+local IconRows = 9
+local IconsShown = IconsPerRow * IconRows
+MegaMacro_IconRowHeight = 36
 MegaMacroWindowTogglingMode = false
 
 local function GetScopeFromTabIndex(tabIndex)
@@ -66,14 +68,14 @@ local function CreateIconButtons()
 	local firstInRow
 	local previous
 
-	for i=1, NUM_MACRO_ICONS_SHOWN do
+	for i=1, IconsShown do
 		local button = CreateFrame("CheckButton", "MegaMacro_PopupButton"..i, MegaMacro_PopupFrame, "MegaMacro_PopupButtonTemplate")
 		button:SetID(i)
 
 		if i == 1 then
 			button:SetPoint("TOPLEFT", 26, -125)
 			firstInRow = button
-		elseif i % NUM_ICONS_PER_ROW == 1 then
+		elseif i % IconsPerRow == 1 then
 			button:SetPoint("TOPLEFT", firstInRow, "BOTTOMLEFT", 0, -8)
 			firstInRow = button
 		else
@@ -965,10 +967,10 @@ function MegaMacro_PopupFrame_OnUpdate()
 	local index;
 
 	-- Icon list
-	for i=1, NUM_MACRO_ICONS_SHOWN do
+	for i=1, IconsShown do
 		macroPopupButton = _G["MegaMacro_PopupButton"..i];
 		macroPopupIcon = _G["MegaMacro_PopupButton"..i.."Icon"];
-		index = (macroPopupOffset * NUM_ICONS_PER_ROW) + i;
+		index = (macroPopupOffset * IconsPerRow) + i;
 		local icon, spellId
 
 		if index == 1 then
@@ -991,7 +993,7 @@ function MegaMacro_PopupFrame_OnUpdate()
 	end
 
 	-- Scrollbar stuff
-	FauxScrollFrame_Update(MegaMacro_PopupScrollFrame, ceil(numMacroIcons / NUM_ICONS_PER_ROW) + 1, NUM_ICON_ROWS, MACRO_ICON_ROW_HEIGHT );
+	FauxScrollFrame_Update(MegaMacro_PopupScrollFrame, ceil(numMacroIcons / IconsPerRow) + 1, IconRows, MegaMacro_IconRowHeight );
 end
 
 function MegaMacro_PopupButton_OnClick(self)

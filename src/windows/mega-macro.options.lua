@@ -26,7 +26,7 @@ local MacroTabElements = {
 	"MegaMacro_FrameTextButton",
 	"MegaMacro_CancelButton",
 	"MegaMacro_SaveButton",
-	"MacroFrameTextBackground",
+	"MegaMacro_FrameTextBackground",
 	"MegaMacro_DeleteButton",
 	"MegaMacro_ExportTabButton",
 	"MegaMacro_ImportButton"
