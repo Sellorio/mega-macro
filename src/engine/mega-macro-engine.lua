@@ -3,6 +3,7 @@ local ClickyFrameName = "MegaMacroClicky"
 local MacroIndexCache = {} -- caches native macro indexes - these change based on macro name so they are not the id we'll use in the addon
 local IsMacroIndexCacheStale = true -- starts stale so it can be read before setup, which waits out combat after a reload
 local Initialized = false
+local IsPickupMacroWrapped = false
 -- Macros can't be edited in combat, so the ones changed then are bound when it ends
 local MacrosToBindAfterCombat = {}
 -- Retail's action bars 6 to 8 use slots 145 to 180. Slots a game version doesn't have are empty.
@@ -350,7 +351,9 @@ function MegaMacroEngine.SafeInitialize()
 
     BindMacros() 
 
-    if not MegaMacroIsForever then
+    -- Setup runs after every loading screen, so wrapping again would stack a wrapper each time
+    if not MegaMacroIsForever and not IsPickupMacroWrapped then
+        IsPickupMacroWrapped = true
         local originalPickupMacro = PickupMacro
         PickupMacro = function(macroIndex) PickupMacroWrapper(originalPickupMacro, macroIndex) end
     end
