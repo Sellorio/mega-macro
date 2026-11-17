@@ -266,7 +266,7 @@
 					<OnClick>MegaMacro_SaveButton_OnClick();</OnClick>
 				</Scripts>
 			</Button>
-			<Frame name="MacroFrameTextBackground" inherits="TooltipBackdropTemplate">
+			<Frame name="MegaMacro_FrameTextBackground" inherits="TooltipBackdropTemplate">
 				<Size x="627" y="195"/>
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeTo="MegaMacro_Frame" x="6" y="-289"/>
@@ -551,7 +551,7 @@
 					<Anchor point="BOTTOMRIGHT" relativeTo="MegaMacro_PopupFrame" x="-36" y="48"/>
 				</Anchors>
 				<Scripts>
-					<OnVerticalScroll>FauxScrollFrame_OnVerticalScroll(self, offset, MACRO_ICON_ROW_HEIGHT, MacroPopupFrame_Update);</OnVerticalScroll>
+					<OnVerticalScroll>FauxScrollFrame_OnVerticalScroll(self, offset, MegaMacro_IconRowHeight, MegaMacro_PopupFrame_OnUpdate);</OnVerticalScroll>
 				</Scripts>
 				<ScrollChild>
 					<Frame name="$parentScrollChildFrame">

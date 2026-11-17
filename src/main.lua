@@ -79,7 +79,8 @@ f:RegisterEvent("PLAYER_REGEN_ENABLED")
 
 -- Forever only lets some classes choose a specialization and has dual spec on top of
 -- that, so there the active talent group is used when there is no specialization name.
-local function GetCurrentSpecialization()
+-- Older versions kept Forever's spec macros under this name.
+local function GetSpecializationName()
     local isSelectionEnabled = C_SpecializationInfo.IsSpecSelectionEnabled
     local canChooseSpec = not isSelectionEnabled or isSelectionEnabled(select(3, UnitClass("player")))
     local specIndex = C_SpecializationInfo.GetSpecialization()
@@ -91,6 +92,30 @@ local function GetCurrentSpecialization()
         return C_SpecializationInfo.GetActiveSpecGroup() == 2 and DUAL_SPEC_SECONDARY or DUAL_SPEC_PRIMARY
     end
 end
+
+local function GetCurrentSpecialization()
+    if MegaMacroIsForever then
+        return MegaMacroSharedSpecialization
+    end
+
+    return GetSpecializationName()
+end
+
+-- Forever's class tab holds the spec macros too, so lists from older versions are merged into one
+local function MergeForeverSpecializations()
+    if not MegaMacroIsForever then
+        return
+    end
+
+    local inactiveCount = MegaMacro.MergeSpecializations(MegaMacroCachedClass, GetSpecializationName())
+
+    if inactiveCount == 1 then
+        print("Mega Macro: Your " .. MegaMacroCachedClass .. " spec macros are now on the " .. MegaMacroCachedClass .. " tab. 1 didn't fit, so it's on the Inactive tab. Drag it to the " .. MegaMacroCachedClass .. " tab to use it.")
+    elseif inactiveCount > 1 then
+        print("Mega Macro: Your " .. MegaMacroCachedClass .. " spec macros are now on the " .. MegaMacroCachedClass .. " tab. " .. inactiveCount .. " didn't fit, so they're on the Inactive tab. Drag them to the " .. MegaMacroCachedClass .. " tab to use them.")
+    end
+end
+MegaMacroMergeForeverSpecializations = MergeForeverSpecializations
 
 local function OnUpdate(_, elapsed)
     MegaMacroSystemTime = GetTime()
@@ -220,6 +245,7 @@ local function Initialize()
     if specialization then
         MegaMacroCachedClass = UnitClass("player")
         MegaMacroCachedSpecialization = specialization
+        MergeForeverSpecializations()
 
         MegaMacroCodeInfo.ClearAll()
         MegaMacroIconEvaluator.Initialize()

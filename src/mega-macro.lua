@@ -74,8 +74,60 @@ function MegaMacro.GetNextIdInScope(scope)
     return offset and GetNextAvailableMacroId(offset, count, MegaMacro.GetMacrosInScope(scope))
 end
 
+-- On Forever the class tab also holds the spec list (see MegaMacroSharedSpecialization).
+-- Every other tab is just its own scope. The Inactive tab's scope is nil, so it can't go in a list.
+local MergedTabScopes = { MegaMacroScopes.Class, MegaMacroScopes.Specialization }
+
+local function IsMergedTab(scope)
+    return MegaMacroIsForever and scope == MegaMacroScopes.Class
+end
+
+-- The scopes the tab shows when it has more than one, otherwise nothing
+function MegaMacro.GetMergedTabScopes(tabScope)
+    return IsMergedTab(tabScope) and MergedTabScopes or nil
+end
+
+function MegaMacro.IsOnTab(macro, tabScope)
+    if IsMergedTab(tabScope) then
+        return macro.Scope == MegaMacroScopes.Class or macro.Scope == MegaMacroScopes.Specialization
+    end
+
+    return macro.Scope == tabScope
+end
+
+-- A new list for the merged tab, otherwise the saved list itself
+function MegaMacro.GetMacrosOnTab(tabScope)
+    if not IsMergedTab(tabScope) then
+        return MegaMacro.GetMacrosInScope(tabScope)
+    end
+
+    local result = {}
+
+    for _, scope in ipairs(MergedTabScopes) do
+        for _, macro in ipairs(MegaMacro.GetMacrosInScope(scope)) do
+            table.insert(result, macro)
+        end
+    end
+
+    return result
+end
+
+function MegaMacro.GetTabSlotCount(tabScope)
+    if not IsMergedTab(tabScope) then
+        return MegaMacro.GetSlotCount(tabScope)
+    end
+
+    local count = 0
+
+    for _, scope in ipairs(MergedTabScopes) do
+        count = count + MegaMacro.GetSlotCount(scope)
+    end
+
+    return count
+end
+
 -- preferredId is used instead of the next free ID when the scope can take it
-function MegaMacro.Create(displayName, scope, staticTexture, isStaticTextureFallback, code, macroIndex, preferredId)
+local function CreateInScope(displayName, scope, staticTexture, isStaticTextureFallback, code, macroIndex, preferredId)
     local result = {}
 
     local id
@@ -182,6 +234,33 @@ function MegaMacro.Create(displayName, scope, staticTexture, isStaticTextureFall
     MegaMacroEngine.OnMacroCreated(result, macroIndex)
 
     return result
+end
+
+-- Creates the macro in exactly this scope
+MegaMacro.CreateInScope = CreateInScope
+
+-- Creates the macro on the tab for this scope. A tab with more than one scope fills them in order,
+-- except that a preferred ID picks the scope it belongs to.
+function MegaMacro.Create(displayName, scope, staticTexture, isStaticTextureFallback, code, macroIndex, preferredId)
+    if not IsMergedTab(scope) then
+        return CreateInScope(displayName, scope, staticTexture, isStaticTextureFallback, code, macroIndex, preferredId)
+    end
+
+    local scopes = MergedTabScopes
+
+    if preferredId and MegaMacro.CanUseId(scopes[2], preferredId) then
+        scopes = { scopes[2], scopes[1] }
+    end
+
+    for _, tabScope in ipairs(scopes) do
+        local macro = CreateInScope(displayName, tabScope, staticTexture, isStaticTextureFallback, code, macroIndex, preferredId)
+
+        if macro then
+            return macro
+        end
+    end
+
+    return nil
 end
 
 function MegaMacro.GetSlotCount(scope)
@@ -348,4 +427,91 @@ function MegaMacro.GetMacrosInScope(scope)
     elseif scope == MegaMacroScopes.Inactive then
         return MegaMacroGlobalData.InactiveMacros
     end
+end
+-- Forever keeps one spec list for each class. Older versions kept one for each spec or talent group
+-- (Primary and Secondary), so those are merged into it, preferredKey first, then Primary, then the rest.
+-- Their IDs are kept, which keeps them on action bars. A macro whose ID the merged list already has
+-- goes to the Inactive tab under a new ID. Returns how many went there.
+function MegaMacro.MergeSpecializations(classKey, preferredKey)
+    local classData = MegaMacroGlobalData.Classes[classKey]
+
+    if not classData or type(classData.Specializations) ~= "table" then
+        return 0
+    end
+
+    local specializations = classData.Specializations
+    local keys = {}
+
+    for key in pairs(specializations) do
+        if key ~= MegaMacroSharedSpecialization then
+            table.insert(keys, key)
+        end
+    end
+
+    if #keys == 0 then
+        return 0
+    end
+
+    local function Rank(key)
+        if key == preferredKey then
+            return 1
+        elseif key == DUAL_SPEC_PRIMARY then
+            return 2
+        end
+
+        return 3
+    end
+
+    table.sort(keys, function(left, right)
+        if Rank(left) ~= Rank(right) then
+            return Rank(left) < Rank(right)
+        end
+
+        return tostring(left) < tostring(right)
+    end)
+
+    local shared = specializations[MegaMacroSharedSpecialization] or { Macros = {} }
+    specializations[MegaMacroSharedSpecialization] = shared
+
+    local usedIds = {}
+    for _, macro in ipairs(shared.Macros) do
+        usedIds[macro.Id] = true
+    end
+
+    local inactiveCount = 0
+
+    for _, key in ipairs(keys) do
+        local leftovers = {}
+
+        for _, macro in ipairs(specializations[key].Macros or {}) do
+            if not usedIds[macro.Id] then
+                usedIds[macro.Id] = true
+                macro.Specialization = MegaMacroSharedSpecialization
+                table.insert(shared.Macros, macro)
+            else
+                local inactiveMacros = MegaMacroGlobalData.InactiveMacros
+                local id = #inactiveMacros < MacroLimits.InactiveCount
+                    and GetNextAvailableMacroId(MacroIndexOffsets.Inactive, MacroLimits.InactiveCount, inactiveMacros)
+
+                if id then
+                    macro.Id = id
+                    macro.Scope = MegaMacroScopes.Inactive
+                    macro.Specialization = nil
+                    table.insert(inactiveMacros, macro)
+                    inactiveCount = inactiveCount + 1
+                else
+                    -- With no room it stays where it was, so it's still in backups
+                    table.insert(leftovers, macro)
+                end
+            end
+        end
+
+        if #leftovers == 0 then
+            specializations[key] = nil
+        else
+            specializations[key].Macros = leftovers
+        end
+    end
+
+    return inactiveCount
 end

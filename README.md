@@ -30,7 +30,8 @@ slots!!
 I'm not just trying to be a sales person here - I've wanted this feature for ages. Especially as a Druid
 main!
 
-On Forever the Spec tab follows your dual spec (Primary / Secondary).
+On Forever you can put talent points in any tree, so there's no Spec tab. Its 30 slots are added to the class tab,
+which holds 60 macros.
 
 ### Shared macros across characters
 

@@ -3,6 +3,7 @@ local ClickyFrameName = "MegaMacroClicky"
 local MacroIndexCache = {} -- caches native macro indexes - these change based on macro name so they are not the id we'll use in the addon
 local IsMacroIndexCacheStale = true -- starts stale so it can be read before setup, which waits out combat after a reload
 local Initialized = false
+local IsPickupMacroWrapped = false
 -- Macros can't be edited in combat, so the ones changed then are bound when it ends
 local MacrosToBindAfterCombat = {}
 -- Retail's action bars 6 to 8 use slots 145 to 180. Slots a game version doesn't have are empty.
@@ -21,13 +22,14 @@ local function FormatMacroDisplayName(megaMacroDisplayName)
     end
 end
 
+-- Spaces after the ID are allowed, since editing the macro in the game's macro window can leave one there
 local function GetIdFromMacroCode(macroCode)
-    local id = macroCode and (string.match(macroCode, "^#(%d%d%d)\n") or string.match(macroCode, "^#(%d%d%d)$"))
+    local id = macroCode and (string.match(macroCode, "^#(%d%d%d)[ \t]*\n") or string.match(macroCode, "^#(%d%d%d)[ \t]*$"))
     return id and tonumber(id)
 end
 
 local function RemoveIdFromMacroCode(macroCode)
-    return GetIdFromMacroCode(macroCode) and string.gsub(macroCode, "^#%d%d%d\n?", "", 1) or macroCode
+    return GetIdFromMacroCode(macroCode) and string.gsub(macroCode, "^#%d%d%d[ \t]*\n?", "", 1) or macroCode
 end
 
 local function IsBlank(text)
@@ -96,13 +98,24 @@ local function BindMacro(macro, macroIndex)
     -- Bind code to macro
     if macroIndex then
         local iconTexture = getTexture(macro, macroIndex)
+        local name = FormatMacroDisplayName(macro.DisplayName)
+        local body
+
         if #macro.Code <= MegaMacroCodeMaxLengthForNative then
-            EditMacro(macroIndex, FormatMacroDisplayName(macro.DisplayName), iconTexture, GenerateNativeMacroCode(macro), true, macroIndex > MacroLimits.MaxGlobalMacros)
+            body = GenerateNativeMacroCode(macro)
         else
             MegaMacroEngine.GetOrCreateClicky(macro.Id):SetAttribute("macrotext", macro.Code)
-            EditMacro(macroIndex, FormatMacroDisplayName(macro.DisplayName), iconTexture, MegaMacroEngine.GetMacroStubCode(macro.Id), true, macroIndex > MacroLimits.MaxGlobalMacros)
+            body = MegaMacroEngine.GetMacroStubCode(macro.Id)
         end
-        InitializeMacroIndexCache()
+
+        -- Setup binds every macro after each loading screen. Each edit makes the game refresh action
+        -- bars and tell other addons, so a game macro that already matches is left as it is.
+        local currentName, currentIcon, currentBody = GetMacroInfo(macroIndex)
+
+        if currentName ~= name or currentBody ~= body or (iconTexture ~= nil and currentIcon ~= iconTexture) then
+            EditMacro(macroIndex, name, iconTexture, body, true, macroIndex > MacroLimits.MaxGlobalMacros)
+            InitializeMacroIndexCache()
+        end
     end
 end
 
@@ -155,7 +168,8 @@ end
 
 local function MergeCharacterSpecializationMacros()
     -- Remove the character specialization macros and add them to character macros.
-    local characterSpecializationMacros = MegaMacroCharacterData.Specializations[MegaMacroCachedSpecialization].Macros
+    local characterSpecialization = MegaMacroCharacterData.Specializations[MegaMacroCachedSpecialization]
+    local characterSpecializationMacros = characterSpecialization and characterSpecialization.Macros
     local characterMacros = MegaMacroCharacterData.Macros
     if not characterSpecializationMacros or #characterSpecializationMacros == 0 then
         return
@@ -337,12 +351,47 @@ function MegaMacroEngine.SafeInitialize()
 
     BindMacros() 
 
-    if not MegaMacroIsForever then
+    -- Setup runs after every loading screen, so wrapping again would stack a wrapper each time
+    if not MegaMacroIsForever and not IsPickupMacroWrapped then
+        IsPickupMacroWrapped = true
         local originalPickupMacro = PickupMacro
         PickupMacro = function(macroIndex) PickupMacroWrapper(originalPickupMacro, macroIndex) end
     end
 
     return true
+end
+
+local function IsOnActionBar(macroIndex)
+    for i=1, ActionSlotCount do
+        local actionType, actionId = GetActionInfo(i)
+        if actionType == "macro" and actionId == macroIndex then
+            return true
+        end
+    end
+
+    return false
+end
+
+-- Blank game macros left by inactive macros that were deleted or moved by older versions. Nothing
+-- can use or show them, so each one only takes up a slot. Ones on an action bar are left alone.
+local function RemoveInactiveLeftovers()
+    local removed = false
+
+    -- Backwards, since deleting one moves the ones after it
+    for i=MacroLimits.MaxGlobalMacros + MacroLimits.MaxCharacterMacros, 1, -1 do
+        local name, _, body = GetMacroInfo(i)
+        local macroId = GetIdFromMacroCode(body)
+
+        if macroId and macroId > MacroIndexOffsets.Inactive and IsBlank(name) and IsBlank(RemoveIdFromMacroCode(body))
+            and not MegaMacro.IsKnownId(macroId) and not IsOnActionBar(i) then
+            DeleteMacro(i)
+            removed = true
+        end
+    end
+
+    if removed then
+        InitializeMacroIndexCache()
+    end
 end
 
 -- Points action bar buttons that use one game macro at another
@@ -449,6 +498,7 @@ function MegaMacroEngine.VerifyMacros()
 
     InitializeMacroIndexCache()
     RemoveStrayCharacterCopies()
+    RemoveInactiveLeftovers()
 
     if restoredCount == 1 then
         print("Mega Macro: Restored 1 missing macro.")
@@ -580,8 +630,7 @@ local function FindIdWithoutMacro(scope)
     end
 end
 
--- Turns a macro from the game's list into a Mega Macro. Returns nothing if there's no room.
-function MegaMacroEngine.ImportNativeMacro(macroIndex, scope)
+local function ImportNativeMacroInScope(macroIndex, scope)
     local name, iconTexture, body = GetMacroInfo(macroIndex)
     local isTextLost = GetIdFromMacroCode(body) and string.find(body, ClickyFrameName, 1, true)
     local code = isTextLost and "" or RemoveIdFromMacroCode(body)
@@ -605,9 +654,9 @@ function MegaMacroEngine.ImportNativeMacro(macroIndex, scope)
 
     if isSameList and not isIdInList then
         -- Converting it where it is keeps it on any action bars
-        macro = MegaMacro.Create(name, scope, iconTexture or MegaMacroTexture, true, code, macroIndex, preferredId)
+        macro = MegaMacro.CreateInScope(name, scope, iconTexture or MegaMacroTexture, true, code, macroIndex, preferredId)
     else
-        macro = MegaMacro.Create(name, scope, iconTexture or MegaMacroTexture, true, code)
+        macro = MegaMacro.CreateInScope(name, scope, iconTexture or MegaMacroTexture, true, code)
 
         -- Callers say when there's no room, since the first import tries the Inactive tab next
         if macro and not GetMacroIndexCache()[macro.Id] then
@@ -630,34 +679,74 @@ function MegaMacroEngine.ImportNativeMacro(macroIndex, scope)
     return macro
 end
 
--- How many more macros this tab can really take. Besides the tab's own limit, each one needs a free ID
--- and a place in the game's macro list, and macros on the Inactive tab can be using both.
-function MegaMacroEngine.GetAvailableSlotCount(scope)
-    local room = MegaMacro.GetSlotCount(scope) - #MegaMacro.GetMacrosInScope(scope)
-    local offset, count = MegaMacro.GetIdRange(scope)
+-- Turns a macro from the game's list into a Mega Macro on the tab for this scope. Returns nothing if there's no room.
+-- On a tab with more than one scope, a macro left from lost saved data tries the scope its ID is from first.
+function MegaMacroEngine.ImportNativeMacro(macroIndex, scope)
+    local scopes = MegaMacro.GetMergedTabScopes(scope)
 
-    if room <= 0 or not offset or scope == MegaMacroScopes.Inactive then
-        return math.max(room, 0)
+    if not scopes then
+        return ImportNativeMacroInScope(macroIndex, scope)
     end
 
-    local usedIds = {}
-    for _, macro in ipairs(MegaMacro.GetMacrosInScope(scope)) do
-        usedIds[macro.Id] = true
+    local _, _, body = GetMacroInfo(macroIndex)
+    local ownId = GetIdFromMacroCode(body)
+    local offset, count = MegaMacro.GetIdRange(scopes[2])
+
+    if ownId and ownId > offset and ownId <= offset + count then
+        scopes = { scopes[2], scopes[1] }
     end
 
-    -- An ID that already has a game macro (a blank one, or a slot another class shares) reuses it
-    local cache = GetMacroIndexCache()
-    local idsWithMacro, idsNeedingMacro = 0, 0
-    for macroId=offset + 1, offset + count do
-        if not usedIds[macroId] and not MegaMacroEngine.IsIdHeldByUnknownMacro(macroId) then
-            if cache[macroId] then
-                idsWithMacro = idsWithMacro + 1
-            else
-                idsNeedingMacro = idsNeedingMacro + 1
-            end
+    for _, tabScope in ipairs(scopes) do
+        local macro = ImportNativeMacroInScope(macroIndex, tabScope)
+
+        if macro then
+            return macro
         end
     end
 
+    return nil
+end
+
+-- The scopes must all be in the same part of the game's list (global or character), since they share its free macros.
+-- Not for the Inactive tab, whose scope is nil.
+local function GetAvailableSlotCountForScopes(scopes)
+    local cache = GetMacroIndexCache()
+    -- Slots each scope can fill from IDs that already have a game macro, and slots that need a new one
+    local withMacroTotal, needingMacroTotal = 0, 0
+
+    for _, scope in ipairs(scopes) do
+        local room = MegaMacro.GetSlotCount(scope) - #MegaMacro.GetMacrosInScope(scope)
+        local offset, count = MegaMacro.GetIdRange(scope)
+
+        if room > 0 and offset then
+            local usedIds = {}
+            for _, macro in ipairs(MegaMacro.GetMacrosInScope(scope)) do
+                usedIds[macro.Id] = true
+            end
+
+            -- An ID that already has a game macro (a blank one, or a slot another class shares) reuses it
+            local idsWithMacro, idsNeedingMacro = 0, 0
+            for macroId=offset + 1, offset + count do
+                if not usedIds[macroId] and not MegaMacroEngine.IsIdHeldByUnknownMacro(macroId) then
+                    if cache[macroId] then
+                        idsWithMacro = idsWithMacro + 1
+                    else
+                        idsNeedingMacro = idsNeedingMacro + 1
+                    end
+                end
+            end
+
+            local withMacro = math.min(room, idsWithMacro)
+            withMacroTotal = withMacroTotal + withMacro
+            needingMacroTotal = needingMacroTotal + math.min(room - withMacro, idsNeedingMacro)
+        end
+    end
+
+    if needingMacroTotal == 0 then
+        return withMacroTotal
+    end
+
+    local scope = scopes[1]
     local isGlobal = scope == MegaMacroScopes.Global or scope == MegaMacroScopes.Class or scope == MegaMacroScopes.Specialization
     local globalCount, characterCount = GetNumMacros()
     local freeMacros = isGlobal and MacroLimits.MaxGlobalMacros - globalCount or MacroLimits.MaxCharacterMacros - characterCount
@@ -671,7 +760,24 @@ function MegaMacroEngine.GetAvailableSlotCount(scope)
         end
     end
 
-    return math.min(room, idsWithMacro + math.min(math.max(freeMacros, 0), idsNeedingMacro))
+    return withMacroTotal + math.min(math.max(freeMacros, 0), needingMacroTotal)
+end
+
+-- How many more macros this tab can really take. Besides the tab's own limit, each one needs a free ID
+-- and a place in the game's macro list, and macros on the Inactive tab can be using both.
+function MegaMacroEngine.GetAvailableSlotCount(scope)
+    -- Inactive macros don't need an ID or game macro of their own
+    if scope == MegaMacroScopes.Inactive then
+        return math.max(MegaMacro.GetSlotCount(scope) - #MegaMacro.GetMacrosInScope(scope), 0)
+    end
+
+    return GetAvailableSlotCountForScopes({ scope })
+end
+
+-- The same for every scope the tab shows
+function MegaMacroEngine.GetTabAvailableSlotCount(tabScope)
+    local scopes = MegaMacro.GetMergedTabScopes(tabScope)
+    return scopes and GetAvailableSlotCountForScopes(scopes) or MegaMacroEngine.GetAvailableSlotCount(tabScope)
 end
 
 -- Macros left by Mega Macro whose saved data was lost (a new PC, a reinstall, a deleted WTF folder).
@@ -795,6 +901,18 @@ function MegaMacroEngine.OnMacroDeleted(macro)
                 ClearCursor()
             end
         end
+    end
+
+    -- Other macros keep their game macro, blank, so a restored backup finds their action bar spots again.
+    -- An inactive one has none to keep, and a blank would take up a slot nothing can see or free.
+    local macroIndex = GetMacroIndexCache()[macro.Id]
+
+    if Initialized and macro.Id > MacroIndexOffsets.Inactive and macroIndex and not InCombatLockdown()
+        and not IsOnActionBar(macroIndex) then
+        MegaMacroEngine.GetOrCreateClicky(macro.Id):SetAttribute("macrotext", "")
+        DeleteMacro(macroIndex)
+        InitializeMacroIndexCache()
+        return
     end
 
     UnbindMacro(macro)

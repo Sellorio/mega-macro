@@ -31,6 +31,11 @@ MegaMacroScopes = {
     CharacterSpecialization = "cs"
 }
 
+-- Forever lets you put talent points in any tree, so there are no specs to keep macros apart.
+-- Each class keeps one spec list under this key, shown as the second half of the class tab.
+-- The spec IDs stay as they are, so the saved data matches retail's.
+MegaMacroSharedSpecialization = "Shared"
+
 PetActionTextures = {
 	Attack = 132152,
 	Assist = 524348,
