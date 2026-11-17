@@ -404,6 +404,8 @@ local function AddClauseState(tooltip, clause)
     tooltip:AddLine(" ")
     if clause.Line.Stopped then
         tooltip:AddLine("Not used right now: an earlier /stopmacro ends the macro first.", 1, 0.35, 0.35, true)
+    elseif clause.Used and clause.Line.Empty then
+        tooltip:AddLine("Used right now, but it names nothing, so nothing happens.", 1, 0.35, 0.35, true)
     elseif clause.Used then
         tooltip:AddLine("Used right now", 0.25, 1, 0.25)
     elseif clause.Passes then
@@ -426,8 +428,11 @@ local function ShowCommand(tooltip, token)
     elseif #line.Clauses > 0 and not line.Unknown and not line.Winner then
         tooltip:AddLine(" ")
         tooltip:AddLine("Does nothing right now: none of its conditions are true.", 1, 0.35, 0.35, true)
+    elseif not line.Unknown and line.Empty then
+        tooltip:AddLine(" ")
+        tooltip:AddLine("Does nothing right now: the option in use is empty.", 1, 0.35, 0.35, true)
     end
-    return help ~= nil or line.Stopped or (#line.Clauses > 0 and not line.Winner)
+    return help ~= nil or line.Stopped or (#line.Clauses > 0 and not line.Winner) or line.Empty
 end
 
 local function ShowDirective(tooltip, token)
@@ -471,7 +476,7 @@ function MegaMacroInsights.TooltipState(token)
         local clause = token.Clause
         Add(clause.Used) Add(clause.Passes) Add(clause.Line.Stopped) Add(clause.Line.Unknown)
     elseif token.Kind == "command" then
-        Add(token.Line.Stopped) Add(token.Line.Winner ~= nil) Add(token.Line.Unknown)
+        Add(token.Line.Stopped) Add(token.Line.Winner ~= nil) Add(token.Line.Unknown) Add(token.Line.Empty)
     end
 
     return table.concat(state, ",")

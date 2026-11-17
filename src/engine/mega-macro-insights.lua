@@ -289,9 +289,12 @@ function MegaMacroInsights.Evaluate(scan)
 
             line.Winner = winner
             line.Unknown = unknown
+            -- "/cast [x] Wrath;" ends in an empty option that always matches but casts nothing
+            line.Empty = winner ~= nil and winner.Value == ""
+                and (SingleNameCommands[line.Command] or ListNameCommands[line.Command]) or false
 
             if not unknown then
-                if not winner then
+                if not winner or line.Empty then
                     DimRange(dim, line.S, line.E)
                 else
                     for index, clause in ipairs(line.Clauses) do
