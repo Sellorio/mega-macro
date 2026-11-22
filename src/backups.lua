@@ -618,6 +618,75 @@ function MegaMacroBackups.GetCodeKind(code)
     return payload and CodeKinds[payload.Kind]
 end
 
+local function GetMacroKey(name, code)
+    return (type(name) == "string" and name or "") .. "\n" .. code
+end
+
+-- The macros in a tab code, to choose from before any are added. Nothing if it isn't a tab code.
+-- Each one: { Name, Texture, Code, IsOnTab = the tab already has one with this name and text, Data }
+function MegaMacroBackups.ReadTabCode(code, scope)
+    local payload = Decode(code)
+
+    if not payload or payload.Kind ~= CodeKinds.Macros or type(payload.Macros) ~= "table" then
+        return nil
+    end
+
+    local onTab = {}
+    for _, macro in ipairs(MegaMacro.GetMacrosOnTab(scope)) do
+        if type(macro.Code) == "string" then
+            onTab[GetMacroKey(macro.DisplayName, macro.Code)] = true
+        end
+    end
+
+    local result = {}
+
+    for _, macroData in ipairs(payload.Macros) do
+        if type(macroData) == "table" and type(macroData.Code) == "string" then
+            local texture = macroData.StaticTexture
+
+            table.insert(result, {
+                Name = type(macroData.DisplayName) == "string" and macroData.DisplayName or "",
+                Texture = (type(texture) == "number" or type(texture) == "string") and texture or MegaMacroTexture,
+                Code = macroData.Code,
+                IsOnTab = onTab[GetMacroKey(macroData.DisplayName, macroData.Code)] or false,
+                Data = macroData
+            })
+        end
+    end
+
+    return result
+end
+
+-- Adds shared macros to the tab, or the Inactive tab once that's full. Returns { Added, OnInactive, Skipped }.
+local function AddSharedMacros(macroDataList, scope)
+    local result = { Added = 0, OnInactive = 0, Skipped = 0 }
+
+    for _, macroData in ipairs(macroDataList) do
+        local macro = AddSharedMacro(macroData, scope)
+
+        if not macro then
+            result.Skipped = result.Skipped + 1
+        elseif macro.Scope == MegaMacroScopes.Inactive and scope ~= MegaMacroScopes.Inactive then
+            result.OnInactive = result.OnInactive + 1
+        else
+            result.Added = result.Added + 1
+        end
+    end
+
+    return result
+end
+
+-- Adds the chosen entries from ReadTabCode
+function MegaMacroBackups.AddFromTabCode(entries, scope)
+    local macroDataList = {}
+
+    for _, entry in ipairs(entries) do
+        table.insert(macroDataList, entry.Data)
+    end
+
+    return AddSharedMacros(macroDataList, scope)
+end
+
 -- Adds what the code holds. Macros go on the given tab, or the Inactive tab once that's full.
 -- A backup goes on the backup list, to restore from there.
 -- Results: "Macro", macro | "Macros", { Added, OnInactive, Skipped } | "Backup", backup | "Duplicate", backup
@@ -638,19 +707,7 @@ function MegaMacroBackups.Import(code, scope)
 
         return CodeKinds.Macro, macro
     elseif payload.Kind == CodeKinds.Macros and type(payload.Macros) == "table" then
-        local result = { Added = 0, OnInactive = 0, Skipped = 0 }
-
-        for _, macroData in ipairs(payload.Macros) do
-            local macro = AddSharedMacro(macroData, scope)
-
-            if not macro then
-                result.Skipped = result.Skipped + 1
-            elseif macro.Scope == MegaMacroScopes.Inactive and scope ~= MegaMacroScopes.Inactive then
-                result.OnInactive = result.OnInactive + 1
-            else
-                result.Added = result.Added + 1
-            end
-        end
+        local result = AddSharedMacros(payload.Macros, scope)
 
         if result.Added + result.OnInactive == 0 then
             return #payload.Macros > 0 and "Full" or nil

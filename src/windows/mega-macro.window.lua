@@ -318,6 +318,8 @@ local function SetMacroItems()
 	local savedMacros = MegaMacro.GetMacrosOnTab(SelectedScope)
 	-- The Inactive tab is leftovers from every class and spec, not a set to hand to someone
 	MegaMacro_ExportTabButton:SetEnabled(SelectedScope ~= MegaMacroScopes.Inactive and savedMacros ~= nil and #savedMacros > 0)
+	-- Macros there don't work, so imports go on the tab they're for
+	MegaMacro_ImportButton:SetEnabled(SelectedScope ~= MegaMacroScopes.Inactive)
 
 	SelectMacro(MacroItems[1])
 end
