@@ -586,7 +586,25 @@ local function GetSharedMacro(macro)
     }
 end
 
--- Every macro on a tab, in one code
+-- A tab's macros as they are now, to choose from when exporting. Data goes in the code.
+function MegaMacroBackups.GetTabEntries(macros)
+    local result = {}
+
+    for _, macro in ipairs(macros) do
+        local data = MegaMacroIconEvaluator.GetCachedData(macro.Id)
+
+        table.insert(result, {
+            Name = macro.DisplayName or "",
+            Texture = data and data.Icon or macro.StaticTexture or MegaMacroTexture,
+            Code = macro.Code or "",
+            Data = GetSharedMacro(macro)
+        })
+    end
+
+    return result
+end
+
+-- All the given macros in one code
 function MegaMacroBackups.GetTabCode(macros)
     local shared = {}
 
