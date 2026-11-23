@@ -605,6 +605,14 @@ MegaMacroOptions = {
 local Dialog
 local DialogCode
 local ImportScope
+-- The macros listed to choose from, when importing or exporting a tab
+local ChoiceEntries
+local OnChoicesChanged
+local ChoiceRowHeight = 24
+local DialogHeight = 330
+-- Room for the list above the code
+local ExportDialogHeight = 440
+local ExportCodeHeight = 90
 
 local function SetDialogMessage(text, isError)
 	Dialog.Message:SetText(text)
@@ -616,6 +624,195 @@ local function SetDialogMessage(text, isError)
 	end
 end
 
+local function PrintAddedMacros(result)
+	local message = "Mega Macro: Added " .. (result.Added + result.OnInactive) .. " macros."
+
+	if result.OnInactive > 0 then
+		message = message .. " " .. result.OnInactive .. " didn't fit, so they're on the Inactive tab."
+	end
+
+	if result.Skipped > 0 then
+		message = message .. " " .. result.Skipped .. " were left out because the Inactive tab is full."
+	end
+
+	print(message)
+end
+
+local function GetCheckedEntries()
+	local checked = {}
+
+	for index, entry in ipairs(ChoiceEntries or {}) do
+		if Dialog.ChoiceRows[index]:GetChecked() then
+			table.insert(checked, entry)
+		end
+	end
+
+	return checked
+end
+
+local function UpdateImportChoices()
+	local checkedCount = #GetCheckedEntries()
+	local total = #ChoiceEntries
+	local room = MegaMacroEngine.GetTabAvailableSlotCount(ImportScope)
+	local inactiveRoom = MegaMacroEngine.GetAvailableSlotCount(MegaMacroScopes.Inactive)
+
+	Dialog.ActionButton:SetEnabled(checkedCount > 0)
+
+	if checkedCount == 0 then
+		local allOnTab = true
+		for _, entry in ipairs(ChoiceEntries) do
+			allOnTab = allOnTab and entry.IsOnTab
+		end
+
+		SetDialogMessage(allOnTab and "This tab already has all of these macros." or "Choose the macros to add.")
+		return
+	end
+
+	local text = checkedCount .. " of " .. total .. " chosen."
+
+	if checkedCount > room + inactiveRoom then
+		text = text .. " There's only room for " .. (room + inactiveRoom) .. ", so the rest will be left out."
+	elseif checkedCount > room then
+		if room == 0 then
+			text = text .. " This tab is full, so they'll go on the Inactive tab."
+		else
+			text = text .. " Only " .. room .. " fit on this tab, the rest will go on the Inactive tab."
+		end
+	end
+
+	SetDialogMessage(text, checkedCount > room)
+end
+
+local function SetAllChoices(checked)
+	for index in ipairs(ChoiceEntries) do
+		Dialog.ChoiceRows[index]:SetChecked(checked)
+	end
+
+	OnChoicesChanged()
+end
+
+local function CreateChoiceRow(index)
+	local row = CreateFrame("CheckButton", "MegaMacro_MacroChoice" .. index, Dialog.ChoiceChild, "ChatConfigCheckButtonTemplate")
+	row:SetPoint("TOPLEFT", 4, -(index - 1) * ChoiceRowHeight)
+	row:SetScript("OnClick", function() OnChoicesChanged() end)
+
+	-- The name and icon toggle it too
+	row.Area = CreateFrame("Button", nil, Dialog.ChoiceChild)
+	row.Area:SetPoint("LEFT", row, "RIGHT", 2, 0)
+	row.Area:SetPoint("RIGHT", Dialog.ChoiceChild, "RIGHT", -4, 0)
+	row.Area:SetHeight(ChoiceRowHeight - 2)
+	row.Area:SetHighlightTexture("Interface\\QuestFrame\\UI-QuestTitleHighlight", "ADD")
+	row.Area:SetScript("OnClick", function()
+		row:SetChecked(not row:GetChecked())
+		OnChoicesChanged()
+	end)
+
+	row.Icon = row.Area:CreateTexture(nil, "ARTWORK")
+	row.Icon:SetSize(20, 20)
+	row.Icon:SetPoint("LEFT", 0, 0)
+
+	row.Name = row.Area:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+	row.Name:SetPoint("LEFT", row.Icon, "RIGHT", 6, 0)
+	row.Name:SetWidth(250)
+	row.Name:SetJustifyH("LEFT")
+	row.Name:SetWordWrap(false)
+
+	row.Note = row.Area:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+	row.Note:SetPoint("RIGHT", 0, 0)
+	row.Note:SetJustifyH("RIGHT")
+
+	row.Area:SetScript("OnEnter", function(self)
+		local entry = ChoiceEntries and ChoiceEntries[index]
+
+		if entry then
+			GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+			GameTooltip:AddLine(entry.Name ~= "" and entry.Name or " ", 1, 1, 1)
+			GameTooltip:AddLine(entry.Code, nil, nil, nil, true)
+			GameTooltip:Show()
+		end
+	end)
+	row.Area:SetScript("OnLeave", function() GameTooltip:Hide() end)
+
+	Dialog.ChoiceRows[index] = row
+	return row
+end
+
+-- The list, the code, or the list above the code
+local function LayOutDialog(showList, showCode)
+	local showBoth = showList and showCode
+
+	Dialog:SetHeight(showBoth and ExportDialogHeight or DialogHeight)
+	Dialog.ChoiceBox:SetShown(showList)
+	Dialog.SelectAllButton:SetShown(showList)
+	Dialog.SelectNoneButton:SetShown(showList)
+	Dialog.ChoiceBox:SetPoint("BOTTOMRIGHT", -20, showBoth and 50 + ExportCodeHeight + 6 or 50)
+
+	Dialog.CodeBox:SetShown(showCode)
+	Dialog.CodeBox:ClearAllPoints()
+	Dialog.CodeBox:SetPoint("BOTTOMRIGHT", -20, 50)
+
+	if showBoth then
+		Dialog.CodeBox:SetPoint("TOPLEFT", Dialog, "BOTTOMLEFT", 20, 50 + ExportCodeHeight)
+	else
+		Dialog.CodeBox:SetPoint("TOPLEFT", 20, -62)
+	end
+end
+
+local function ShowCodeView()
+	ChoiceEntries = nil
+	OnChoicesChanged = nil
+	LayOutDialog(false, true)
+end
+
+-- Ticks everything except macros the tab already has
+local function ListChoices(entries, onChanged)
+	ChoiceEntries = entries
+	OnChoicesChanged = onChanged
+
+	for index, entry in ipairs(entries) do
+		local row = Dialog.ChoiceRows[index] or CreateChoiceRow(index)
+		row:SetChecked(not entry.IsOnTab)
+		row.Icon:SetTexture(entry.Texture)
+		row.Name:SetText(entry.Name)
+		row.Note:SetText(entry.IsOnTab and "Already on this tab" or "")
+		row:Show()
+		row.Area:Show()
+	end
+
+	for index=#entries + 1, #Dialog.ChoiceRows do
+		Dialog.ChoiceRows[index]:Hide()
+		Dialog.ChoiceRows[index].Area:Hide()
+	end
+
+	Dialog.ChoiceChild:SetHeight(math.max(#entries * ChoiceRowHeight, 1))
+	Dialog.ChoiceScrollFrame:SetVerticalScroll(0)
+	OnChoicesChanged()
+end
+
+local function ShowImportChoices(entries)
+	LayOutDialog(true, false)
+	Dialog.ActionButton:SetText("Add")
+	ListChoices(entries, UpdateImportChoices)
+end
+
+local function AddChosenMacros()
+	if MegaMacroWindow.IsBlockedByCombat() then
+		SetDialogMessage("You can't do that in combat.", true)
+		return
+	end
+
+	local result = MegaMacroBackups.AddFromTabCode(GetCheckedEntries(), ImportScope)
+
+	if result.Added + result.OnInactive == 0 then
+		SetDialogMessage("There's no room for them. Delete or move macros on the Inactive tab to make room.", true)
+		return
+	end
+
+	PrintAddedMacros(result)
+	Dialog:Hide()
+	MegaMacroWindow.ShowMacro(nil)
+end
+
 local function ImportCode()
 	if MegaMacroWindow.IsBlockedByCombat() then
 		SetDialogMessage("You can't do that in combat.", true)
@@ -623,6 +820,19 @@ local function ImportCode()
 	end
 
 	local text = Dialog.EditBox:GetText()
+
+	-- A tab of macros is shown first, so the player can leave out ones they don't want
+	if ImportScope then
+		local entries = MegaMacroBackups.ReadTabCode(text, ImportScope)
+
+		if entries and #entries == 0 then
+			SetDialogMessage("That code has no macros in it.", true)
+			return
+		elseif entries then
+			ShowImportChoices(entries)
+			return
+		end
+	end
 
 	-- Macros need a tab to go on. From Options there isn't one, and guessing could put them on the
 	-- wrong class or spec. A backup only goes on the backup list, so it's fine from anywhere.
@@ -650,17 +860,7 @@ local function ImportCode()
 		Dialog:Hide()
 		MegaMacroWindow.ShowMacro(value)
 	elseif result == "Macros" then
-		local message = "Mega Macro: Added " .. (value.Added + value.OnInactive) .. " macros."
-
-		if value.OnInactive > 0 then
-			message = message .. " " .. value.OnInactive .. " didn't fit, so they're on the Inactive tab."
-		end
-
-		if value.Skipped > 0 then
-			message = message .. " " .. value.Skipped .. " were left out because the Inactive tab is full."
-		end
-
-		print(message)
+		PrintAddedMacros(value)
 		Dialog:Hide()
 		MegaMacroWindow.ShowMacro(nil)
 	elseif result == "Backup" then
@@ -676,8 +876,36 @@ local function ImportCode()
 	end
 end
 
+local function SetDialogCode(code)
+	DialogCode = code
+	Dialog.EditBox:SetText(code)
+	Dialog.EditBox:SetFocus()
+	Dialog.EditBox:HighlightText()
+end
+
+-- Keeps the code to copy in step with what's ticked
+local function UpdateExportChoices(tabName)
+	local macros = {}
+
+	for _, entry in ipairs(GetCheckedEntries()) do
+		table.insert(macros, entry.Data)
+	end
+
+	local total = #ChoiceEntries
+	local count = #macros == total and total or #macros .. " of " .. total
+	Dialog.Title:SetText(tabName .. " tab (" .. count .. (total == 1 and " macro)" or " macros)"))
+
+	if #macros == 0 then
+		SetDialogMessage("Choose the macros to export.")
+		SetDialogCode("")
+	else
+		SetDialogMessage("Press Ctrl+C to copy the code, then paste it with Import in Mega Macro.")
+		SetDialogCode(MegaMacroBackups.GetTabCode(macros))
+	end
+end
+
 local function CreateDialog()
-	Dialog = CreateDialogFrame("MegaMacro_CodeDialog", 520, 330)
+	Dialog = CreateDialogFrame("MegaMacro_CodeDialog", 520, DialogHeight)
 
 	Dialog.Title = Dialog:CreateFontString(nil, "ARTWORK", "GameFontNormal")
 	Dialog.Title:SetPoint("TOP", 0, -20)
@@ -686,9 +914,33 @@ local function CreateDialog()
 	Dialog.Message:SetPoint("TOP", Dialog.Title, "BOTTOM", 0, -8)
 	Dialog.Message:SetWidth(470)
 
+	-- LayOutDialog places the rest of both boxes
 	local box = CreateFrame("Frame", nil, Dialog, "TooltipBackdropTemplate")
-	box:SetPoint("TOPLEFT", 20, -62)
-	box:SetPoint("BOTTOMRIGHT", -20, 50)
+	Dialog.CodeBox = box
+
+	Dialog.ChoiceBox = CreateFrame("Frame", nil, Dialog, "TooltipBackdropTemplate")
+	Dialog.ChoiceBox:SetPoint("TOPLEFT", 20, -62)
+
+	Dialog.ChoiceScrollFrame = CreateFrame("ScrollFrame", "MegaMacro_MacroChoiceScrollFrame", Dialog.ChoiceBox, "UIPanelScrollFrameTemplate")
+	Dialog.ChoiceScrollFrame:SetPoint("TOPLEFT", 6, -6)
+	Dialog.ChoiceScrollFrame:SetPoint("BOTTOMRIGHT", -28, 6)
+
+	Dialog.ChoiceChild = CreateFrame("Frame", nil, Dialog.ChoiceScrollFrame)
+	Dialog.ChoiceChild:SetSize(440, 1)
+	Dialog.ChoiceScrollFrame:SetScrollChild(Dialog.ChoiceChild)
+	Dialog.ChoiceRows = {}
+
+	Dialog.SelectAllButton = CreateFrame("Button", nil, Dialog, "UIPanelButtonTemplate")
+	Dialog.SelectAllButton:SetSize(90, 22)
+	Dialog.SelectAllButton:SetPoint("BOTTOMLEFT", 20, 20)
+	Dialog.SelectAllButton:SetText("Select All")
+	Dialog.SelectAllButton:SetScript("OnClick", function() SetAllChoices(true) end)
+
+	Dialog.SelectNoneButton = CreateFrame("Button", nil, Dialog, "UIPanelButtonTemplate")
+	Dialog.SelectNoneButton:SetSize(90, 22)
+	Dialog.SelectNoneButton:SetPoint("LEFT", Dialog.SelectAllButton, "RIGHT", 6, 0)
+	Dialog.SelectNoneButton:SetText("Select None")
+	Dialog.SelectNoneButton:SetScript("OnClick", function() SetAllChoices(false) end)
 
 	local scrollFrame = CreateFrame("ScrollFrame", "MegaMacro_CodeDialogScrollFrame", box, "UIPanelScrollFrameTemplate")
 	scrollFrame:SetPoint("TOPLEFT", 8, -8)
@@ -734,7 +986,15 @@ local function CreateDialog()
 	Dialog.ActionButton:SetSize(100, 22)
 	Dialog.ActionButton:SetPoint("RIGHT", Dialog.CloseButton, "LEFT", -6, 0)
 	Dialog.ActionButton:SetText("Import")
-	Dialog.ActionButton:SetScript("OnClick", ImportCode)
+	Dialog.ActionButton:SetScript("OnClick", function()
+		if ChoiceEntries then
+			AddChosenMacros()
+		else
+			ImportCode()
+		end
+	end)
+
+	Dialog:SetScript("OnHide", function() ChoiceEntries = nil end)
 end
 
 MegaMacroCodeDialog = {
@@ -743,21 +1003,33 @@ MegaMacroCodeDialog = {
 			CreateDialog()
 		end
 
-		DialogCode = code
+		ShowCodeView()
 		Dialog.Title:SetText(title)
 		SetDialogMessage("Press Ctrl+C to copy the code, then paste it with Import in Mega Macro.")
 		Dialog.ActionButton:Hide()
 		Dialog:Show()
-		Dialog.EditBox:SetText(code)
-		Dialog.EditBox:SetFocus()
-		Dialog.EditBox:HighlightText()
+		SetDialogCode(code)
 	end,
+	-- Shows the code for the whole tab, which follows along as macros are ticked and unticked
+	ShowTabExport = function(tabName, macros)
+		if not Dialog then
+			CreateDialog()
+		end
+
+		LayOutDialog(true, true)
+		Dialog.ActionButton:Hide()
+		Dialog:Show()
+		ListChoices(MegaMacroBackups.GetTabEntries(macros), function() UpdateExportChoices(tabName) end)
+	end,
+	-- scope is the macro tab's, or nil from Options
 	ShowImport = function(scope)
 		if not Dialog then
 			CreateDialog()
 		end
 
+		ShowCodeView()
 		DialogCode = nil
+		Dialog.ActionButton:SetText("Import")
 		ImportScope = scope
 		Dialog.Title:SetText("Import")
 		if scope then

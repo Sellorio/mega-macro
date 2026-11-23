@@ -318,6 +318,8 @@ local function SetMacroItems()
 	local savedMacros = MegaMacro.GetMacrosOnTab(SelectedScope)
 	-- The Inactive tab is leftovers from every class and spec, not a set to hand to someone
 	MegaMacro_ExportTabButton:SetEnabled(SelectedScope ~= MegaMacroScopes.Inactive and savedMacros ~= nil and #savedMacros > 0)
+	-- Macros there don't work, so imports go on the tab they're for
+	MegaMacro_ImportButton:SetEnabled(SelectedScope ~= MegaMacroScopes.Inactive)
 
 	SelectMacro(MacroItems[1])
 end
@@ -715,13 +717,11 @@ function MegaMacro_FrameTab_OnClick(self)
 end
 
 function MegaMacro_ExportTabButton_OnClick()
-	local macros = MegaMacro.GetMacrosOnTab(SelectedScope)
-
-	if macros and #macros > 0 then
+	if SelectedScope ~= MegaMacroScopes.Inactive and #MacroItems > 0 then
 		SaveMacro()
 		local tabName = _G["MegaMacro_FrameTab" .. SelectedTabIndex]:GetText()
-		local count = #macros == 1 and "1 macro" or #macros .. " macros"
-		MegaMacroCodeDialog.ShowCode(tabName .. " tab (" .. count .. ")", MegaMacroBackups.GetTabCode(macros))
+		-- In the order the tab shows them
+		MegaMacroCodeDialog.ShowTabExport(tabName, MacroItems)
 	end
 end
 
